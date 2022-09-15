@@ -6,6 +6,5 @@
 
 ## 1. 依赖安装
 ```
-
-pip install -r requirements.txt
-pip install "modelscope" -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
+pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
+```
