@@ -1,7 +1,9 @@
 import os
+import random
 from typing import Callable, Optional, Tuple, Union
 
 import torch
+from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import build_preprocessor
@@ -16,6 +18,7 @@ from modelscope.utils.logger import get_logger
 from modelscope.utils.registry import build_from_cfg, default_group
 from modelscope.utils.torch_utils import create_device, get_dist_info, init_dist
 
+from uner.datasets.corpus import Corpus
 from uner.metainfo import Trainers
 from uner.models.base import Model
 from uner.preprocessors.data_collators import DataCollatorWithPadding
@@ -28,9 +31,10 @@ from .default_config import DEFAULT_CONFIG
 class NERTrainer(EpochBasedTrainer):
     def __init__(
             self,
-            model: Optional[Union[Model, torch.nn.Module]] = None,
+            model: Optional[Union[Model, nn.Module]] = None,
             cfg_file: Optional[str] = None,
             arg_parse_fn: Optional[Callable] = None,
+            corpus: Optional[Corpus] = None,
             data_collator: Optional[Callable] = None,
             train_dataset: Optional[Dataset] = None,
             eval_dataset: Optional[Dataset] = None,
@@ -50,14 +54,14 @@ class NERTrainer(EpochBasedTrainer):
 
         # seed
         self._seed = 0
-        if 'seed' in kwargs:
+        if 'seed' in kwargs and kwargs['seed'] is not None:
             self._seed = kwargs['seed']
         elif has_keys(self.cfg, 'experiment', 'seed'):
             self._seed = self.cfg.experiment.seed
 
         if self._seed == -1:
             self._seed = random.randint(0, 10000)
-        self.logger.info('seed = {}'.format(self._seed))
+        self.logger.info('seed: {}'.format(self._seed))
 
         # work_dir
         if 'work_dir' in kwargs:
@@ -69,6 +73,14 @@ class NERTrainer(EpochBasedTrainer):
                 create_datetime_str()
             )
 
+        if train_dataset is None and eval_dataset is None:
+            if corpus is None:
+                corpus = self.build_corpus()   
+            if corpus.train is not None:
+                train_dataset = corpus.train
+            if corpus.valid is not None:
+                eval_dataset = corpus.valid
+
         if 'label2id' in kwargs:
             self.label2id = kwargs.pop('label2id')
         elif has_keys(self.cfg, 'dataset', 'label_file'):
@@ -79,8 +91,6 @@ class NERTrainer(EpochBasedTrainer):
             labels = get_labels(train_dataset)
             self.label2id = dict(zip(labels, range(len(labels))))
 
-        self.model = model
-
         self.preprocessor = None
         if isinstance(preprocessor, Preprocessor):
             self.preprocessor = preprocessor
@@ -90,7 +100,12 @@ class NERTrainer(EpochBasedTrainer):
             self.preprocessor.mode = ModeKeys.TRAIN
             self.label2id = self.preprocessor.label2id
         self.id2label = {v: k for k, v in self.label2id.items()}
-        print('id2label', self.id2label)
+        self.logger.info('label2id:', self.label2id)
+
+        if isinstance(model, nn.Module):
+            self.model = model
+        else:
+            self.model = self.build_model()
 
         device_name = kwargs.get('device', 'gpu')
         assert device_name in ['gpu',
@@ -137,10 +152,19 @@ class NERTrainer(EpochBasedTrainer):
     def _get_default_config(self):
         return DEFAULT_CONFIG
 
+    def build_model(self) -> nn.Module:
+        cfg = self.cfg.model
+        cfg['num_labels'] = len(self.label2id)
+        return Model.from_config(cfg)
+
+    def build_corpus(self) -> Corpus:
+        corpus = Corpus(
+            task=self.cfg.task,
+            **self.cfg.dataset)
+        return corpus
+
     def build_preprocessor(self) -> Preprocessor:
-        cfg = {
-            **self.cfg.preprocessor
-        }
+        cfg = self.cfg.preprocessor
         if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder', 'model_dir'):
             cfg['model_dir'] = self.cfg.model.encoder.model_dir
         cfg['label2id'] = self.label2id
@@ -156,7 +180,7 @@ class NERTrainer(EpochBasedTrainer):
         optim_options = {}
         if optimizer_cfg is not None:
             optim_options = optimizer_cfg.pop('options', {})
-            optimizer = build_optimizer(self.model, cfg=optimizer_cfg)
+            optimizer = self.build_optimizer(self.model, cfg=optimizer_cfg)
 
         if lr_scheduler is None:
             lr_scheduler_cfg = self.cfg.train.get('lr_scheduler', None)
@@ -174,22 +198,22 @@ class NERTrainer(EpochBasedTrainer):
         self.lr_scheduler = lr_scheduler
         return self.optimizer, self.lr_scheduler, optim_options, lr_options
 
-
-def build_optimizer(model: torch.nn.Module,
-                    cfg: ConfigDict,
-                    default_args: dict = None):
-    if hasattr(model, 'module'):
-        model = model.module
-    if default_args is None:
-        default_args = {}
-    if 'crf_lr' in cfg:
-        finetune_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' not in k]
-        transition_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' in k]
-        default_args['params'] = [
-            {'params': finetune_parameters}, 
-            {'params': transition_parameters, 'lr': cfg.pop('crf_lr')}
-        ]
-    else:
-        default_args['params'] = model.parameters()
-    return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
+    @staticmethod
+    def build_optimizer(model: nn.Module,
+                        cfg: ConfigDict,
+                        default_args: dict = None):
+        if hasattr(model, 'module'):
+            model = model.module
+        if default_args is None:
+            default_args = {}
+        if 'crf_lr' in cfg:
+            finetune_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' not in k]
+            transition_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' in k]
+            default_args['params'] = [
+                {'params': finetune_parameters}, 
+                {'params': transition_parameters, 'lr': cfg.pop('crf_lr')}
+            ]
+        else:
+            default_args['params'] = model.parameters()
+        return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
 
