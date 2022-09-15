@@ -9,10 +9,6 @@ from transformers import BertModel
 from uner.models import *  # tmp
 
 
-import warnings
-warnings.filterwarnings("ignore")
-
-
 class TestRegistry(unittest.TestCase):
 
     def setUp(self):
