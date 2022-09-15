@@ -79,12 +79,6 @@ class NERTrainer(EpochBasedTrainer):
             labels = get_labels(train_dataset)
             self.label2id = dict(zip(labels, range(len(labels))))
 
-        self.bio2bioes = False
-        if 'bio2bioes' in kwargs:
-            self.bio2bioes = kwargs.pop('bio2bioes')
-        elif has_keys(self.cfg, 'dataset', 'bio2bioes'):
-            self.bio2bioes = self.cfg.dataset.bio2bioes
-
         self.model = model
 
         self.preprocessor = None
@@ -150,7 +144,6 @@ class NERTrainer(EpochBasedTrainer):
         if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder', 'model_dir'):
             cfg['model_dir'] = self.cfg.model.encoder.model_dir
         cfg['label2id'] = self.label2id
-        cfg['bio2bioes'] = self.bio2bioes
         return build_preprocessor(cfg)
 
     def create_optimizer_and_scheduler(self):
