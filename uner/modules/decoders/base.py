@@ -1,14 +1,15 @@
-from abc import abstractmethod
 import functools
-import torch.nn as nn
-import torch
-from transformers import AutoModel
-from typing import Union, Dict
+from abc import abstractmethod
 from os import path as osp
+from typing import Dict, Union
+
+import torch
+import torch.nn as nn
 from modelscope.utils.config import Config
 from modelscope.utils.registry import Registry, build_from_cfg
-from uner.utils.common_utils import has_keys
+from transformers import AutoModel
 
+from uner.utils.common_utils import has_keys
 
 DECODERS = Registry('decoders')
 
@@ -34,7 +35,8 @@ class Decoder(nn.Module):
 
         Returns: A Decoder instance.
         """
-        return cls(model_name_or_path=model_name_or_path, config=config, **kwargs)
+        return cls(
+            model_name_or_path=model_name_or_path, config=config, **kwargs)
 
     @abstractmethod
     @torch.jit.export
@@ -60,15 +62,18 @@ class Decoder(nn.Module):
             'Either the model or the cfg information should be passed in from the parameters.'
 
         if cfg_dict_or_path is not None:
-            if isinstance(cfg_dict_or_path, str) and osp.isfile(cfg_dict_or_path):
+            if isinstance(cfg_dict_or_path,
+                          str) and osp.isfile(cfg_dict_or_path):
                 cfg = Config.from_file(cfg_dict_or_path)
             elif isinstance(cfg_dict_or_path, (dict, Config)):
                 cfg = cfg_dict_or_path
             else:
-                raise ValueError('Please pass a correct cfg dict, which should be a reachable file or a dict.')
-        elif model_name_or_path is not None and osp.exists(osp.join(model_name_or_path, 'config.json')):
-            cfg = Config.from_file(
-                osp.join(model_name_or_path, "config.json"))
+                raise ValueError(
+                    'Please pass a correct cfg dict, which should be a reachable file or a dict.'
+                )
+        elif model_name_or_path is not None and osp.exists(
+                osp.join(model_name_or_path, 'config.json')):
+            cfg = Config.from_file(osp.join(model_name_or_path, 'config.json'))
         else:
             cfg = {}
 
@@ -82,15 +87,18 @@ class Decoder(nn.Module):
         elif 'model' not in cfg and 'model_type' in cfg:
             type = cfg['model_type']
 
-        if model_name_or_path is None and has_keys(cfg, 'model', 'decoder', 'model_name_or_path'):
+        if model_name_or_path is None and has_keys(cfg, 'model', 'decoder',
+                                                   'model_name_or_path'):
             model_name_or_path = cfg['model']['decoder']['model_name_or_path']
 
         if type is not None and type in DECODERS.modules['default']:
-            return build_decoder(type, model_name_or_path=model_name_or_path,
-                                 config=cfg if len(cfg) > 0 else None, **kwargs)
+            return build_decoder(
+                type,
+                model_name_or_path=model_name_or_path,
+                config=cfg if len(cfg) > 0 else None,
+                **kwargs)
         else:
             assert model_name_or_path is not None, 'Model is not found in registry, ' \
                                                    'so it is considered a huggingface backbone ' \
                                                    'and the model_name_or_path param should not be None'
             return AutoModel.from_pretrained(model_name_or_path, **kwargs)
-

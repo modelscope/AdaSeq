@@ -5,7 +5,7 @@ from modelscope.utils.config import Config
 
 def create_datetime_str():
     datetime_dt = datetime.datetime.today()
-    datetime_str = datetime_dt.strftime("%y%m%d%H%M%S.%f")
+    datetime_str = datetime_dt.strftime('%y%m%d%H%M%S.%f')
     return datetime_str
 
 

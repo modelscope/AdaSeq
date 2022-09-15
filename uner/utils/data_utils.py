@@ -16,4 +16,3 @@ def get_labels(dataset: Union[Dataset, Dict[str, Dataset]]) -> List[str]:
         labels.remove('O')
         labels = ['O'] + labels
     return labels
-

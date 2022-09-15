@@ -3,20 +3,24 @@ import random
 from typing import Callable, Optional, Tuple, Union
 
 import torch
-from torch import nn
-from torch.utils.data import DataLoader, Dataset
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import build_preprocessor
 from modelscope.trainers.builder import TRAINERS
 from modelscope.trainers.lrscheduler.builder import build_lr_scheduler
-from modelscope.trainers.trainer import EpochBasedTrainer
 from modelscope.trainers.optimizer.builder import OPTIMIZERS
 from modelscope.trainers.parallel.utils import is_parallel
-from modelscope.utils.constant import ModeKeys
+from modelscope.trainers.trainer import EpochBasedTrainer
 from modelscope.utils.config import ConfigDict
+from modelscope.utils.constant import ModeKeys
 from modelscope.utils.logger import get_logger
 from modelscope.utils.registry import build_from_cfg, default_group
-from modelscope.utils.torch_utils import create_device, get_dist_info, init_dist
+from modelscope.utils.torch_utils import (
+    create_device,
+    get_dist_info,
+    init_dist,
+)
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 
 from uner.datasets.corpus import Corpus
 from uner.metainfo import Trainers
@@ -29,6 +33,7 @@ from .default_config import DEFAULT_CONFIG
 
 @TRAINERS.register_module(module_name=Trainers.ner_trainer)
 class NERTrainer(EpochBasedTrainer):
+
     def __init__(
             self,
             model: Optional[Union[Model, nn.Module]] = None,
@@ -67,15 +72,13 @@ class NERTrainer(EpochBasedTrainer):
         if 'work_dir' in kwargs:
             self.work_dir = kwargs['work_dir']
         else:
-            self.work_dir = os.path.join(
-                self.cfg.experiment.exp_dir,
-                self.cfg.experiment.exp_name,
-                create_datetime_str()
-            )
+            self.work_dir = os.path.join(self.cfg.experiment.exp_dir,
+                                         self.cfg.experiment.exp_name,
+                                         create_datetime_str())
 
         if train_dataset is None and eval_dataset is None:
             if corpus is None:
-                corpus = self.build_corpus()   
+                corpus = self.build_corpus()
             if corpus.train is not None:
                 train_dataset = corpus.train
             if corpus.valid is not None:
@@ -158,14 +161,13 @@ class NERTrainer(EpochBasedTrainer):
         return Model.from_config(cfg)
 
     def build_corpus(self) -> Corpus:
-        corpus = Corpus(
-            task=self.cfg.task,
-            **self.cfg.dataset)
+        corpus = Corpus(task=self.cfg.task, **self.cfg.dataset)
         return corpus
 
     def build_preprocessor(self) -> Preprocessor:
         cfg = self.cfg.preprocessor
-        if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder', 'model_dir'):
+        if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder',
+                                               'model_dir'):
             cfg['model_dir'] = self.cfg.model.encoder.model_dir
         cfg['label2id'] = self.label2id
         return build_preprocessor(cfg)
@@ -207,13 +209,24 @@ class NERTrainer(EpochBasedTrainer):
         if default_args is None:
             default_args = {}
         if 'crf_lr' in cfg:
-            finetune_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' not in k]
-            transition_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' in k]
-            default_args['params'] = [
-                {'params': finetune_parameters}, 
-                {'params': transition_parameters, 'lr': cfg.pop('crf_lr')}
+            finetune_parameters = [
+                v for k, v in model.named_parameters()
+                if v.requires_grad and 'crf' not in k
             ]
+            transition_parameters = [
+                v for k, v in model.named_parameters()
+                if v.requires_grad and 'crf' in k
+            ]
+            default_args['params'] = [{
+                'params': finetune_parameters
+            }, {
+                'params': transition_parameters,
+                'lr': cfg.pop('crf_lr')
+            }]
         else:
             default_args['params'] = model.parameters()
-        return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
-
+        return build_from_cfg(
+            cfg,
+            OPTIMIZERS,
+            group_key=default_group,
+            default_args=default_args)

@@ -1,21 +1,22 @@
-import torch
 import os
-import numpy as np
-import torch.nn as nn
 from typing import Any, Dict, Optional, Union
 
+import numpy as np
+import torch
+import torch.nn as nn
 from modelscope.models.builder import MODELS
 
 from uner.metainfo import Models
 from uner.models.base import Model
+from uner.modules.decoders import CRF
 from uner.modules.dropouts import WordDropout
 from uner.modules.encoders import Encoder
-from uner.modules.decoders import CRF
 from uner.preprocessors.constant import PAD_LABEL_ID
 
 
 @MODELS.register_module(module_name=Models.sequence_labeling_model)
 class SequenceLabelingModel(Model):
+
     def __init__(self,
                  num_labels: int,
                  encoder: Union[Encoder, str] = None,
@@ -27,7 +28,8 @@ class SequenceLabelingModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(
+                cfg_dict_or_path=encoder, **kwargs)
         self.linear = nn.Linear(self.encoder.config.hidden_size, num_labels)
 
         self.use_dropout = word_dropout > 0.0
@@ -38,10 +40,12 @@ class SequenceLabelingModel(Model):
         if use_crf:
             self.crf = CRF(num_labels, batch_first=True)
         else:
-            self.loss_fn = nn.CrossEntropyLoss(reduction='mean', ignore_index=PAD_LABEL_ID)
+            self.loss_fn = nn.CrossEntropyLoss(
+                reduction='mean', ignore_index=PAD_LABEL_ID)
 
     def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
+        embed = self.encoder(
+            inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
 
         if self.use_dropout:
             embed = self.dropout(embed)
@@ -53,8 +57,9 @@ class SequenceLabelingModel(Model):
             masked_lengths = mask.sum(-1).long()
             masked_logits = torch.zeros_like(logits)
             for i in range(len(mask)):
-                a = logits[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
-                masked_logits[i,:masked_lengths[i],:] = logits[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
+                masked_logits[
+                    i, :masked_lengths[i], :] = logits[i].masked_select(
+                        mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
             logits = masked_logits
 
         return {'logits': logits}
@@ -92,4 +97,3 @@ class SequenceLabelingModel(Model):
         else:
             predicts = logits.argmax(-1)
         return predicts
-

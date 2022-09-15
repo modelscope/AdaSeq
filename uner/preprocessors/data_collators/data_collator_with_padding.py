@@ -3,8 +3,8 @@ from typing import Any, Dict, List
 
 from transformers import PreTrainedTokenizerBase
 
-from .base import DataBatch
 from ..constant import PAD_LABEL_ID
+from .base import DataBatch
 
 
 @dataclass
@@ -18,7 +18,8 @@ class DataCollatorWithPadding:
         batch = {key: [example[key] for example in features] for key in fields}
 
         input_ids_field = 'input_ids' if 'ext_input_ids' not in fields else 'ext_input_ids'
-        max_length = max([len(input_ids) for input_ids in batch[input_ids_field]])
+        max_length = max(
+            [len(input_ids) for input_ids in batch[input_ids_field]])
         padding_side = self.tokenizer.padding_side
 
         for i in range(batch_size):
@@ -37,12 +38,14 @@ class DataCollatorWithPadding:
                         continue
 
                     if padding_side == 'right':
-                        batch[field][i] = batch[field][i] + [pad_id] * difference
+                        batch[field][i] = batch[field][i] + [pad_id
+                                                             ] * difference
                     elif padding_side == 'left':
-                        batch[field][i] = [pad_id] * difference + batch[field][i]
+                        batch[field][i] = [pad_id
+                                           ] * difference + batch[field][i]
                     else:
-                        raise ValueError("Invalid padding strategy:" + str(self.padding_side))
+                        raise ValueError('Invalid padding strategy:'
+                                         + str(self.padding_side))
 
         batch = DataBatch(batch)
         return batch
-

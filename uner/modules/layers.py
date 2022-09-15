@@ -1,12 +1,13 @@
 import sys
+
+import json
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-import json
 
 
 def load_vocab(vocab_file):
-    idx =  0
+    idx = 0
     word2id = {}
     id2word = {}
     for line in open(vocab_file):
@@ -39,10 +40,10 @@ class Embedding(nn.Module):
                     word_embed = [float(x) for x in fields[1:]]
                     embedding[idx] = word_embed
 
-            self.embedding = nn.Embedding.from_pretrained(torch.tensor(embedding, dtype = torch.float32), freeze = False)
+            self.embedding = nn.Embedding.from_pretrained(
+                torch.tensor(embedding, dtype=torch.float32), freeze=False)
         else:
             self.embedding = nn.Embedding(self.vocab_size, self.width)
-
 
     def forward(self, input_ids):
         return self.embedding(input_ids)

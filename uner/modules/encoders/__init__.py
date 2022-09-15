@@ -1,2 +1,2 @@
-from .base import Encoder, ENCODERS, build_encoder
+from .base import ENCODERS, Encoder, build_encoder
 from .nezha import NeZhaModel

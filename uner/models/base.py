@@ -3,13 +3,14 @@ from abc import abstractmethod
 from typing import Any, Dict, Optional, Union
 
 import torch.nn as nn
-from modelscope.utils.config import Config
 from modelscope.models.builder import build_model
+from modelscope.utils.config import Config
 
 from uner.utils.common_utils import has_keys
 
 
 class Model(nn.Module):
+
     def __init__(self, **kwargs):
         super(Model, self).__init__()
 
@@ -23,7 +24,8 @@ class Model(nn.Module):
 
     @classmethod
     def from_config(cls,
-                    cfg_dict_or_path: Optional[Union[str, Dict, Config]] = None,
+                    cfg_dict_or_path: Optional[Union[str, Dict,
+                                                     Config]] = None,
                     **kwargs):
 
         if isinstance(cfg_dict_or_path, str) and osp.isfile(cfg_dict_or_path):
@@ -35,10 +37,11 @@ class Model(nn.Module):
 
         if 'type' in kwargs:
             cfg['type'] = kwargs.pop('type')
-        
+
         if 'type' not in cfg:
-            raise ValueError('Please pass a correct cfg dict, which should be a reachable file or a dict.')
+            raise ValueError(
+                'Please pass a correct cfg dict, which should be a reachable file or a dict.'
+            )
 
         model = build_model(cfg, default_args=kwargs)
         return model
-

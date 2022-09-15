@@ -1,11 +1,12 @@
 import os
 from typing import Optional
-import yaml
 
+import yaml
 from datasets import load_dataset
 
 
 class Corpus:
+
     def __init__(self,
                  task: str,
                  corpus: Optional[str] = None,
@@ -65,4 +66,3 @@ class Corpus:
 
     def _get_predefined_corpus_url_by_name(self, task, name):
         return self._predefined_corpus_config[task][name]['url']
-

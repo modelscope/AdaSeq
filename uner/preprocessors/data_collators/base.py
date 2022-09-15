@@ -1,9 +1,11 @@
 from collections.abc import Mapping
+
 import torch
 
 
 class DataBatch(Mapping):
     keep_fields = ['tokens', 'offset_mapping']
+
     def __init__(self, batch):
         self.batch = self.tensorize(batch)
 
@@ -23,9 +25,15 @@ class DataBatch(Mapping):
         return len(self.batch)
 
     def tensorize(self, batch):
-        return {k: torch.tensor(v, dtype=torch.int64 if not k.endswith('mask') else torch.bool)
-                if k not in self.keep_fields else v for k, v in batch.items()}
+        return {
+            k: torch.tensor(
+                v, dtype=torch.int64 if not k.endswith('mask') else torch.bool)
+            if k not in self.keep_fields else v
+            for k, v in batch.items()
+        }
 
     def to(self, device):
-        self.batch = {k: v.to(device) if k not in [self.token_field] else v for k, v in self.batch.items()}
-
+        self.batch = {
+            k: v.to(device) if k not in [self.token_field] else v
+            for k, v in self.batch.items()
+        }

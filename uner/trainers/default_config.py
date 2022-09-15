@@ -16,4 +16,3 @@ DEFAULT_CONFIG = {
         }]
     }
 }
-

@@ -1,6 +1,7 @@
 addict
 datasets
 numpy
+pyyaml
 seqeval
 torch>=1.11.0
 tqdm>=4.64.0
