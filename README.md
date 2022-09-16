@@ -8,3 +8,8 @@
 ```
 pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
 ```
+
+## 2. 模型训练
+```
+python -m examples.train -c examples/bert_crf/configs/resume.yaml --seed 0
+```

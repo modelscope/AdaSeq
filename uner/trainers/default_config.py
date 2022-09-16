@@ -3,10 +3,9 @@ DEFAULT_CONFIG = {
         'hooks': [{
             'type': 'EvaluationHook'
         }, {
-            'type': 'CheckpointHook',
-            'interval': 10
+            'type': 'CheckpointHook'
         }, {
-            'type': 'BestCkptSaverHook',
+            'type': 'MyBestCkptSaverHook',
             'metric_key': 'f1'
         }, {
             'type': 'TextLoggerHook',

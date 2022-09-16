@@ -43,6 +43,9 @@ class Corpus:
             data_dir=data_dir,
             data_files=data_files)
 
+        if self.valid is None and self.test is not None:
+            self.datasets['valid'] = self.datasets['test']
+
     @property
     def train(self):
         return self.datasets.get('train', None)
