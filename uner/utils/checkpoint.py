@@ -41,4 +41,3 @@ def load_checkpoint(filename,
     model.load_state_dict(state_dict)
     if 'meta' in checkpoint:
         return checkpoint.get('meta', {})
-

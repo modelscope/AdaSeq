@@ -1,6 +1,6 @@
 import os
 import random
-from typing import Callable, Optional, Tuple, Union, Mapping
+from typing import Callable, Mapping, Optional, Tuple, Union
 
 import torch
 from modelscope.metrics import build_metric
@@ -12,14 +12,14 @@ from modelscope.trainers.optimizer.builder import OPTIMIZERS
 from modelscope.trainers.parallel.utils import is_parallel
 from modelscope.trainers.trainer import EpochBasedTrainer
 from modelscope.utils.config import ConfigDict
-from modelscope.utils.constant import ModeKeys, ConfigKeys, ConfigFields
+from modelscope.utils.constant import ConfigFields, ConfigKeys, ModeKeys
 from modelscope.utils.device import create_device, verify_device
 from modelscope.utils.logger import get_logger
 from modelscope.utils.registry import build_from_cfg, default_group
 from modelscope.utils.torch_utils import (
     get_dist_info,
     init_dist,
-    set_random_seed
+    set_random_seed,
 )
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
@@ -79,8 +79,7 @@ class NERTrainer(EpochBasedTrainer):
         else:
             self.work_dir = os.path.join(self.cfg.experiment.exp_dir,
                                          self.cfg.experiment.exp_name,
-                                         create_datetime_str(),
-                                         'outputs')
+                                         create_datetime_str(), 'outputs')
 
         # datasets
         if train_dataset is None and eval_dataset is None:
@@ -180,7 +179,8 @@ class NERTrainer(EpochBasedTrainer):
                 assert isinstance(data_collator[ConfigKeys.val], Callable)
                 self.eval_data_collator = data_collator[ConfigKeys.val]
         else:
-            default_collate = DataCollatorWithPadding(self.train_preprocessor.tokenizer)
+            default_collate = DataCollatorWithPadding(
+                self.train_preprocessor.tokenizer)
             collate_fn = default_collate if data_collator is None else data_collator
             self.train_data_collator = collate_fn
             self.eval_data_collator = collate_fn
@@ -326,9 +326,7 @@ class NERTrainer(EpochBasedTrainer):
         from modelscope.trainers.hooks.logger.text_logger_hook import TextLoggerHook
         for hook in self.hooks:
             if isinstance(hook, TextLoggerHook):
-                log_dict = OrderedDict(mode='test',
-                                       **metric_values)
-                hook._dump_log(log_dict)               
+                log_dict = OrderedDict(mode='test', **metric_values)
+                hook._dump_log(log_dict)
 
         return metric_values
-
