@@ -225,6 +225,12 @@ class NERTrainer(EpochBasedTrainer):
             if not is_parallel(self.model) and self._dist:
                 self.model = self.to_parallel(self.model)
 
+        # file logger
+        self._file_logger = self._get_file_logger()
+
+        hyper_params = {'seed': self._seed}
+        self.dump_log(hyper_params)
+
     def _get_default_config(self):
         return DEFAULT_CONFIG
 
@@ -307,6 +313,17 @@ class NERTrainer(EpochBasedTrainer):
             group_key=default_group,
             default_args=default_args)
 
+    def _get_file_logger(self):
+        from modelscope.trainers.hooks.logger.text_logger_hook import TextLoggerHook
+        for hook in self.hooks:
+            if isinstance(hook, TextLoggerHook):
+                return hook
+        return None
+
+    def dump_log(self, log_dict):
+        if self._file_logger is not None:
+            self._file_logger._dump_log(log_dict)
+
     def test(self, checkpoint_path=None):
         backup_eval_dataset = self.eval_dataset
         self.eval_dataset = self.test_dataset
@@ -323,10 +340,7 @@ class NERTrainer(EpochBasedTrainer):
 
         # log to file
         from collections import OrderedDict
-        from modelscope.trainers.hooks.logger.text_logger_hook import TextLoggerHook
-        for hook in self.hooks:
-            if isinstance(hook, TextLoggerHook):
-                log_dict = OrderedDict(mode='test', **metric_values)
-                hook._dump_log(log_dict)
+        log_dict = OrderedDict(mode='test', **metric_values)
+        self.dump_log(log_dict)
 
         return metric_values
