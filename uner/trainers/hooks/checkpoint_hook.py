@@ -19,7 +19,7 @@ class MyBestCkptSaverHook(BestCkptSaverHook):
         self._load_checkpoint(trainer, self._best_ckpt_file)
 
     def _save_checkpoint(self, trainer):
-        save_checkpoint(trainer.model, self._best_ckpt_file, trainer.optimizer)
+        save_checkpoint(trainer.model, self._best_ckpt_file)
 
     def _load_checkpoint(self, trainer, checkpoint_path):
         load_checkpoint(checkpoint_path, trainer.model)
