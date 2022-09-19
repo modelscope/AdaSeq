@@ -1,7 +1,8 @@
+/configs/
 /datasets/
+/experiments/
 /logs/
 /outputs/
-/experiments/
 
 .idea/
 *.pyc

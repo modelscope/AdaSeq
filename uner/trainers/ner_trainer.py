@@ -77,8 +77,8 @@ class NERTrainer(EpochBasedTrainer):
         if 'work_dir' in kwargs:
             self.work_dir = kwargs['work_dir']
         else:
-            self.work_dir = os.path.join(self.cfg.experiment.exp_dir,
-                                         self.cfg.experiment.exp_name,
+            self.work_dir = os.path.join(str(self.cfg.experiment.exp_dir),
+                                         str(self.cfg.experiment.exp_name),
                                          create_datetime_str(), 'outputs')
 
         # datasets
@@ -225,12 +225,6 @@ class NERTrainer(EpochBasedTrainer):
             if not is_parallel(self.model) and self._dist:
                 self.model = self.to_parallel(self.model)
 
-        # file logger
-        self._file_logger = self._get_file_logger()
-
-        hyper_params = {'seed': self._seed}
-        self.dump_log(hyper_params)
-
     def _get_default_config(self):
         return DEFAULT_CONFIG
 
@@ -313,12 +307,13 @@ class NERTrainer(EpochBasedTrainer):
             group_key=default_group,
             default_args=default_args)
 
-    def _get_file_logger(self):
+    def _init_file_logger(self):
         from modelscope.trainers.hooks.logger.text_logger_hook import TextLoggerHook
+        self._file_logger = None
         for hook in self.hooks:
             if isinstance(hook, TextLoggerHook):
-                return hook
-        return None
+               self._file_logger = hook
+               break
 
     def dump_log(self, log_dict):
         if self._file_logger is not None:
@@ -339,8 +334,9 @@ class NERTrainer(EpochBasedTrainer):
         self.logger.info('test\t' + ', '.join(log_items))
 
         # log to file
+        self._init_file_logger()
         from collections import OrderedDict
-        log_dict = OrderedDict(mode='test', **metric_values)
+        log_dict = OrderedDict(mode='test', seed=self._seed, **metric_values)
         self.dump_log(log_dict)
 
         return metric_values
