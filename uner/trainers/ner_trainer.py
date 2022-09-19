@@ -76,10 +76,14 @@ class NERTrainer(EpochBasedTrainer):
         # work_dir
         if 'work_dir' in kwargs:
             self.work_dir = kwargs['work_dir']
-        else:
+        elif 'work_dir' in self.cfg:
+            self.work_dir = self.cfg.work_dir
+        elif 'experiment' in self.cfg:
             self.work_dir = os.path.join(str(self.cfg.experiment.exp_dir),
                                          str(self.cfg.experiment.exp_name),
                                          create_datetime_str(), 'outputs')
+        else:
+            self.work_dir = './work_dir'
 
         # datasets
         if train_dataset is None and eval_dataset is None:
