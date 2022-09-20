@@ -11,10 +11,10 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 
 ## 2. 模型训练
 ```
-python -m examples.train -c examples/bert_crf/configs/resume.yaml --seed 0
+python -m scripts.train -c examples/bert_crf/configs/resume.yaml --seed 0
 ```
 
 
 # 开发文档
-1. [Python开发规约](https://yuque.antfin-inc.com/docs/share/d31e3bbe-9d95-44b4-8fb9-e232cdb083c7?# 《Python开发规约》)
+1. [UNER开发规约](https://yuque.antfin-inc.com/docs/share/7088e485-5817-4beb-8a28-f8de7dd95a9a?# 《UNER开发规约》)
 2. [Modelscope文档中心](https://modelscope.cn/docs/%E9%A6%96%E9%A1%B5)
