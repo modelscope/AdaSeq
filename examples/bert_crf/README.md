@@ -12,7 +12,7 @@ python -m scripts.train -c examples/bert_crf/configs/resume.yaml
 | bert-base-chinese | | | | | |
 | bert-base-wwm-ext | | | | | |
 | bert-roberta-wwm-ext | | | | | |
-| nezha-cn-base | | | | | |
+| nezha-cn-base | 95.84 | 81.71 | 95.54 | 70.61 | 85.92 |
 
 ### English
 | Model | conll03 | conllpp | wnut16 | wnut17 | avg |

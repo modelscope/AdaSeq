@@ -1,18 +1,23 @@
 import os
 
 import datasets
+from datasets import Features, Value
 
 
 class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
 
     def _info(self):
         info = datasets.DatasetInfo(
-            features=datasets.Features(
-                {
-                    'id': datasets.Value('string'),
-                    'tokens': datasets.Sequence(datasets.Value('string')),
-                    'labels': datasets.Sequence(datasets.Value('string'))
-                }))
+            features=Features({
+                'id':
+                Value('string'),
+                'tokens': [Value('string')],
+                'spans': [{
+                    'start': Value('int32'),  # close
+                    'end': Value('int32'),  # open
+                    'type': Value('string')
+                }]
+            }))
         return info
 
     def _split_generators(self, dl_manager):
@@ -74,10 +79,11 @@ def load_column_data_file(filepath):
         for line in f:
             if line.startswith('-DOCSTART-') or line == '' or line == '\n':
                 if tokens:
+                    spans = labels_to_spans(labels)
                     yield guid, {
                         'id': str(guid),
                         'tokens': tokens,
-                        'labels': labels,
+                        'spans': spans
                     }
                     guid += 1
                     tokens = []
@@ -87,8 +93,35 @@ def load_column_data_file(filepath):
                 tokens.append(splits[0])
                 labels.append(splits[-1].rstrip())
         if tokens:
-            yield guid, {
-                'id': str(guid),
-                'tokens': tokens,
-                'labels': labels,
-            }
+            spans = labels_to_spans(labels)
+            yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans}
+
+
+def labels_to_spans(labels):
+    spans = []
+    in_entity = False
+    start = -1
+    for i in range(len(labels)):
+        # fix label error
+        if labels[i][0] in 'IE' and not in_entity:
+            labels[i] = 'B' + labels[i][1:]
+        if labels[i][0] in 'BS':
+            if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
+                start = i
+            else:
+                spans.append({'start': i, 'end': i + 1, 'type': labels[i][2:]})
+        elif labels[i][0] in 'IE':
+            if i + 1 >= len(labels) or labels[i + 1][0] not in 'IE':
+                assert start >= 0, \
+                    'Invalid label sequence found: {}'.format(labels)
+                spans.append({
+                    'start': start,
+                    'end': i + 1,
+                    'type': labels[i][2:]
+                })
+                start = -1
+        if labels[i][0] in 'B':
+            in_entity = True
+        elif labels[i][0] in 'OES':
+            in_entity = False
+    return spans

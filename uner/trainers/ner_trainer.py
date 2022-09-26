@@ -29,7 +29,7 @@ from uner.metainfo import Trainers
 from uner.models.base import Model
 from uner.preprocessors.data_collators import DataCollatorWithPadding
 from uner.utils.common_utils import create_datetime_str, has_keys
-from uner.utils.data_utils import get_labels
+from uner.utils.data_utils import gen_label2id, get_labels
 from .default_config import DEFAULT_CONFIG
 
 
@@ -79,9 +79,10 @@ class NERTrainer(EpochBasedTrainer):
         elif 'work_dir' in self.cfg:
             self.work_dir = self.cfg.work_dir
         elif 'experiment' in self.cfg:
-            self.work_dir = os.path.join(str(self.cfg.experiment.exp_dir),
-                                         str(self.cfg.experiment.exp_name),
-                                         create_datetime_str(), 'outputs')
+            self.work_dir = os.path.join(
+                str(self.cfg.experiment.exp_dir),
+                str(self.cfg.experiment.exp_name), create_datetime_str(),
+                'outputs')
         else:
             self.work_dir = './work_dir'
 
@@ -99,13 +100,13 @@ class NERTrainer(EpochBasedTrainer):
         # labels
         if 'label2id' in kwargs:
             self.label2id = kwargs.pop('label2id')
-        elif has_keys(self.cfg, 'dataset', 'label_file'):
-            labels = None
-            raise NotImplementedError
-            self.label2id = dict(zip(labels, range(len(labels))))
-        elif train_dataset is not None:
+        elif train_dataset is not None and has_keys(self.cfg, 'preprocessor',
+                                                    'type'):
             labels = get_labels(train_dataset)
-            self.label2id = dict(zip(labels, range(len(labels))))
+            self.label2id = gen_label2id(
+                labels, mode=self.cfg.preprocessor.type)
+        else:
+            raise ValueError('label2id must be set!')
 
         # preprocessor
         self.train_preprocessor, self.eval_preprocessor = None, None
@@ -316,8 +317,8 @@ class NERTrainer(EpochBasedTrainer):
         self._file_logger = None
         for hook in self.hooks:
             if isinstance(hook, TextLoggerHook):
-               self._file_logger = hook
-               break
+                self._file_logger = hook
+                break
 
     def dump_log(self, log_dict):
         if self._file_logger is not None:

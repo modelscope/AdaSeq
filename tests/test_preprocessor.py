@@ -11,8 +11,23 @@ class PreprocessorTest(unittest.TestCase):
         self.input1 = {
             'tokens':
             'EU rejects German call to boycott British lamb .'.split(),
-            'labels':
-            ['B-ORG', 'O', 'B-MISC', 'O', 'O', 'O', 'B-MISC', 'O', 'O']
+            'spans': [
+                {
+                    'start': 0,
+                    'end': 1,
+                    'type': 'ORG'
+                },
+                {
+                    'start': 2,
+                    'end': 3,
+                    'type': 'MISC'
+                },
+                {
+                    'start': 6,
+                    'end': 7,
+                    'type': 'MISC'
+                },
+            ]
         }
         self.labels1 = [
             'O', 'B-LOC', 'B-MISC', 'B-ORG', 'B-PER', 'I-LOC', 'I-MISC',
