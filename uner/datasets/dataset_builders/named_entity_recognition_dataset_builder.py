@@ -3,8 +3,15 @@ import os
 import datasets
 from datasets import Features, Value
 
+class NamedEntityRecognitionDatasetBuilderConfig(datasets.BuilderConfig):
+
+    def __init__(self, corpus_config):
+        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__()
+        self.corpus_config = corpus_config
 
 class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
+
+    BUILDER_CONFIG_CLASS = NamedEntityRecognitionDatasetBuilderConfig
 
     def _info(self):
         info = datasets.DatasetInfo(
@@ -58,10 +65,25 @@ class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
             raise ValueError('Datasets cannot be resolved!')
 
     def _generate_examples(self, filepath):
-        if filepath.endswith('.json'):
+        if 'corpus_reader' in self.config.corpus_config:
+            #TODO: get the reder via reflection
+            raise NotImplementedError
+        corpus_type = self.config.corpus_config['type']
+        corpus_format = self.config.corpus_config['format']
+        if corpus_type == 'sequence_labeling':
+            if corpus_format == 'column':
+                return load_column_data_file(filepath, self.config.corpus_config) 
+            elif corpus_format == 'json': # including tag sequnece style and offset style
+                return load_sequence_labeling_json_data_file(filepath, self.config.corpus_config) 
+            else:
+                return ValueError('Unknown corpus format. Please specify corpus reader.')
+        elif corpus_type == 'span_based':
+            if corpus_format == 'json':
+                return load_span_based_json_data_file(filepath, self.config.corpus_config) 
+        elif corpus_type == 'discontinuous':
             raise NotImplementedError
         else:
-            return load_column_data_file(filepath)
+            return ValueError('Unknown corpus type. Please specify corpus reader.')
 
 
 def get_file_by_keyword(files, keyword):
@@ -69,59 +91,3 @@ def get_file_by_keyword(files, keyword):
         if keyword in filename:
             return filename
     return None
-
-
-def load_column_data_file(filepath):
-    with open(filepath, encoding='utf-8') as f:
-        guid = 0
-        tokens = []
-        labels = []
-        for line in f:
-            if line.startswith('-DOCSTART-') or line == '' or line == '\n':
-                if tokens:
-                    spans = labels_to_spans(labels)
-                    yield guid, {
-                        'id': str(guid),
-                        'tokens': tokens,
-                        'spans': spans
-                    }
-                    guid += 1
-                    tokens = []
-                    labels = []
-            else:
-                splits = line.split()
-                tokens.append(splits[0])
-                labels.append(splits[-1].rstrip())
-        if tokens:
-            spans = labels_to_spans(labels)
-            yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans}
-
-
-def labels_to_spans(labels):
-    spans = []
-    in_entity = False
-    start = -1
-    for i in range(len(labels)):
-        # fix label error
-        if labels[i][0] in 'IE' and not in_entity:
-            labels[i] = 'B' + labels[i][1:]
-        if labels[i][0] in 'BS':
-            if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
-                start = i
-            else:
-                spans.append({'start': i, 'end': i + 1, 'type': labels[i][2:]})
-        elif labels[i][0] in 'IE':
-            if i + 1 >= len(labels) or labels[i + 1][0] not in 'IE':
-                assert start >= 0, \
-                    'Invalid label sequence found: {}'.format(labels)
-                spans.append({
-                    'start': start,
-                    'end': i + 1,
-                    'type': labels[i][2:]
-                })
-                start = -1
-        if labels[i][0] in 'B':
-            in_entity = True
-        elif labels[i][0] in 'OES':
-            in_entity = False
-    return spans

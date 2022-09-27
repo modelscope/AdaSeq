@@ -5,43 +5,31 @@ import yaml
 from datasets import load_dataset
 
 
-class Corpus:
+class NamedEntityRecognitionDataset:
+   
+    TARGET_TASK_NAME = 'name_entity_recognition'
 
     def __init__(self,
-                 task: str,
-                 corpus: Optional[str] = None,
-                 train: Optional[str] = None,
-                 dev: Optional[str] = None,
-                 valid: Optional[str] = None,
-                 test: Optional[str] = None,
-                 **kwargs):
+                 **corpus_config):
         self._init_predefined_corpus_config()
 
-        task = task.replace('-', '_')
         data_dir = None
         data_files = None
 
-        if corpus is not None:
-            data_dir = self._get_predefined_corpus_url_by_name(task, corpus)
+        if 'name' in corpus_config:
+            data_dir = self._get_predefined_corpus_url_by_name(TARGET_TASK_NAME, corpus_config['name'])
         else:
-            assert train is not None \
-                or dev is not None \
-                or valid is not None \
-                or test is not None
             data_files = {}
-            if train is not None:
-                data_files['train'] = train
-            if dev is not None and valid is None:
-                valid = dev
-            if valid is not None:
-                data_files['valid'] = valid
-            if test is not None:
-                data_files['test'] = test
+            for key in ['train', 'dev', 'valid', 'test']:
+                if key in corpus_config:
+                    data_files[key] = corpus_config[key.replace('dev', 'valid')]
+            assert len(data_files) > 0 
 
         self.datasets = load_dataset(
-            f'uner/datasets/dataset_builders/{task}_dataset_builder.py',
+            f'uner/datasets/dataset_builders/name_entity_recognition_dataset_builder.py',
             data_dir=data_dir,
-            data_files=data_files)
+            data_files=data_files,
+            corpus_config=corpus_config)  # tell the builder how to reader corpus files. if someone wants to use a custumized reader other than column based or json based, he can pass a reader function. 
 
         if self.valid is None and self.test is not None:
             self.datasets['valid'] = self.datasets['test']
