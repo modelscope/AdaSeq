@@ -13,7 +13,7 @@ class NLPPreprocessor(Preprocessor):
     def __init__(self, model_dir: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if 'lstm' in model_dir:
+        if 'word2vec' in model_dir:
             self.tokenizer = BertTokenizer.from_pretrained(model_dir)
         elif 'nezha' in model_dir:
             self.tokenizer = BertTokenizer.from_pretrained(model_dir)
