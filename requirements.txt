@@ -1,6 +1,6 @@
 addict
 datasets
-modelscope==0.3.7
+modelscope==0.4.0
 numpy
 pyyaml
 seqeval

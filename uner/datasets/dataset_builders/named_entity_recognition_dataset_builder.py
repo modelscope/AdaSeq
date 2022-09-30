@@ -2,11 +2,11 @@ import os
 
 import datasets
 from datasets import Features, Value
+from uner.datasets.dataset_builders.dataset_reader import NamedEntityRecognitionDatasetReader
 
 class NamedEntityRecognitionDatasetBuilderConfig(datasets.BuilderConfig):
-
-    def __init__(self, corpus_config):
-        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__()
+    def __init__(self, data_dir=None, data_files=None, **corpus_config):
+        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__(data_dir = data_dir, data_files = data_files)
         self.corpus_config = corpus_config
 
 class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
@@ -68,23 +68,8 @@ class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
         if 'corpus_reader' in self.config.corpus_config:
             #TODO: get the reder via reflection
             raise NotImplementedError
-        corpus_type = self.config.corpus_config['type']
-        corpus_format = self.config.corpus_config['format']
-        if corpus_type == 'sequence_labeling':
-            if corpus_format == 'column':
-                return load_column_data_file(filepath, self.config.corpus_config) 
-            elif corpus_format == 'json': # including tag sequnece style and offset style
-                return load_sequence_labeling_json_data_file(filepath, self.config.corpus_config) 
-            else:
-                return ValueError('Unknown corpus format. Please specify corpus reader.')
-        elif corpus_type == 'span_based':
-            if corpus_format == 'json':
-                return load_span_based_json_data_file(filepath, self.config.corpus_config) 
-        elif corpus_type == 'discontinuous':
-            raise NotImplementedError
         else:
-            return ValueError('Unknown corpus type. Please specify corpus reader.')
-
+            return NamedEntityRecognitionDatasetReader.load_data_file(filepath, self.config.corpus_config)
 
 def get_file_by_keyword(files, keyword):
     for filename in files:
