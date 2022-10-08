@@ -23,7 +23,7 @@ class TestRegistry(unittest.TestCase):
         # fix modelscope bug
         from modelscope.trainers import EpochBasedTrainer
         from modelscope.utils import regress_test_utils
-        from .ms_patch import train_step, numpify_tensor_nested
+        from tests.ms_patch import train_step, numpify_tensor_nested
         EpochBasedTrainer.train_step = train_step
         regress_test_utils.numpify_tensor_nested = numpify_tensor_nested
 
