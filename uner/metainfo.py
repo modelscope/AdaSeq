@@ -16,6 +16,7 @@ class Preprocessors:
 
 
 class Trainers:
+    default_trainer = 'default-trainer'
     ner_trainer = 'ner-trainer'
 
 
