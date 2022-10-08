@@ -2,12 +2,18 @@ import os
 
 import datasets
 from datasets import Features, Value
-from uner.datasets.dataset_builders.dataset_reader import NamedEntityRecognitionDatasetReader
+
+from uner.datasets.dataset_builders.dataset_reader import \
+    NamedEntityRecognitionDatasetReader  # yapf: disable
+
 
 class NamedEntityRecognitionDatasetBuilderConfig(datasets.BuilderConfig):
+
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__(data_dir = data_dir, data_files = data_files)
+        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__(
+            data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
+
 
 class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
 
@@ -66,10 +72,12 @@ class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
 
     def _generate_examples(self, filepath):
         if 'corpus_reader' in self.config.corpus_config:
-            #TODO: get the reder via reflection
+            # TODO: get the reder via reflection
             raise NotImplementedError
         else:
-            return NamedEntityRecognitionDatasetReader.load_data_file(filepath, self.config.corpus_config)
+            return NamedEntityRecognitionDatasetReader.load_data_file(
+                filepath, self.config.corpus_config)
+
 
 def get_file_by_keyword(files, keyword):
     for filename in files:

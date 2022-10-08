@@ -24,7 +24,7 @@ from modelscope.utils.torch_utils import (
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from uner.datasets.named_entity_recognition_dataset import NamedEntityRecognitionDataset
+from uner.datasets.dataset_manager import DatasetManager
 from uner.metainfo import Trainers
 from uner.models.base import Model
 from uner.preprocessors.data_collators import DataCollatorWithPadding
@@ -41,7 +41,6 @@ class NERTrainer(EpochBasedTrainer):
             model: Optional[Union[Model, nn.Module]] = None,
             cfg_file: Optional[str] = None,
             arg_parse_fn: Optional[Callable] = None,
-            dataset: Optional[NamedEntityRecognitionDataset] = None,
             data_collator: Optional[Callable] = None,
             train_dataset: Optional[Dataset] = None,
             eval_dataset: Optional[Dataset] = None,
@@ -87,9 +86,8 @@ class NERTrainer(EpochBasedTrainer):
             self.work_dir = './work_dir'
 
         # datasets
-        if train_dataset is None and eval_dataset is None:
-            if dataset is None:
-                dataset = self.build_dataset()
+        if train_dataset is None and eval_dataset is None and test_dataset is None:
+            dataset = self.build_dataset()
             if dataset.train is not None:
                 train_dataset = dataset.train
             if dataset.valid is not None:
@@ -238,8 +236,8 @@ class NERTrainer(EpochBasedTrainer):
         cfg['num_labels'] = len(self.label2id)
         return Model.from_config(cfg)
 
-    def build_dataset(self) -> NamedEntityRecognitionDataset:
-        dataset = NamedEntityRecognitionDataset(**self.cfg.dataset)
+    def build_dataset(self) -> DatasetManager:
+        dataset = DatasetManager(task=self.cfg.task, **self.cfg.dataset)
         return dataset
 
     def build_preprocessor(self) -> Tuple[Preprocessor, Preprocessor]:

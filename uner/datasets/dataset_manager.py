@@ -5,36 +5,44 @@ import yaml
 from datasets import load_dataset
 
 
-class NamedEntityRecognitionDataset:
-   
-    TARGET_TASK_NAME = 'named_entity_recognition'
+class DatasetManager:
 
     def __init__(self,
+                 task: str,
+                 corpus: Optional[str] = None,
+                 train: Optional[str] = None,
+                 dev: Optional[str] = None,
+                 valid: Optional[str] = None,
+                 test: Optional[str] = None,
                  **corpus_config):
         self._init_predefined_corpus_config()
         data_url = None
         data_files = None
 
-        if 'corpus' in corpus_config:
-            pre_defined_corpus_config = self._get_predefined_corpus_config_by_name(self.TARGET_TASK_NAME, corpus_config['corpus'])
-            print(pre_defined_corpus_config)
+        if corpus is not None:
+            pre_defined_corpus_config = self._get_predefined_corpus_config_by_name(
+                task, corpus)
             for k, v in pre_defined_corpus_config.items():
-                if not k in corpus_config:
+                if k not in corpus_config:
                     corpus_config[k] = v
 
         if 'url' in corpus_config:
-            data_url = corpus_config['url']
+            data_url = corpus_config.pop('url')
         else:
             data_files = {}
-            for key in ['train', 'dev', 'valid', 'test']:
-                if key in corpus_config:
-                    data_files[key] = corpus_config[key.replace('dev', 'valid')]
-            assert len(data_files) > 0 
+            for split in ['train', 'dev', 'valid', 'test']:
+                data_file = locals()[split]
+                if data_file is not None:
+                    data_files[split.replace('dev', 'valid')] = data_file
+            assert len(data_files) > 0
+
+        _task = task.replace('-', '_')
         self.datasets = load_dataset(
-            f'uner/datasets/dataset_builders/named_entity_recognition_dataset_builder.py',
+            f'uner/datasets/dataset_builders/{_task}_dataset_builder.py',
             data_dir=data_url,
             data_files=data_files,
-            **corpus_config)  # tell the builder how to reader corpus files. if someone wants to use a custumized reader other than column based or json based, he can pass a reader function. 
+            **corpus_config
+        )  # tell the builder how to reader corpus files. if someone wants to use a custumized reader other than column based or json based, he can pass a reader function.  # noqa
 
         if self.valid is None and self.test is not None:
             self.datasets['valid'] = self.datasets['test']
