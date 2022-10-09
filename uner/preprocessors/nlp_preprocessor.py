@@ -38,10 +38,11 @@ class NLPPreprocessor(Preprocessor):
 
     def encode_tokens(self, data: Dict[str, Any]) -> Dict[str, Any]:
         tokens = data['tokens']
+        mask = data.get('mask', [True] * len(tokens))
         input_ids = []
         emission_mask = []
         offset_mapping = []
-        for offset, token in enumerate(tokens):
+        for offset, (token, token_mask) in enumerate(zip(tokens, mask)):
             subtoken_ids = self.tokenizer.encode(
                 token, add_special_tokens=False)
             if len(subtoken_ids) == 0:
@@ -50,17 +51,18 @@ class NLPPreprocessor(Preprocessor):
             offset_mapping.extend([(offset, offset + 1)]
                                   + [(offset + 1, offset + 1)]
                                   * (len(subtoken_ids) - 1))
+            emission_mask.extend([token_mask]
+                                 + [False] * (len(subtoken_ids) - 1))
         if len(input_ids) > self.max_length - 2:
             input_ids = input_ids[:self.max_length - 2]
             offset_mapping = offset_mapping[:self.max_length - 2]
+            emission_mask = emission_mask[:self.max_length - 2]
         if self.add_cls_sep:
             input_ids = [self.tokenizer.cls_token_id
                          ] + input_ids + [self.tokenizer.sep_token_id]
             offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
+            emission_mask = [False] + emission_mask + [False]
         attention_mask = [1] * len(input_ids)
-        emission_mask = [
-            1 if start < end else 0 for start, end in offset_mapping
-        ]
 
         output = {
             'tokens': tokens,

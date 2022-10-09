@@ -29,7 +29,8 @@ class NamedEntityRecognitionDatasetBuilder(datasets.GeneratorBasedBuilder):
                     'start': Value('int32'),  # close
                     'end': Value('int32'),  # open
                     'type': Value('string')
-                }]
+                }],
+                'mask': [Value('bool')]
             }))
         return info
 

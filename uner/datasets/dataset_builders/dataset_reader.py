@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+from uner.preprocessors.constant import PAD_LABEL
+
+
 class DatasetReader(ABC):
 
     @classmethod
@@ -14,13 +17,17 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
     def load_data_file(cls, file_path, corpus_config):
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
-                return cls.load_column_data_file(file_path, delimiter = corpus_config.get('delimiter', '\t'))
+                return cls.load_column_data_file(
+                    file_path, delimiter=corpus_config.get('delimiter', '\t'))
             elif corpus_config['data_format'] == 'json':
-                return cls.load_sequence_labeling_json_data_file(file_path, corpus_config)
+                return cls.load_sequence_labeling_json_data_file(
+                    file_path, corpus_config)
         elif corpus_config['data_type'] == 'span_based':
-            return cls.load_span_based_json_data_file(file_path, corpus_config.get('is_end_included', False))
+            return cls.load_span_based_json_data_file(
+                file_path, corpus_config.get('is_end_included', False))
         else:
-            raise ValueError('Unknown corpus format type [%s]' % corpus_config['data_type'])
+            raise ValueError('Unknown corpus format type [%s]'
+                             % corpus_config['data_type'])
 
     @classmethod
     def load_column_data_file(cls, file_path, delimiter):
@@ -32,10 +39,12 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 if line.startswith('-DOCSTART-') or line == '' or line == '\n':
                     if tokens:
                         spans = cls.labels_to_spans(labels)
+                        mask = cls.labels_to_mask(labels)
                         yield guid, {
                             'id': str(guid),
                             'tokens': tokens,
-                            'spans': spans
+                            'spans': spans,
+                            'mask': mask
                         }
                         guid += 1
                         tokens = []
@@ -46,11 +55,17 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                     labels.append(splits[-1].rstrip())
             if tokens:
                 spans = cls.labels_to_spans(labels)
-                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans}
+                mask = cls.labels_to_mask(labels)
+                yield guid, {
+                    'id': str(guid),
+                    'tokens': tokens,
+                    'spans': spans,
+                    'mask': mask
+                }
 
     @classmethod
     def load_sequence_labeling_json_data_file(cls, filepath, corpus_config):
-        with open(filepath, encoding="utf-8") as f:
+        with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
                 example = json.loads(line)
@@ -67,12 +82,18 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 labels = example['labels']
                 assert len(tokens) == len(labels)
                 spans = cls.labels_to_spans(labels)
-                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans}
+                mask = cls.labels_to_mask(labels)
+                yield guid, {
+                    'id': str(guid),
+                    'tokens': tokens,
+                    'spans': spans,
+                    'mask': mask
+                }
                 guid += 1
 
     @classmethod
     def load_span_based_json_data_file(cls, filepath, corpus_config):
-        with open(filepath, encoding="utf-8") as f:
+        with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
                 example = json.loads(line)
@@ -86,18 +107,24 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                         tokens = text.split(' ')
                     else:
                         raise NotImplementedError
-                entity_list  = []
+                entity_list = []
                 entities = example['label']
                 for entity_type, span_list in entities.items():
                     for name, span in span_list.items():
                         end_offset = 0
-                        if corpus_config['is_end_included'] == True:
+                        if corpus_config['is_end_included'] is True:
                             end_offset = 1
-                        entity_list.append({'start': span[0][0], 'end': span[0][1] + end_offset, 'type': entity_type})
+                        entity_list.append({
+                            'start': span[0][0],
+                            'end': span[0][1] + end_offset,
+                            'type': entity_type
+                        })
+                mask = [True] * len(tokens)
                 yield guid, {
-                    "id": str(guid),
-                    "tokens": tokens,
-                    "spans": entity_list,
+                    'id': str(guid),
+                    'tokens': tokens,
+                    'spans': entity_list,
+                    'mask': mask
                 }
                 guid += 1
 
@@ -114,7 +141,11 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
                     start = i
                 else:
-                    spans.append({'start': i, 'end': i + 1, 'type': labels[i][2:]})
+                    spans.append({
+                        'start': i,
+                        'end': i + 1,
+                        'type': labels[i][2:]
+                    })
             elif labels[i][0] in 'IE':
                 if i + 1 >= len(labels) or labels[i + 1][0] not in 'IE':
                     assert start >= 0, \
@@ -130,3 +161,10 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
             elif labels[i][0] in 'OES':
                 in_entity = False
         return spans
+
+    @classmethod
+    def labels_to_mask(cls, labels):
+        mask = []
+        for label in labels:
+            mask.append(label != PAD_LABEL)
+        return mask
