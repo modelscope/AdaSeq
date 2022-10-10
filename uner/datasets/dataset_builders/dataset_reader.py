@@ -18,7 +18,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
                 return cls.load_column_data_file(
-                    file_path, delimiter=corpus_config.get('delimiter', '\t'))
+                    file_path, delimiter=corpus_config.get('delimiter', None))
             elif corpus_config['data_format'] == 'json':
                 return cls.load_sequence_labeling_json_data_file(
                     file_path, corpus_config)
