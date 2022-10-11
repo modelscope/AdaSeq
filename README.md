@@ -11,9 +11,13 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 
 ## 2. 模型训练
 ```
-python -m scripts.train -c examples/bert_crf/configs/resume.yaml --seed 0
+python -m scripts.train -c examples/bert_crf/configs/resume.yaml -t ner-trainer --seed 0
 ```
 
+## 3. 模型测试
+```
+python -m scripts.test -c examples/bert_crf/configs/resume.yaml -t ner-trainer -cp checkpoint_path
+```
 
 # 开发文档
 1. [UNER开发规约](https://yuque.antfin-inc.com/docs/share/7088e485-5817-4beb-8a28-f8de7dd95a9a?# 《UNER开发规约》)

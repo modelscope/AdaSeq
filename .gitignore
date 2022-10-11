@@ -3,6 +3,7 @@
 /experiments/
 /logs/
 /outputs/
+/tmp/
 
 .idea/
 *.pyc
