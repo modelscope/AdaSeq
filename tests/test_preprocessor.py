@@ -2,7 +2,7 @@ import unittest
 
 from modelscope.preprocessors.builder import build_preprocessor
 
-from uner.preprocessors import *  # noqa
+import uner
 
 
 class PreprocessorTest(unittest.TestCase):

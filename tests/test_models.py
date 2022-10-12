@@ -7,10 +7,6 @@ from modelscope.trainers import build_trainer
 from modelscope.utils.regress_test_utils import MsRegressTool
 
 from uner.metainfo import Trainers
-from uner.metrics import *  # noqa
-from uner.preprocessors import *  # noqa
-from uner.trainers import *  # noqa
-from uner.trainers.hooks import *  # noqa
 
 
 class TestRegistry(unittest.TestCase):

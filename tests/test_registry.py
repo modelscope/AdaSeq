@@ -5,7 +5,6 @@ import unittest
 from transformers import BertModel
 
 from uner.metainfo import Models
-from uner.models import *  # noqa
 from uner.models.base import Model
 from uner.models.sequence_labeling_model import SequenceLabelingModel
 from uner.modules.encoders import Encoder, NeZhaModel
