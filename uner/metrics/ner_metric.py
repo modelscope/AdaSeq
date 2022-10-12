@@ -15,8 +15,14 @@ from uner.preprocessors.constant import PAD_LABEL_ID
 @METRICS.register_module(module_name=Metrics.ner_metric)
 class NERMetric(Metric):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self,
+                 return_class_level_metric=False,
+                 mode=None,
+                 *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
+        self.return_class_level_metric = return_class_level_metric
+        self.mode = mode
         self.preds = []
         self.golds = []
 
@@ -38,7 +44,7 @@ class NERMetric(Metric):
                        for gold in self.golds]
 
         report = classification_report(
-            gold_labels, pred_labels, output_dict=True)
+            gold_labels, pred_labels, output_dict=True, mode=self.mode)
 
         report.pop('macro avg')
         report.pop('weighted avg')
@@ -50,4 +56,12 @@ class NERMetric(Metric):
         scores[MetricKeys.F1] = overall_score['f1-score']
         scores[MetricKeys.ACCURACY] = accuracy_score(
             y_true=gold_labels, y_pred=pred_labels)
+        if self.return_class_level_metric:
+            for tp, tp_score in report.items():
+                scores[tp] = {}
+                scores[tp][MetricKeys.PRECISION] = round(
+                    tp_score['precision'], 4)
+                scores[tp][MetricKeys.RECALL] = round(tp_score['recall'], 4)
+                scores[tp][MetricKeys.F1] = round(tp_score['f1-score'], 4)
+                scores[tp]['support'] = tp_score['support']
         return scores
