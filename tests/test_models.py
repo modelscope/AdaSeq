@@ -61,7 +61,7 @@ class TestRegistry(unittest.TestCase):
             })
 
         with self.regress_tool.monitor_ms_train(
-                trainer, 'ut_bert_crf', level='strict', atol=1e-4):
+                trainer, 'ut_bert_crf', level='strict', atol=1e-3):
             trainer.train()
 
 
