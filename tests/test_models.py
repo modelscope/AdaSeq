@@ -4,9 +4,9 @@ import shutil
 import unittest
 
 from modelscope.trainers import build_trainer
+from tests.regress_test_utils import MsRegressTool
 
 from uner.metainfo import Trainers
-from .regress_test_utils import MsRegressTool
 
 
 class TestRegistry(unittest.TestCase):
