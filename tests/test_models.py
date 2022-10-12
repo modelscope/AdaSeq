@@ -4,7 +4,7 @@ import shutil
 import unittest
 
 from modelscope.trainers import build_trainer
-from modelscope.utils.regress_test_utils import MsRegressTool
+from .regress_test_utils import MsRegressTool
 
 from uner.metainfo import Trainers
 
@@ -61,7 +61,7 @@ class TestRegistry(unittest.TestCase):
             })
 
         with self.regress_tool.monitor_ms_train(
-                trainer, 'ut_bert_crf', level='strict'):
+                trainer, 'ut_bert_crf', level='strict', atol=1e-4):
             trainer.train()
 
 
