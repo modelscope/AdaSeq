@@ -57,7 +57,7 @@ class TestRegistry(unittest.TestCase):
             Trainers.ner_trainer,
             default_args={
                 'cfg_file': cfg_file,
-                'seed': 42
+                'seed': 43
             })
 
         def compare_fn(value1, value2, key, type):
