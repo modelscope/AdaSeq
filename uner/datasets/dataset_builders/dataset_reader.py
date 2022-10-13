@@ -17,20 +17,20 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
     def load_data_file(cls, file_path, corpus_config):
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
-                return cls.load_column_data_file(
+                return cls._load_column_data_file(
                     file_path, delimiter=corpus_config.get('delimiter', None))
             elif corpus_config['data_format'] == 'json':
-                return cls.load_sequence_labeling_json_data_file(
+                return cls._load_sequence_labeling_json_data_file(
                     file_path, corpus_config)
         elif corpus_config['data_type'] == 'span_based':
-            return cls.load_span_based_json_data_file(
+            return cls._load_span_based_json_data_file(
                 file_path, corpus_config.get('is_end_included', False))
         else:
             raise ValueError('Unknown corpus format type [%s]'
                              % corpus_config['data_type'])
 
     @classmethod
-    def load_column_data_file(cls, file_path, delimiter):
+    def _load_column_data_file(cls, file_path, delimiter):
         with open(file_path, encoding='utf-8') as f:
             guid = 0
             tokens = []
@@ -38,8 +38,8 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
             for line in f:
                 if line.startswith('-DOCSTART-') or line == '' or line == '\n':
                     if tokens:
-                        spans = cls.labels_to_spans(labels)
-                        mask = cls.labels_to_mask(labels)
+                        spans = cls._labels_to_spans(labels)
+                        mask = cls._labels_to_mask(labels)
                         yield guid, {
                             'id': str(guid),
                             'tokens': tokens,
@@ -54,8 +54,8 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                     tokens.append(splits[0])
                     labels.append(splits[-1].rstrip())
             if tokens:
-                spans = cls.labels_to_spans(labels)
-                mask = cls.labels_to_mask(labels)
+                spans = cls._labels_to_spans(labels)
+                mask = cls._labels_to_mask(labels)
                 yield guid, {
                     'id': str(guid),
                     'tokens': tokens,
@@ -64,7 +64,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 }
 
     @classmethod
-    def load_sequence_labeling_json_data_file(cls, filepath, corpus_config):
+    def _load_sequence_labeling_json_data_file(cls, filepath, corpus_config):
         with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
@@ -81,8 +81,8 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                         raise NotImplementedError
                 labels = example['labels']
                 assert len(tokens) == len(labels)
-                spans = cls.labels_to_spans(labels)
-                mask = cls.labels_to_mask(labels)
+                spans = cls._labels_to_spans(labels)
+                mask = cls._labels_to_mask(labels)
                 yield guid, {
                     'id': str(guid),
                     'tokens': tokens,
@@ -92,7 +92,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 guid += 1
 
     @classmethod
-    def load_span_based_json_data_file(cls, filepath, corpus_config):
+    def _load_span_based_json_data_file(cls, filepath, corpus_config):
         with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
@@ -129,7 +129,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 guid += 1
 
     @classmethod
-    def labels_to_spans(cls, labels):
+    def _labels_to_spans(cls, labels):
         spans = []
         in_entity = False
         start = -1
@@ -163,7 +163,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
         return spans
 
     @classmethod
-    def labels_to_mask(cls, labels):
+    def _labels_to_mask(cls, labels):
         mask = []
         for label in labels:
             mask.append(label != PAD_LABEL)
