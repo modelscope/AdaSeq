@@ -79,8 +79,8 @@ class DefaultTrainer(EpochBasedTrainer):
         elif 'experiment' in self.cfg:
             self.work_dir = os.path.join(
                 str(self.cfg.experiment.exp_dir),
-                str(self.cfg.experiment.exp_name), create_datetime_str(),
-                'outputs')
+                str(self.cfg.experiment.exp_name), 'outputs',
+                create_datetime_str())
         else:
             self.work_dir = './work_dir'
 
