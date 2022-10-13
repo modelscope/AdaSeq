@@ -4,7 +4,7 @@ import shutil
 import unittest
 
 from modelscope.trainers import build_trainer
-from tests.regress_test_utils import MsRegressTool
+from tests.regress_test_utils import MsRegressTool, compare_arguments_nested
 
 from uner.metainfo import Trainers
 
@@ -60,8 +60,40 @@ class TestRegistry(unittest.TestCase):
                 'seed': 42
             })
 
+        def compare_fn(value1, value2, key, type):
+            # Ignore the differences between optimizers of two torch versions
+            if type != 'optimizer':
+                return None
+
+            match = (value1['type'] == value2['type'])
+            shared_defaults = set(value1['defaults'].keys()).intersection(
+                set(value2['defaults'].keys()))
+            match = all([
+                compare_arguments_nested(f'Optimizer defaults {key} not match',
+                                         value1['defaults'][key],
+                                         value2['defaults'][key])
+                for key in shared_defaults
+            ]) and match
+            match = (len(value1['state_dict']['param_groups']) == len(
+                value2['state_dict']['param_groups'])) and match
+            for group1, group2 in zip(value1['state_dict']['param_groups'],
+                                      value2['state_dict']['param_groups']):
+                shared_keys = set(group1.keys()).intersection(
+                    set(group2.keys()))
+                match = all([
+                    compare_arguments_nested(
+                        f'Optimizer param_groups {key} not match', group1[key],
+                        group2[key]) for key in shared_keys
+                ]) and match
+            return match
+
         with self.regress_tool.monitor_ms_train(
-                trainer, 'ut_bert_crf', level='strict', atol=1e-3):
+                trainer,
+                'ut_bert_crf',
+                level='strict',
+                compare_fn=compare_fn,
+                # Ignore the calculation gap of cpu & gpu
+                atol=1e-3):
             trainer.train()
 
 
