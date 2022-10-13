@@ -30,3 +30,7 @@ class LR_Schedulers:
 
 class Hooks:
     pass
+
+
+class DatasetDumpers:
+    ner_dumper = 'ner-dumper'
