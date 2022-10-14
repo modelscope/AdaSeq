@@ -1,1 +1,2 @@
-from .ner_metric import NERMetric
+from .sequence_labeling_metric import SequenceLabelingMetric
+from .span_extraction_metric import SpanExtractionMetric

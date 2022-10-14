@@ -4,7 +4,7 @@ import torch
 
 
 class DataBatch(Mapping):
-    keep_fields = ['tokens', 'offset_mapping']
+    keep_fields = ['tokens', 'offset_mapping', 'spans']
 
     def __init__(self, batch):
         self.batch = self.tensorize(batch)

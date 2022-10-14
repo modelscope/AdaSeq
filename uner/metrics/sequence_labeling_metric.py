@@ -12,8 +12,9 @@ from uner.metainfo import Metrics
 from uner.preprocessors.constant import PAD_LABEL_ID
 
 
+@METRICS.register_module(module_name=Metrics.sequence_labeling_metric)
 @METRICS.register_module(module_name=Metrics.ner_metric)
-class NERMetric(Metric):
+class SequenceLabelingMetric(Metric):
 
     def __init__(self,
                  return_class_level_metric=False,

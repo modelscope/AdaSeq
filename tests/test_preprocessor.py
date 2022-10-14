@@ -1,11 +1,12 @@
 import unittest
 
+import numpy as np
 from modelscope.preprocessors.builder import build_preprocessor
 
 import uner
 
 
-class PreprocessorTest(unittest.TestCase):
+class TestPreprocessor(unittest.TestCase):
 
     def setUp(self):
         self.input1 = {
@@ -33,6 +34,7 @@ class PreprocessorTest(unittest.TestCase):
             'O', 'B-LOC', 'B-MISC', 'B-ORG', 'B-PER', 'I-LOC', 'I-MISC',
             'I-ORG', 'I-PER'
         ]
+
         self.label2id1 = dict(zip(self.labels1, range(len(self.labels1))))
 
         self.input2 = {
@@ -47,6 +49,9 @@ class PreprocessorTest(unittest.TestCase):
             'O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC'
         ]
         self.label2id2 = dict(zip(self.labels2, range(len(self.labels2))))
+
+        self.labels3 = ['PER', 'ORG', 'LOC']
+        self.label2id3 = dict(zip(self.labels3, range(len(self.labels3))))
 
     def test_bert_sequence_labeling_preprocessor(self):
         cfg = dict(
@@ -98,6 +103,36 @@ class PreprocessorTest(unittest.TestCase):
         self.assertEqual(
             output2['label_ids'],
             [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    def test_bert_global_pointer_preprocessor(self):
+        cfg = dict(
+            type='global-pointer-preprocessor',
+            model_dir='bert-base-cased',
+            label2id=self.label2id3)
+        preprocessor = build_preprocessor(cfg)
+        output2 = preprocessor(self.input2)
+        self.assertEqual(output2['input_ids'], [
+            101, 1004, 1045, 100, 1056, 100, 100, 1027, 980, 100, 100, 100,
+            100, 100, 976, 100, 100, 100, 886, 102
+        ])
+        self.assertEqual(
+            output2['attention_mask'],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        self.assertEqual(
+            output2['emission_mask'],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0])
+        self.assertEqual(output2['offset_mapping'], [(0, 0), (0, 1), (1, 2),
+                                                     (2, 3), (3, 4), (4, 5),
+                                                     (5, 6), (6, 7), (7, 8),
+                                                     (8, 9), (9, 10), (10, 11),
+                                                     (11, 12), (12, 13),
+                                                     (13, 14), (14, 15),
+                                                     (15, 16), (16, 17),
+                                                     (17, 18), (0, 0)])
+        expected_label_matrix = np.zeros((3, 20, 20))
+        expected_label_matrix[0][1][2] = 1
+        self.assertEqual(
+            (output2['label_matrix'] == expected_label_matrix).all(), True)
 
 
 if __name__ == '__main__':

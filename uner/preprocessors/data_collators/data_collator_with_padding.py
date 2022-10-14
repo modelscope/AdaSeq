@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
+import numpy as np
 from transformers import PreTrainedTokenizerBase
 
 from ..constant import PAD_LABEL_ID
@@ -24,7 +25,10 @@ class DataCollatorWithPadding:
 
         for i in range(batch_size):
             for field in fields:
-                difference = max_length - len(batch[field][i])
+                if field.endswith('matrix'):
+                    difference = max_length - len(batch[field][i][0])
+                else:
+                    difference = max_length - len(batch[field][i])
                 if difference > 0:
                     if field.endswith('input_ids'):
                         pad_id = self.tokenizer.pad_token_id
@@ -34,18 +38,30 @@ class DataCollatorWithPadding:
                         pad_id = self.pad_label_id
                     elif field.endswith('mask'):
                         pad_id = 0
+                    elif field.endswith('matrix'):
+                        pad_id = 0
                     else:
                         continue
 
-                    if padding_side == 'right':
-                        batch[field][i] = batch[field][i] + [pad_id
-                                                             ] * difference
-                    elif padding_side == 'left':
-                        batch[field][i] = [pad_id
-                                           ] * difference + batch[field][i]
+                    if isinstance(batch[field][i], np.ndarray):
+                        # label_matrix
+                        num_classes = len(batch[field][i])
+                        padded_label_matrix = np.ones(
+                            (num_classes, max_length, max_length)) * pad_id
+                        padded_label_matrix[:, :batch[field][i].
+                                            shape[1], :batch[field][i].
+                                            shape[2]] = batch[field][i]
+                        batch[field][i] = padded_label_matrix
                     else:
-                        raise ValueError('Invalid padding strategy:'
-                                         + str(self.padding_side))
+                        if padding_side == 'right':
+                            batch[field][i] = batch[field][i] + [pad_id
+                                                                 ] * difference
+                        elif padding_side == 'left':
+                            batch[field][i] = [pad_id
+                                               ] * difference + batch[field][i]
+                        else:
+                            raise ValueError('Invalid padding strategy:'
+                                             + str(self.padding_side))
 
         batch = DataBatch(batch)
         return batch

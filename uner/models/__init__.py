@@ -1,1 +1,2 @@
+from .global_pointer_model import GlobalPointerModel
 from .sequence_labeling_model import SequenceLabelingModel
