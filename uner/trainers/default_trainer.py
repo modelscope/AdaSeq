@@ -18,6 +18,7 @@ from modelscope.utils.logger import get_logger
 from modelscope.utils.registry import build_from_cfg, default_group
 from modelscope.utils.torch_utils import (
     get_dist_info,
+    get_local_rank,
     init_dist,
     set_random_seed,
 )
@@ -131,8 +132,17 @@ class DefaultTrainer(EpochBasedTrainer):
             self.model = self.build_model()
 
         # device
+        if kwargs.get('launcher', None) is not None:
+            init_dist(kwargs['launcher'])
+
+        _, world_size = get_dist_info()
+        self._dist = world_size > 1
+
         device_name = kwargs.get('device', 'gpu')
-        verify_device(device_name)
+        if self._dist:
+            local_rank = get_local_rank()
+            device_name = f'cuda:{local_rank}'
+
         self.device = create_device(device_name)
 
         # task datasets
@@ -204,11 +214,6 @@ class DefaultTrainer(EpochBasedTrainer):
             self._eval_iters_per_epoch = self.cfg.evaluation.val_iters_per_epoch
 
         self.use_fp16 = kwargs.get('use_fp16', False)
-
-        if kwargs.get('launcher', None) is not None:
-            init_dist(kwargs['launcher'])
-
-        self._dist = get_dist_info()[1] > 1
 
         # model placement
         if self.device.type == 'cuda':
