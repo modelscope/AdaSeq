@@ -1,9 +1,14 @@
 import argparse
+import os
+import sys
 import warnings
 
 from modelscope.trainers import build_trainer
 
-import uner
+parent_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(parent_folder)
+
+import uner  # noqa # isort:skip
 
 warnings.filterwarnings('ignore')
 
