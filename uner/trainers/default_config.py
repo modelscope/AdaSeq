@@ -5,9 +5,10 @@ DEFAULT_CONFIG = {
         }, {
             'type': 'CheckpointHook'
         }, {
-            'type': 'MyBestCkptSaverHook',
+            'type': 'BestCkptSaverHook',
             'metric_key': 'f1',
-            'save_optimizer': False
+            'save_optimizer': False,
+            'restore_best': True
         }, {
             'type': 'TextLoggerHook',
             'interval': 50

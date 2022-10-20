@@ -47,6 +47,8 @@ class TestModel(unittest.TestCase):
 
 def compare_fn(value1, value2, key, type):
     # Ignore the differences between optimizers of two torch versions
+    if type == 'cfg':
+        return True
     if type != 'optimizer':
         return None
 

@@ -25,6 +25,8 @@ class DataBatch(Mapping):
         return len(self.batch)
 
     def tensorize(self, batch):
+        if isinstance(batch, tuple):
+            return dict(batch)
         return {
             k: torch.tensor(
                 v, dtype=torch.int64 if not k.endswith('mask') else torch.bool)
