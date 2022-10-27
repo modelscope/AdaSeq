@@ -189,6 +189,8 @@ class DefaultTrainer(EpochBasedTrainer):
         # misc
         self.metrics = self.get_metrics()
         self._metric_values = None
+        self.optimizer = None
+        self.lr_scheduler = None
         self.optimizers = optimizers
         self._mode = ModeKeys.TRAIN
         self._hooks: List[Hook] = []
@@ -298,11 +300,6 @@ class DefaultTrainer(EpochBasedTrainer):
             self._file_logger._dump_log(log_dict)
 
     def test(self, checkpoint_path=None):
-        if checkpoint_path is not None and os.path.isfile(checkpoint_path):
-            from uner.utils.checkpoint import load_checkpoint
-            self.logger.info(f'Loading checkpoint from: {checkpoint_path}')
-            load_checkpoint(checkpoint_path, self.model)
-
         backup_eval_dataset = self.eval_dataset
         self.eval_dataset = self.test_dataset
         metric_values = self.evaluate(checkpoint_path)
