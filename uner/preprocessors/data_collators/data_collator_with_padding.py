@@ -3,13 +3,15 @@ from typing import Any, Dict, List
 
 import numpy as np
 from transformers import PreTrainedTokenizerBase
+from transformers.data.data_collator import DataCollatorMixin
 
 from ..constant import PAD_LABEL_ID
-from .base import DataBatch
+from .base import DataBatch, DataCollators
 
 
+@DataCollators.register_module(module_name='DataCollatorWithPadding')
 @dataclass
-class DataCollatorWithPadding:
+class DataCollatorWithPadding(DataCollatorMixin):
     tokenizer: PreTrainedTokenizerBase
     pad_label_id: int = PAD_LABEL_ID
 

@@ -1,3 +1,4 @@
+from . import data_collators
 from .global_pointer_preprocessor import GlobalPointerPreprocessor
 from .nlp_preprocessor import NLPPreprocessor
 from .sequence_labeling_preprocessor import SequenceLabelingPreprocessor

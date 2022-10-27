@@ -24,11 +24,12 @@ from modelscope.utils.torch_utils import (
 )
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
+from transformers.data.data_collator import DataCollatorMixin
 
 from uner.datasets.dataset_manager import DatasetManager
 from uner.metainfo import Trainers
 from uner.models.base import Model
-from uner.preprocessors.data_collators import DataCollatorWithPadding
+from uner.preprocessors.data_collators.base import build_data_collator
 from uner.utils.common_utils import create_datetime_str, has_keys
 from .default_config import DEFAULT_CONFIG
 
@@ -118,10 +119,12 @@ class DefaultTrainer(EpochBasedTrainer):
             self.train_preprocessor, self.eval_preprocessor = self.build_preprocessor(
             )
 
-        if self.train_preprocessor is not None:
-            self.train_preprocessor.mode = ModeKeys.TRAIN
         if self.eval_preprocessor is not None:
             self.eval_preprocessor.mode = ModeKeys.EVAL
+            self.tokenizer = self.eval_preprocessor.tokenizer
+        if self.train_preprocessor is not None:
+            self.train_preprocessor.mode = ModeKeys.TRAIN
+            self.tokenizer = self.train_preprocessor.tokenizer
 
         self.after_build_preprocessor(**kwargs)
 
@@ -166,7 +169,7 @@ class DefaultTrainer(EpochBasedTrainer):
             preprocessor=self.eval_preprocessor)
 
         # data collators
-        self.train_data_collator, self.eval_default_collate = None, None
+        self.train_data_collator, self.eval_data_collate = None, None
         if isinstance(data_collator, Mapping):
             if not (ConfigKeys.train in data_collator
                     or ConfigKeys.val in data_collator):
@@ -179,12 +182,12 @@ class DefaultTrainer(EpochBasedTrainer):
             if ConfigKeys.val in data_collator:
                 assert isinstance(data_collator[ConfigKeys.val], Callable)
                 self.eval_data_collator = data_collator[ConfigKeys.val]
+        elif data_collator is not None:
+            self.train_data_collator = data_collator
+            self.eval_data_collator = data_collator
         else:
-            default_collate = DataCollatorWithPadding(
-                self.train_preprocessor.tokenizer)
-            collate_fn = default_collate if data_collator is None else data_collator
-            self.train_data_collator = collate_fn
-            self.eval_data_collator = collate_fn
+            self.train_data_collator, self.eval_data_collator = self.build_data_collator(
+            )
 
         # misc
         self.metrics = self.get_metrics()
@@ -251,6 +254,16 @@ class DefaultTrainer(EpochBasedTrainer):
 
     def after_build_preprocessor(self, **kwargs):
         pass
+
+    def build_data_collator(
+            self) -> Tuple[DataCollatorMixin, DataCollatorMixin]:
+        cfg = self.cfg.preprocessor.data_collator
+        if isinstance(cfg, str):
+            cfg = dict(type=cfg)
+        data_collator = build_data_collator(self.tokenizer, cfg)
+        train_data_collator = data_collator
+        eval_data_collator = data_collator
+        return train_data_collator, eval_data_collator
 
     def create_optimizer_and_scheduler(self):
         optimizer, lr_scheduler = self.optimizers
