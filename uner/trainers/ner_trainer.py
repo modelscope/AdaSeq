@@ -21,7 +21,7 @@ from .default_trainer import DefaultTrainer
 class NERTrainer(DefaultTrainer):
 
     def after_build_dataset(self, **kwargs):
-        # labels
+        # get label info from dataset
         if 'label2id' in kwargs:
             self.label2id = kwargs.pop('label2id')
         elif 'train_dataset' in kwargs and kwargs[
@@ -34,7 +34,7 @@ class NERTrainer(DefaultTrainer):
             raise ValueError('label2id must be set!')
 
     def after_build_preprocessor(self, **kwargs):
-        # update label2id
+        # update label2id, since label set was exteded. e.g., B-X->S-X
         if self.train_preprocessor is not None:
             self.label2id = self.train_preprocessor.label2id
         elif self.eval_preprocessor is not None:
@@ -49,6 +49,7 @@ class NERTrainer(DefaultTrainer):
 
     def build_model(self) -> nn.Module:
         cfg = self.cfg.model
+        # num_labels is one of the models super params.
         cfg['num_labels'] = len(self.label2id)
         return Model.from_config(cfg)
 

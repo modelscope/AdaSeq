@@ -80,6 +80,24 @@ class EntityScore:
         self.n_sentences += len(batch_gold_entities)
         for gold_entities, pred_entities in zip(batch_gold_entities,
                                                 batch_pred_entities):
+            if isinstance(gold_entities[0]['type'], list):
+                expanded_golden_mentions = []
+                for mention in gold_entities:
+                    expanded_golden_mentions.extend([{
+                        'start': mention['start'],
+                        'end': mention['end'],
+                        'type': t
+                    } for t in mention['type']])
+                gold_entities = expanded_golden_mentions
+                expanded_pred_mentions = []
+                for mention in pred_entities:
+                    expanded_pred_mentions.extend([{
+                        'start': mention['start'],
+                        'end': mention['end'],
+                        'type': t
+                    } for t in mention['type']])
+                pred_entities = expanded_pred_mentions
+
             self.origins.extend(gold_entities)
             self.founds.extend(pred_entities)
             self.rights.extend([
@@ -107,7 +125,10 @@ class SpanExtractionMetric(Metric):
             for span in pred_result:
                 start = token_mapping[i][span[0]][0]
                 end = token_mapping[i][span[1]][1]
-                typ = id2label[span[2]]
+                if isinstance(span[2], list):
+                    typ = [id2label[x] for x in span[2]]
+                else:
+                    typ = id2label[span[2]]
                 pred_entities.append({'start': start, 'end': end, 'type': typ})
             pred_entities_batch.append(pred_entities)
 

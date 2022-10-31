@@ -69,9 +69,30 @@ class NLPPreprocessor(Preprocessor):
             'input_ids': input_ids,
             'attention_mask': attention_mask,
             'emission_mask': emission_mask,
-            'offset_mapping': offset_mapping
+            'offset_mapping': offset_mapping,  # subtoken->token
+            'reverse_offset_mapping':
+            self.compress_token_mapping(offset_mapping)  # token->subtoken span
         }
         return output
+        '''
+        offset_mapping
+            tokens : 0, 1, 2
+            subtoken: 0, 1-1, 1-2, 2-1, 2-2
+            offset_mapping: [(0,1), (1,2), (2,2), (2,3), (3,3)]
+        compressed:
+            offset_mapping: [(0,1), (1,3), (3,5)]
+        '''
+
+    def compress_token_mapping(self, original_token_mapping):
+        token_span_mapping = []
+        for i, (token_start, token_end) in enumerate(original_token_mapping):
+            if token_start == token_end and token_start == 0:
+                token_span_mapping.append([0, 0])  # CLS, SEP
+            elif token_start == token_end:
+                token_span_mapping[-1][1] += 1
+            else:
+                token_span_mapping.append([i, i + 1])
+        return token_span_mapping
 
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError

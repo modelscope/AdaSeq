@@ -22,9 +22,10 @@ class DatasetManager:
         if corpus is not None:
             pre_defined_corpus_config = self._get_predefined_corpus_config_by_name(
                 task, corpus)
-            for k, v in pre_defined_corpus_config.items():
-                if k not in corpus_config:
-                    corpus_config[k] = v
+            if pre_defined_corpus_config is not None:
+                for k, v in pre_defined_corpus_config.items():
+                    if k not in corpus_config:
+                        corpus_config[k] = v
 
         if 'url' in corpus_config:
             data_url = corpus_config.pop('url')

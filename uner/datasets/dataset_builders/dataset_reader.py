@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import json
+
 from uner.preprocessors.constant import PAD_LABEL
 
 
@@ -168,3 +170,42 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
         for label in labels:
             mask.append(label != PAD_LABEL)
         return mask
+
+
+class EntityTypingDatasetReader(DatasetReader):
+
+    @classmethod
+    def load_data_file(cls, file_path, corpus_config):
+        with open(file_path, encoding='utf-8') as f:
+            guid = 0
+            for line in f:
+                example = json.loads(line)
+                text = example['text']
+                if isinstance(text, list):
+                    tokens = text
+                elif isinstance(text, str):
+                    if corpus_config['tokenizer'] == 'char':
+                        tokens = list(text)
+                    elif corpus_config['tokenizer'] == 'blank':
+                        tokens = text.split(' ')
+                    else:
+                        raise NotImplementedError
+                entity_list = []
+                entities = example['label']
+                for entity in entities:
+                    end_offset = 0
+                    if corpus_config.get('is_end_included', False) is True:
+                        end_offset = 1
+                    entity_list.append({
+                        'start': entity['start'],
+                        'end': entity['end'] + end_offset,
+                        'type': entity['type']
+                    })
+                mask = [True] * len(tokens)
+                yield guid, {
+                    'id': str(guid),
+                    'tokens': tokens,
+                    'spans': entity_list,
+                    'mask': mask
+                }
+                guid += 1
