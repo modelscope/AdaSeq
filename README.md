@@ -11,12 +11,12 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 
 ## 2. 模型训练
 ```
-python scripts/train.py -c examples/bert_crf/configs/resume.yaml -t ner-trainer --seed 0
+python scripts/train.py -c examples/bert_crf/configs/resume.yaml -t ner-trainer [-cp ${checkpoint_path} --seed 0]
 ```
 
 ## 3. 模型测试
 ```
-python scripts/test.py -c examples/bert_crf/configs/resume.yaml -t ner-trainer -cp checkpoint_path
+python scripts/test.py -c examples/bert_crf/configs/resume.yaml -t ner-trainer -cp ${checkpoint_path}
 ```
 
 # 开发文档

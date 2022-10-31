@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-t', '--trainer_name', required=True, help='trainer name')
     parser.add_argument(
-        '-cp', '--checkpoint_path', default=None, help='model checkpoint')
+        '-cp', '--checkpoint_path', required=True, help='model checkpoint')
     args = parser.parse_args()
 
     main(args)
