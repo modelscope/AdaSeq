@@ -58,6 +58,7 @@ class DefaultTrainer(EpochBasedTrainer):
         # add default config
         self.cfg.merge_from_dict(self._get_default_config(), force=False)
         self.cfg = self.rebuild_config(self.cfg)
+        self.meta = self.cfg.to_dict()
 
         # init logger
         self.logger = get_logger(log_level=self.cfg.get('log_level', 'INFO'))

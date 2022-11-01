@@ -8,7 +8,7 @@ python scripts/grid_search.py tune -c ${cfg_file} [-c_env ${env_file} -to ${log_
 
 ## collect - collect and analyze the experimental results
 ```shell
-#TODO
+python scripts/grid_search.py tune -c ${cfg_file} [-o ${result_file} -oa ${seed_avg_result_file}]
 ```
 
 ## kill - kill all running grid search processes

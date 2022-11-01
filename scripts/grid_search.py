@@ -3,10 +3,14 @@ import glob
 import os
 import re
 import subprocess
+from collections import OrderedDict
 from itertools import product
 from typing import Optional
 
+import json
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
 
 
 def tune(args):
@@ -160,7 +164,56 @@ def create_config(data):
 
 
 def collect(args):
-    pass
+    from modelscope.utils.config import Config
+    assert args.cfg_file is not None, 'cfg_file must be specified!'
+    config = Config.from_file(args.cfg_file)
+    assert 'experiment' in config
+    assert 'exp_name' in config.experiment
+
+    output_path = os.path.join(config.experiment.exp_dir,
+                               config.experiment.exp_name, 'outputs')
+
+    keys = None
+    records = []
+    log_files = glob.glob(os.path.join(output_path, '*/*.log.json'))
+    for log_file in tqdm(log_files):
+        result = parse_log(log_file)
+        records.append(list(result.values()) + [log_file])
+        keys = list(result.keys()) + ['log_file']
+
+    df = pd.DataFrame.from_records(records, columns=keys)
+    df.to_csv(args.output_file)
+
+    df_seed_avg = df.groupby(by=[
+        k for k in list(df.columns)
+        if k not in ['experiment_seed', 'p', 'r', 'f1', 'dev_f1', 'log_file']
+    ]).agg(['mean', 'std'])
+    df_seed_avg.to_csv(args.output_avg_file)
+
+
+IGNORE_KEY_REGEX = re.compile('dataset|evaluation|experiment_exp|hooks')
+
+
+def parse_log(log_file):
+    ret = OrderedDict(dev_f1='NaN', p='NaN', r='NaN', f1='NaN')
+    with open(log_file, 'r') as f:
+        hp = json.loads(f.readline())
+        hp_list = flatten_config(hp)
+        for k, v in hp_list:
+            k = '_'.join(map(str, k))
+            if IGNORE_KEY_REGEX.search(k):
+                continue
+            ret[k] = v
+        for line in f:
+            if '"eval"' in line:
+                result = json.loads(line)
+                ret['dev_f1'] = result['f1']
+            elif '"test"' in line:
+                result = json.loads(line)
+                ret['p'] = result['precision']
+                ret['r'] = result['recall']
+                ret['f1'] = result['f1']
+    return ret
 
 
 def kill():
@@ -189,6 +242,16 @@ if __name__ == '__main__':
         default='examples/grid_search/env.yaml')
     parser.add_argument(
         '-to', '--to', help='stdout and stderr to', default='/dev/null')
+    parser.add_argument(
+        '-o',
+        '--output_file',
+        help='output file for collect',
+        default='res.csv')
+    parser.add_argument(
+        '-oa',
+        '--output_avg_file',
+        help='output avg file for collect',
+        default='res_seed_avg.csv')
     args = parser.parse_args()
 
     if args.mode == 'tune':
