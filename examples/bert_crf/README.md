@@ -2,7 +2,7 @@
 
 ## Training a new model
 ```
-python -m scripts.train -c examples/bert_crf/configs/resume.yaml
+python scripts/train.py -c examples/bert_crf/configs/resume.yaml
 ```
 
 ## Benchmarks
