@@ -5,11 +5,12 @@ import numpy as np
 from modelscope.utils.registry import Registry, build_from_cfg, default_group
 from transformers import PreTrainedTokenizerBase
 
-from .base import DataCollators, DataCollatorWithPadding
+from uner.metainfo import DataCollators
+from .base import DATA_COLLATORS, DataCollatorWithPadding
 
 
-@DataCollators.register_module(
-    module_name='SpanExtractionDataCollatorWithPadding')
+@DATA_COLLATORS.register_module(
+    module_name=DataCollators.span_extraction_data_collator)
 @dataclass
 class SpanExtractionDataCollatorWithPadding(DataCollatorWithPadding):
 

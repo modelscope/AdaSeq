@@ -36,6 +36,7 @@ from transformers.models.bert.modeling_bert import (
     BertSelfOutput,
 )
 
+from uner.metainfo import Encoders
 from ..base import ENCODERS, Encoder
 from .configuration_nezha import NeZhaConfig
 
@@ -805,7 +806,7 @@ class NeZhaPreTrainedModel(PreTrainedModel):
     'The bare Bert Model transformer outputting raw hidden-states without any specific head on top.',
     BERT_START_DOCSTRING,
 )
-@ENCODERS.register_module(module_name='nezha')
+@ENCODERS.register_module(module_name=Encoders.nezha)
 class NeZhaModel(NeZhaPreTrainedModel, Encoder):
     """
     The model can behave as an encoder (with only self-attention) as well

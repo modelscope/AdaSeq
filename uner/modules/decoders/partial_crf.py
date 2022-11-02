@@ -2,12 +2,13 @@ from typing import Optional
 
 import torch
 
+from uner.metainfo import Decoders
 from uner.preprocessors.constant import PARTIAL_LABEL_ID
 from .base import DECODERS, Decoder
 from .crf import CRF
 
 
-@DECODERS.register_module(module_name='partial-crf')
+@DECODERS.register_module(module_name=Decoders.partial_crf)
 class PartialCRF(CRF):
     """Partial/Fuzzy Conditional random field.
     """

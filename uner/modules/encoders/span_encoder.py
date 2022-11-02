@@ -3,12 +3,13 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
+from uner.metainfo import Encoders
 from .base import ENCODERS, Encoder
 from .nezha.configuration_nezha import NeZhaConfig
 from .nezha.modeling_nezha import NeZhaModel
 
 
-@ENCODERS.register_module(module_name='span_encoder')
+@ENCODERS.register_module(module_name=Encoders.span_encoder)
 class SpanEncoder(Encoder):
 
     def __init__(self,

@@ -8,7 +8,9 @@ from modelscope.utils.config import ConfigDict
 from modelscope.utils.registry import Registry, build_from_cfg, default_group
 from transformers import PreTrainedTokenizerBase
 
-DataCollators = Registry('data_collators')
+from uner.metainfo import DataCollators
+
+DATA_COLLATORS = Registry('data_collators')
 
 
 def build_data_collator(tokenizer: PreTrainedTokenizerBase,
@@ -18,7 +20,10 @@ def build_data_collator(tokenizer: PreTrainedTokenizerBase,
         default_args = {}
     default_args['tokenizer'] = tokenizer
     return build_from_cfg(
-        cfg, DataCollators, group_key=default_group, default_args=default_args)
+        cfg,
+        DATA_COLLATORS,
+        group_key=default_group,
+        default_args=default_args)
 
 
 class DataBatch(Mapping):
@@ -66,7 +71,8 @@ class DataBatch(Mapping):
 
 
 # only padding encoder related fields: input_ids, token_type_ids, mask
-@DataCollators.register_module(module_name='DataCollatorWithPadding')
+@DATA_COLLATORS.register_module(
+    module_name=DataCollators.data_collator_with_padding)
 @dataclass
 class DataCollatorWithPadding:
 

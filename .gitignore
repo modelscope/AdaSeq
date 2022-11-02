@@ -4,6 +4,7 @@
 /logs/
 /outputs/
 /tmp/
+/tests/resources/regression/*.log.json
 
 .idea/
 *.pyc

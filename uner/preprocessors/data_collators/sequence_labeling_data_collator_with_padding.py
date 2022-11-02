@@ -5,12 +5,13 @@ import numpy as np
 from modelscope.utils.registry import Registry, build_from_cfg, default_group
 from transformers import PreTrainedTokenizerBase
 
+from uner.metainfo import DataCollators
 from ..constant import PAD_LABEL_ID
-from .base import DataCollators, DataCollatorWithPadding
+from .base import DATA_COLLATORS, DataCollatorWithPadding
 
 
-@DataCollators.register_module(
-    module_name='SequenceLabelingDataCollatorWithPadding')
+@DATA_COLLATORS.register_module(
+    module_name=DataCollators.sequence_labeling_data_collator)
 @dataclass
 class SequenceLabelingDataCollatorWithPadding(DataCollatorWithPadding):
     pad_label_id: int = PAD_LABEL_ID

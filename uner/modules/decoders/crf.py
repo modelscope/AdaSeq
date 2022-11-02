@@ -3,10 +3,11 @@ from typing import List, Optional
 import torch
 import torch.nn as nn
 
+from uner.metainfo import Decoders
 from .base import DECODERS, Decoder
 
 
-@DECODERS.register_module(module_name='crf')
+@DECODERS.register_module(module_name=Decoders.crf)
 class CRF(Decoder):
     """Conditional random field.
     This module implements a conditional random field [LMP01]_. The forward computation
