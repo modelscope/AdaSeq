@@ -96,3 +96,16 @@ class NLPPreprocessor(Preprocessor):
 
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
+
+    def map_label_to_id(self,
+                        labels: List[str] = None,
+                        label2id: Dict[str, int] = None) -> Dict[str, int]:
+        if label2id is not None:
+            return label2id
+        elif labels is not None:
+            return self._label2id(labels)
+        else:
+            raise ValueError('labels or label2id is needed.')
+
+    def _label2id(self, labels: List[str]) -> Dict[str, int]:
+        raise NotImplementedError

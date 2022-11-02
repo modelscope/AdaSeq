@@ -22,16 +22,22 @@ class TypingTrainer(DefaultTrainer):
 
     def after_build_dataset(self, **kwargs):
         # get label info from dataset
+        self.labels = None
+        self.label2id = None
         if 'label2id' in kwargs:
             self.label2id = kwargs.pop('label2id')
         elif 'train_dataset' in kwargs and kwargs[
                 'train_dataset'] is not None and has_keys(
                     self.cfg, 'preprocessor', 'type'):
-            labels = get_labels(kwargs.pop('train_dataset'))
-            self.label2id = gen_label2id(
-                labels, mode=self.cfg.preprocessor.type)
+            self.labels = get_labels(kwargs.pop('train_dataset'))
         else:
             raise ValueError('label2id must be set!')
+
+    def after_build_preprocessor(self, **kwargs):
+        if self.train_preprocessor is not None:
+            self.label2id = self.train_preprocessor.label2id
+        elif self.eval_preprocessor is not None:
+            self.label2id = self.eval_preprocessor.label2id
         self.id2label = {v: k for k, v in self.label2id.items()}
         cfg = self.cfg.model
         # num_labels is one of the models super params.
@@ -39,4 +45,5 @@ class TypingTrainer(DefaultTrainer):
 
     def build_preprocessor(self,
                            **kwargs) -> Tuple[Preprocessor, Preprocessor]:
-        return super().build_preprocessor(label2id=self.label2id, **kwargs)
+        return super().build_preprocessor(
+            labels=self.labels, label2id=self.label2id, **kwargs)

@@ -21,17 +21,16 @@ def get_labels(dataset: Union[Dataset, Dict[str, Dataset]]) -> List[str]:
     return labels
 
 
-def gen_label2id(labels: List[str], mode) -> Dict[str, int]:
-    if mode == Preprocessors.sequence_labeling_preprocessor:
-        label2id = {'O': 0}
-        for label in labels:
-            label2id['B-' + label] = len(label2id)
-            label2id['I-' + label] = len(label2id)
-        return label2id
-    elif mode == Preprocessors.global_pointer_preprocessor or mode == Preprocessors.multilabel_span_typing_preprocessor:
-        label2id = {}
-        for label in labels:
-            label2id[label] = len(label2id)
-        return label2id
-    else:
-        raise NotImplementedError('Preprocessor: ' + mode)
+def gen_label2id_with_bio(labels: List[str]) -> Dict[str, int]:
+    label2id = {'O': 0}
+    for label in labels:
+        label2id['B-' + label] = len(label2id)
+        label2id['I-' + label] = len(label2id)
+    return label2id
+
+
+def gen_label2id(labels: List[str]) -> Dict[str, int]:
+    label2id = {}
+    for label in labels:
+        label2id[label] = len(label2id)
+    return label2id

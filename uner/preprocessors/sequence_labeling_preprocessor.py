@@ -3,7 +3,14 @@ from typing import Any, Dict, List, Union
 from modelscope.preprocessors.builder import PREPROCESSORS
 
 from uner.metainfo import Preprocessors
-from .constant import NON_ENTITY_LABEL, PAD_LABEL, PAD_LABEL_ID
+from uner.utils.data_utils import gen_label2id_with_bio
+from .constant import (
+    NON_ENTITY_LABEL,
+    PAD_LABEL,
+    PAD_LABEL_ID,
+    PARTIAL_LABEL,
+    PARTIAL_LABEL_ID,
+)
 from .nlp_preprocessor import NLPPreprocessor
 
 
@@ -13,11 +20,13 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
 
     def __init__(self,
                  model_dir: str,
-                 label2id,
-                 bio2bioes=False,
+                 labels: List[str] = None,
+                 bio2bioes: bool = False,
                  *args,
                  **kwargs):
         super().__init__(model_dir, *args, **kwargs)
+        label2id = kwargs.get('label2id', None)
+        label2id = self.map_label_to_id(labels, label2id)
         self.label2id = transform_label2id(label2id, bio2bioes)
         self.bio2bioes = bio2bioes
 
@@ -29,9 +38,13 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
             labels = spans_to_bio_labels(data['spans'], input_length)
             labels = transform_labels(labels, self.bio2bioes)
             output['label_ids'] = [
-                self.label2id[labels[i]] for i in range(input_length)
+                self.label2id.get(labels[i], PARTIAL_LABEL_ID)
+                for i in range(input_length)
             ]
         return output
+
+    def _label2id(self, labels: List[str]) -> Dict[str, int]:
+        return gen_label2id_with_bio(labels)
 
 
 def transform_label2id(label2id, bio2bioes=False):
@@ -48,7 +61,7 @@ def transform_labels(labels, bio2bioes=False):
     if bio2bioes:
         new_labels = []
         for i, label in enumerate(labels):
-            if label in [NON_ENTITY_LABEL, PAD_LABEL]:
+            if label in [NON_ENTITY_LABEL, PARTIAL_LABEL]:
                 new_labels.append(label)
             elif label[0] == 'B':
                 if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
@@ -73,8 +86,14 @@ def spans_to_bio_labels(spans, length):
     labels = [NON_ENTITY_LABEL] * length
     for span in spans:
         if span['start'] < length:
-            labels[span['start']] = 'B-' + span['type']
+            if span['type'] == PARTIAL_LABEL:
+                labels[span['start']] = span['type']
+            else:
+                labels[span['start']] = 'B-' + span['type']
         for i in range(span['start'] + 1, span['end']):
             if i < length:
-                labels[i] = 'I-' + span['type']
+                if span['type'] == PARTIAL_LABEL:
+                    labels[i] = span['type']
+                else:
+                    labels[i] = 'I-' + span['type']
     return labels

@@ -4,6 +4,7 @@ import numpy as np
 from modelscope.preprocessors.builder import PREPROCESSORS
 
 from uner.metainfo import Preprocessors
+from uner.utils.data_utils import gen_label2id
 from .constant import NON_ENTITY_LABEL, PAD_LABEL, PAD_LABEL_ID
 from .nlp_preprocessor import NLPPreprocessor
 
@@ -12,9 +13,10 @@ from .nlp_preprocessor import NLPPreprocessor
     module_name=Preprocessors.global_pointer_preprocessor)
 class GlobalPointerPreprocessor(NLPPreprocessor):
 
-    def __init__(self, model_dir: str, label2id, *args, **kwargs):
+    def __init__(self, model_dir: str, labels: List[str], *args, **kwargs):
         super().__init__(model_dir, *args, **kwargs)
-        self.label2id = label2id
+        label2id = kwargs.get('label2id', None)
+        self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
@@ -38,3 +40,6 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
         output['label_matrix'] = label_matrix
         output['spans'] = data['spans']
         return output
+
+    def _label2id(self, labels: List[str]) -> Dict[str, int]:
+        return gen_label2id(labels)

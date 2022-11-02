@@ -118,6 +118,7 @@ class TestPreprocessor(unittest.TestCase):
         cfg = dict(
             type='global-pointer-preprocessor',
             model_dir='bert-base-cased',
+            labels=None,
             label2id=self.ner_label2id3)
         preprocessor = build_preprocessor(cfg)
         output2 = preprocessor(self.ner_input2)
@@ -162,6 +163,7 @@ class TestPreprocessor(unittest.TestCase):
         cfg = dict(
             type='multilabel-span-typing-preprocessor',
             model_dir='bert-base-cased',
+            labels=None,
             label2id=self.typing_label2id)
         preprocessor = build_preprocessor(cfg)
         output = preprocessor(self.typing_input)

@@ -8,7 +8,7 @@ from modelscope.models.builder import MODELS
 
 from uner.metainfo import Models
 from uner.models.base import Model
-from uner.modules.decoders import CRF
+from uner.modules.decoders import CRF, PartialCRF
 from uner.modules.dropouts import WordDropout
 from uner.modules.encoders import Encoder
 from uner.preprocessors.constant import PAD_LABEL_ID
@@ -38,7 +38,10 @@ class SequenceLabelingModel(Model):
 
         self.use_crf = use_crf
         if use_crf:
-            self.crf = CRF(num_labels, batch_first=True)
+            if kwargs.get('partial', False):
+                self.crf = PartialCRF(num_labels, batch_first=True)
+            else:
+                self.crf = CRF(num_labels, batch_first=True)
         else:
             self.loss_fn = nn.CrossEntropyLoss(
                 reduction='mean', ignore_index=PAD_LABEL_ID)
