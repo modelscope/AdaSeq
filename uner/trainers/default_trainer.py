@@ -26,10 +26,10 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from transformers.data.data_collator import DataCollatorMixin
 
-from uner.datasets.dataset_manager import DatasetManager
+from uner.data.data_collators.base import build_data_collator
+from uner.data.dataset_manager import DatasetManager
 from uner.metainfo import Trainers
 from uner.models.base import Model
-from uner.preprocessors.data_collators.base import build_data_collator
 from uner.utils.common_utils import create_datetime_str, has_keys
 from .default_config import DEFAULT_CONFIG
 

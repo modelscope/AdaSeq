@@ -1,4 +1,3 @@
-from . import data_collators
 from .global_pointer_preprocessor import GlobalPointerPreprocessor
 from .multilabel_span_typing_preprocessor import \
     MultiLabelSpanTypingPreprocessor  # noqa

@@ -10,7 +10,6 @@ from modelscope.utils.tensor_utils import (
 from seqeval.metrics import accuracy_score, classification_report
 
 from uner.metainfo import Metrics
-from uner.preprocessors.constant import PAD_LABEL_ID
 
 
 class EntityScore:

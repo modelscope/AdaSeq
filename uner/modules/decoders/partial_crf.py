@@ -2,8 +2,8 @@ from typing import Optional
 
 import torch
 
+from uner.data.constant import PARTIAL_LABEL_ID
 from uner.metainfo import Decoders
-from uner.preprocessors.constant import PARTIAL_LABEL_ID
 from .base import DECODERS, Decoder
 from .crf import CRF
 

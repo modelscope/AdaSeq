@@ -8,7 +8,7 @@ from modelscope.utils.config import Config
 # copy from  hunggingface datasets load.py load_dataset_builder
 def import_dataset_builder_class(builder_name):
     builder_path = os.path.join(
-        'uner', 'datasets', 'dataset_builders', builder_name
+        'uner', 'data', 'dataset_builders', builder_name
         + '.py')  # maybe failed where working dir does not has uer dir.
     dataset_module = dataset_module_factory(builder_path)
     # Get dataset builder class from the processing script

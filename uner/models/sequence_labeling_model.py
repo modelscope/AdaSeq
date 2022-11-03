@@ -6,12 +6,12 @@ import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
 
+from uner.data.constant import PAD_LABEL_ID
 from uner.metainfo import Models
 from uner.models.base import Model
 from uner.modules.decoders import CRF, PartialCRF
 from uner.modules.dropouts import WordDropout
 from uner.modules.encoders import Encoder
-from uner.preprocessors.constant import PAD_LABEL_ID
 
 
 @MODELS.register_module(module_name=Models.sequence_labeling_model)

@@ -6,8 +6,8 @@ from modelscope.utils.tensor_utils import (
     torch_nested_numpify,
 )
 
+from uner.data.constant import PAD_LABEL_ID
 from uner.metainfo import DatasetDumpers
-from uner.preprocessors.constant import PAD_LABEL_ID
 from .base import DatasetDumper
 
 

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import json
 
-from uner.preprocessors.constant import PAD_LABEL
+from uner.data.constant import PAD_LABEL
 
 
 class DatasetReader(ABC):

@@ -5,8 +5,8 @@ import numpy as np
 from modelscope.utils.registry import Registry, build_from_cfg, default_group
 from transformers import PreTrainedTokenizerBase
 
+from uner.data.constant import PAD_LABEL_ID
 from uner.metainfo import DataCollators
-from ..constant import PAD_LABEL_ID
 from .base import DATA_COLLATORS, DataCollatorWithPadding
 
 

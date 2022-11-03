@@ -3,25 +3,32 @@ import os
 import datasets
 from datasets import Features, Value
 
-from uner.datasets.dataset_builders.dataset_reader import \
-    EntityTypingDatasetReader  # yapf: disable
+from uner.data.dataset_builders.dataset_reader import \
+    NamedEntityRecognitionDatasetReader  # yapf: disable
 from .base import CustomDatasetBuilder
 
 
-class EntityTypingDatasetBuilderConfig(datasets.BuilderConfig):
+class NamedEntityRecognitionDatasetBuilderConfig(datasets.BuilderConfig):
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(EntityTypingDatasetBuilderConfig, self).__init__(
+        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__(
             data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
-class EntityTypingDatasetBuilder(CustomDatasetBuilder):
+class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
 
-    BUILDER_CONFIG_CLASS = EntityTypingDatasetBuilderConfig
+    BUILDER_CONFIG_CLASS = NamedEntityRecognitionDatasetBuilderConfig
 
     def stub():
         pass
+
+    @classmethod
+    def parse_label(cls, data):
+        labels = []
+        for span in data['spans']:
+            labels.append(span['type'])
+        return set(labels)
 
     def _info(self):
         info = datasets.DatasetInfo(
@@ -32,7 +39,7 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
                 'spans': [{
                     'start': Value('int32'),  # close
                     'end': Value('int32'),  # open
-                    'type': [Value('string')]
+                    'type': Value('string')
                 }],
                 'mask': [Value('bool')]
             }))
@@ -43,12 +50,5 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
             # TODO: get the reder via reflection
             raise NotImplementedError
         else:
-            return EntityTypingDatasetReader.load_data_file(
+            return NamedEntityRecognitionDatasetReader.load_data_file(
                 filepath, self.config.corpus_config)
-
-    @classmethod
-    def parse_label(cls, data):
-        labels = []
-        for entity in data['spans']:
-            labels.extend(entity['type'])
-        return set(labels)

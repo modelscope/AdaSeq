@@ -3,9 +3,9 @@ from typing import Any, Dict, List, Union
 import numpy as np
 from modelscope.preprocessors.builder import PREPROCESSORS
 
+from uner.data.constant import NON_ENTITY_LABEL, PAD_LABEL, PAD_LABEL_ID
 from uner.metainfo import Preprocessors
 from uner.utils.data_utils import gen_label2id
-from .constant import NON_ENTITY_LABEL, PAD_LABEL, PAD_LABEL_ID
 from .nlp_preprocessor import NLPPreprocessor
 
 

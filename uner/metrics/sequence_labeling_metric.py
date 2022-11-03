@@ -8,8 +8,8 @@ from modelscope.utils.tensor_utils import (
 )
 from seqeval.metrics import accuracy_score, classification_report
 
+from uner.data.constant import PAD_LABEL_ID
 from uner.metainfo import Metrics
-from uner.preprocessors.constant import PAD_LABEL_ID
 
 
 @METRICS.register_module(module_name=Metrics.sequence_labeling_metric)

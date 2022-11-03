@@ -14,7 +14,6 @@ from uner.metainfo import Models
 from uner.models.base import Model
 from uner.modules.dropouts import WordDropout
 from uner.modules.encoders import Encoder
-from uner.preprocessors.constant import PAD_LABEL_ID
 
 
 class SinusoidalPositionEmbedding(nn.Module):

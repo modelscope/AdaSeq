@@ -39,7 +39,8 @@ class DatasetManager:
 
         _task = task.replace('-', '_')
         self.datasets = load_dataset(
-            f'uner/datasets/dataset_builders/{_task}_dataset_builder.py',
+            os.path.join('uner', 'data', 'dataset_builders',
+                         f'{_task}_dataset_builder.py'),
             data_dir=data_url,
             data_files=data_files,
             **corpus_config
@@ -65,7 +66,7 @@ class DatasetManager:
         return self.datasets.get('test', None)
 
     def _init_predefined_corpus_config(self):
-        config_file = os.path.join('uner', 'datasets', 'corpus.yaml')
+        config_file = os.path.join('uner', 'data', 'corpus.yaml')
         with open(config_file, 'r') as f:
             self._predefined_corpus_config = yaml.safe_load(f)
 

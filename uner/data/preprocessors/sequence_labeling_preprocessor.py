@@ -2,15 +2,15 @@ from typing import Any, Dict, List, Union
 
 from modelscope.preprocessors.builder import PREPROCESSORS
 
-from uner.metainfo import Preprocessors
-from uner.utils.data_utils import gen_label2id_with_bio
-from .constant import (
+from uner.data.constant import (
     NON_ENTITY_LABEL,
     PAD_LABEL,
     PAD_LABEL_ID,
     PARTIAL_LABEL,
     PARTIAL_LABEL_ID,
 )
+from uner.metainfo import Preprocessors
+from uner.utils.data_utils import gen_label2id_with_bio
 from .nlp_preprocessor import NLPPreprocessor
 
 
