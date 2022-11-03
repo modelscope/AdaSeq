@@ -4,7 +4,6 @@ import numpy as np
 from modelscope.preprocessors.builder import PREPROCESSORS
 
 from uner.metainfo import Preprocessors
-from uner.utils.data_utils import gen_label2id
 from .nlp_preprocessor import NLPPreprocessor
 
 
@@ -13,7 +12,8 @@ from .nlp_preprocessor import NLPPreprocessor
 class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
 
     def __init__(self, model_dir: str, labels: List[str], *args, **kwargs):
-        super().__init__(model_dir, *args, **kwargs)
+        super().__init__(model_dir, return_offsets_mapping=True, **kwargs)
+
         label2id = kwargs.get('label2id', None)
         self.label2id = self.map_label_to_id(labels, label2id)
 
@@ -25,7 +25,16 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
     #    out: [[0,1,0]] # [[*] * num_classes(one-hot type vector)]
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
-        token_span_mapping = output['reverse_offset_mapping']
+
+        token_span_mapping = []
+        for i, (token_start, token_end) in enumerate(output['offset_mapping']):
+            if token_start == token_end and token_start == 0:
+                token_span_mapping.append([0, 0])  # CLS, SEP
+            elif token_start == token_end:
+                token_span_mapping[-1][1] += 1
+            else:
+                token_span_mapping.append([i, i + 1])
+
         mention_type_ids = []
         boundary_starts = []
         boundary_ends = []
@@ -52,6 +61,3 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
         output['type_ids'] = mention_type_ids
         output['spans'] = data['spans']
         return output
-
-    def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        return gen_label2id(labels)
