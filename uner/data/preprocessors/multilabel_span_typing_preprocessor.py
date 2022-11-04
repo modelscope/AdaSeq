@@ -11,7 +11,7 @@ from .nlp_preprocessor import NLPPreprocessor
     module_name=Preprocessors.multilabel_span_typing_preprocessor)
 class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
 
-    def __init__(self, model_dir: str, labels: List[str], *args, **kwargs):
+    def __init__(self, model_dir: str, labels: List[str], **kwargs):
         super().__init__(model_dir, return_offsets_mapping=True, **kwargs)
 
         label2id = kwargs.get('label2id', None)
