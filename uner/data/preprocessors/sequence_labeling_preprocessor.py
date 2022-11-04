@@ -4,13 +4,10 @@ from modelscope.preprocessors.builder import PREPROCESSORS
 
 from uner.data.constant import (
     NON_ENTITY_LABEL,
-    PAD_LABEL,
-    PAD_LABEL_ID,
     PARTIAL_LABEL,
     PARTIAL_LABEL_ID,
 )
 from uner.metainfo import Preprocessors
-from uner.utils.data_utils import gen_label2id_with_bio
 from .nlp_preprocessor import NLPPreprocessor
 
 
@@ -21,79 +18,65 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
     def __init__(self,
                  model_dir: str,
                  labels: List[str] = None,
-                 bio2bioes: bool = False,
-                 *args,
+                 tag_scheme: str = 'BIOES',
                  **kwargs):
-        super().__init__(model_dir, *args, **kwargs)
+        super().__init__(model_dir, return_emission_mask=True, **kwargs)
+
+        self.tag_scheme = tag_scheme.upper()
+        if not self._is_valid_tag_scheme(self.tag_scheme):
+            raise ValueError('Invalid tag scheme! Options: [BIO, BIOES]')
+
         label2id = kwargs.get('label2id', None)
-        label2id = self.map_label_to_id(labels, label2id)
-        self.label2id = transform_label2id(label2id, bio2bioes)
-        self.bio2bioes = bio2bioes
+        self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
         if self.label2id is not None and isinstance(data,
                                                     Dict) and 'spans' in data:
             input_length = sum(output['emission_mask'])
-            labels = spans_to_bio_labels(data['spans'], input_length)
-            labels = transform_labels(labels, self.bio2bioes)
+            labels = self._spans_to_bio_labels(data['spans'], input_length,
+                                               self.tag_scheme)
             output['label_ids'] = [
-                self.label2id.get(labels[i], PARTIAL_LABEL_ID)
+                PARTIAL_LABEL_ID
+                if labels[i] == PARTIAL_LABEL else self.label2id[labels[i]]
                 for i in range(input_length)
             ]
         return output
 
     def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        return gen_label2id_with_bio(labels)
+        return self._gen_label2id_with_bio(labels, self.tag_scheme)
 
+    @staticmethod
+    def _is_valid_tag_scheme(tag_scheme: str):
+        return tag_scheme in ['BIO', 'BIOES']
 
-def transform_label2id(label2id, bio2bioes=False):
-    if bio2bioes:
-        for label in sorted(label2id.keys()):
-            if label[0] == 'B' and label.replace('B-', 'S-') not in label2id:
-                label2id[label.replace('B-', 'S-')] = len(label2id)
-            if label[0] == 'I' and label.replace('I-', 'E-') not in label2id:
-                label2id[label.replace('I-', 'E-')] = len(label2id)
-    return label2id
+    @staticmethod
+    def _gen_label2id_with_bio(labels: List[str],
+                               tag_scheme: str = 'BIOES') -> Dict[str, int]:
+        label2id = {}
+        if 'O' in tag_scheme:
+            label2id['O'] = 0
+        for label in labels:
+            for tag in 'BIES':
+                label2id[f'{tag}-{label}'] = len(label2id)
+        return label2id
 
-
-def transform_labels(labels, bio2bioes=False):
-    if bio2bioes:
-        new_labels = []
-        for i, label in enumerate(labels):
-            if label in [NON_ENTITY_LABEL, PARTIAL_LABEL]:
-                new_labels.append(label)
-            elif label[0] == 'B':
-                if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
-                    new_labels.append(label)
-                else:
-                    new_labels.append(label.replace('B-', 'S-'))
-            elif label[0] == 'I':
-                if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
-                    new_labels.append(label)
-                else:
-                    new_labels.append(label.replace('I-', 'E-'))
-            elif label[0] == 'S' or label[0] == 'E':
-                new_labels.append(label)
-            else:
-                raise ValueError(f'Unrecognized label: {label}')
-        return new_labels
-    else:
-        return labels
-
-
-def spans_to_bio_labels(spans, length):
-    labels = [NON_ENTITY_LABEL] * length
-    for span in spans:
-        if span['start'] < length:
-            if span['type'] == PARTIAL_LABEL:
-                labels[span['start']] = span['type']
-            else:
-                labels[span['start']] = 'B-' + span['type']
-        for i in range(span['start'] + 1, span['end']):
-            if i < length:
+    @staticmethod
+    def _spans_to_bio_labels(spans: List[Dict],
+                             length: int,
+                             tag_scheme: str = 'BIOES'):
+        labels = [NON_ENTITY_LABEL] * length
+        for span in spans:
+            for i in range(span['start'], min(span['end'], length)):
                 if span['type'] == PARTIAL_LABEL:
                     labels[i] = span['type']
+                    continue
+                if 'S' in tag_scheme and i == span['start'] == span['end'] + 1:
+                    labels[i] = 'S-' + span['type']
+                elif i == span['start']:
+                    labels[i] = 'B-' + span['type']
+                elif 'E' in tag_scheme and i == span['end'] + 1:
+                    labels[i] = 'E-' + span['type']
                 else:
                     labels[i] = 'I-' + span['type']
-    return labels
+        return labels

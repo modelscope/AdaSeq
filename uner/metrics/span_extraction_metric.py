@@ -79,7 +79,8 @@ class EntityScore:
         self.n_sentences += len(batch_gold_entities)
         for gold_entities, pred_entities in zip(batch_gold_entities,
                                                 batch_pred_entities):
-            if isinstance(gold_entities[0]['type'], list):
+            if len(gold_entities) > 0 and isinstance(gold_entities[0]['type'],
+                                                     list):
                 expanded_golden_mentions = []
                 for mention in gold_entities:
                     expanded_golden_mentions.extend([{
@@ -88,6 +89,8 @@ class EntityScore:
                         'type': t
                     } for t in mention['type']])
                 gold_entities = expanded_golden_mentions
+            if len(pred_entities) > 0 and isinstance(pred_entities[0]['type'],
+                                                     list):
                 expanded_pred_mentions = []
                 for mention in pred_entities:
                     expanded_pred_mentions.extend([{

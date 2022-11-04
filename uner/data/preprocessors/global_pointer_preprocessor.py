@@ -3,9 +3,7 @@ from typing import Any, Dict, List, Union
 import numpy as np
 from modelscope.preprocessors.builder import PREPROCESSORS
 
-from uner.data.constant import NON_ENTITY_LABEL, PAD_LABEL, PAD_LABEL_ID
 from uner.metainfo import Preprocessors
-from uner.utils.data_utils import gen_label2id
 from .nlp_preprocessor import NLPPreprocessor
 
 
@@ -13,14 +11,23 @@ from .nlp_preprocessor import NLPPreprocessor
     module_name=Preprocessors.global_pointer_preprocessor)
 class GlobalPointerPreprocessor(NLPPreprocessor):
 
-    def __init__(self, model_dir: str, labels: List[str], *args, **kwargs):
-        super().__init__(model_dir, *args, **kwargs)
+    def __init__(self, model_dir: str, labels: List[str], **kwargs):
+        super().__init__(model_dir, return_offsets_mapping=True, **kwargs)
+
         label2id = kwargs.get('label2id', None)
         self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
-        token_span_mapping = output['reverse_offset_mapping']
+
+        token_span_mapping = []
+        for i, (token_start, token_end) in enumerate(output['offset_mapping']):
+            if token_start == token_end and token_start == 0:
+                token_span_mapping.append([0, 0])  # CLS, SEP
+            elif token_start == token_end:
+                token_span_mapping[-1][1] += 1
+            else:
+                token_span_mapping.append([i, i + 1])
 
         # 计算span矩阵，注意修正offset: 1, offset_mapping, 2, cls_token
         label_matrix = np.zeros([
@@ -40,6 +47,3 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
         output['label_matrix'] = label_matrix
         output['spans'] = data['spans']
         return output
-
-    def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        return gen_label2id(labels)

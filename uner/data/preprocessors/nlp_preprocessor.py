@@ -5,23 +5,31 @@ from modelscope.preprocessors.builder import PREPROCESSORS
 from transformers import AutoTokenizer, BertTokenizer
 
 from uner.metainfo import Preprocessors
+from uner.utils.data_utils import gen_label2id
 
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.nlp_preprocessor)
 class NLPPreprocessor(Preprocessor):
 
-    def __init__(self, model_dir: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if 'word2vec' in model_dir:
-            self.tokenizer = BertTokenizer.from_pretrained(model_dir)
-        elif 'nezha' in model_dir:
-            self.tokenizer = BertTokenizer.from_pretrained(model_dir)
-        else:
-            self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    def __init__(self, model_dir: str, **kwargs):
+        super().__init__(**kwargs)
 
         self.max_length = kwargs.pop('max_length', 512)
         self.add_cls_sep = kwargs.pop('add_cls_sep', True)
+        self.return_tokens_or_text = kwargs.pop('return_tokens_or_text', True)
+        self.return_attention_mask = kwargs.pop('return_attention_mask', True)
+        self.return_emission_mask = kwargs.pop('return_emission_mask', False)
+        self.return_offsets_mapping = kwargs.pop('return_offsets_mapping',
+                                                 False)
+        self.tokenizer = self.build_tokenizer(model_dir)
+
+    def build_tokenizer(self, model_dir):
+        if 'word2vec' in model_dir:
+            return BertTokenizer.from_pretrained(model_dir)
+        elif 'nezha' in model_dir:
+            return BertTokenizer.from_pretrained(model_dir)
+        else:
+            return AutoTokenizer.from_pretrained(model_dir)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         if isinstance(data, str):
@@ -48,51 +56,34 @@ class NLPPreprocessor(Preprocessor):
             if len(subtoken_ids) == 0:
                 subtoken_ids = [self.tokenizer.unk_token_id]
             input_ids.extend(subtoken_ids)
+            emission_mask.extend([token_mask]
+                                 + [False] * (len(subtoken_ids) - 1))
             offset_mapping.extend([(offset, offset + 1)]
                                   + [(offset + 1, offset + 1)]
                                   * (len(subtoken_ids) - 1))
-            emission_mask.extend([token_mask]
-                                 + [False] * (len(subtoken_ids) - 1))
         if len(input_ids) > self.max_length - 2:
             input_ids = input_ids[:self.max_length - 2]
-            offset_mapping = offset_mapping[:self.max_length - 2]
             emission_mask = emission_mask[:self.max_length - 2]
+            offset_mapping = offset_mapping[:self.max_length - 2]
         if self.add_cls_sep:
             input_ids = [self.tokenizer.cls_token_id
                          ] + input_ids + [self.tokenizer.sep_token_id]
-            offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
             emission_mask = [False] + emission_mask + [False]
+            offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
         attention_mask = [1] * len(input_ids)
 
         output = {
-            'tokens': tokens,
             'input_ids': input_ids,
-            'attention_mask': attention_mask,
-            'emission_mask': emission_mask,
-            'offset_mapping': offset_mapping,  # subtoken->token
-            'reverse_offset_mapping':
-            self.compress_token_mapping(offset_mapping)  # token->subtoken span
         }
+        if self.return_tokens_or_text:
+            output['tokens'] = tokens
+        if self.return_attention_mask:
+            output['attention_mask'] = attention_mask
+        if self.return_emission_mask:
+            output['emission_mask'] = emission_mask
+        if self.return_offsets_mapping:
+            output['offset_mapping'] = offset_mapping
         return output
-        '''
-        offset_mapping
-            tokens : 0, 1, 2
-            subtoken: 0, 1-1, 1-2, 2-1, 2-2
-            offset_mapping: [(0,1), (1,2), (2,2), (2,3), (3,3)]
-        compressed:
-            offset_mapping: [(0,1), (1,3), (3,5)]
-        '''
-
-    def compress_token_mapping(self, original_token_mapping):
-        token_span_mapping = []
-        for i, (token_start, token_end) in enumerate(original_token_mapping):
-            if token_start == token_end and token_start == 0:
-                token_span_mapping.append([0, 0])  # CLS, SEP
-            elif token_start == token_end:
-                token_span_mapping[-1][1] += 1
-            else:
-                token_span_mapping.append([i, i + 1])
-        return token_span_mapping
 
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
@@ -108,4 +99,4 @@ class NLPPreprocessor(Preprocessor):
             raise ValueError('labels or label2id is needed.')
 
     def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        raise NotImplementedError
+        return gen_label2id(labels)
