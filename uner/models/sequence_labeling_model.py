@@ -22,6 +22,7 @@ class SequenceLabelingModel(Model):
                  encoder: Union[Encoder, str] = None,
                  word_dropout: Optional[float] = 0.0,
                  use_crf: Optional[bool] = True,
+                 partial: Optional[bool] = False,
                  **kwargs):
         super(SequenceLabelingModel, self).__init__()
         self.num_labels = num_labels
@@ -38,7 +39,7 @@ class SequenceLabelingModel(Model):
 
         self.use_crf = use_crf
         if use_crf:
-            if kwargs.get('partial', False):
+            if partial:
                 self.crf = PartialCRF(num_labels, batch_first=True)
             else:
                 self.crf = CRF(num_labels, batch_first=True)

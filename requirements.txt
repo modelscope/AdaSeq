@@ -4,7 +4,7 @@ modelscope==1.0.2
 numpy
 pyyaml
 seqeval
-torch>=1.11.0
+torch>=1.11.0,<1.13.0
 tqdm>=4.64.0
-transformers==4.19.2
+transformers>=4.21.0
 yapf

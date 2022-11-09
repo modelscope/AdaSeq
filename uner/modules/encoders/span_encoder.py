@@ -5,8 +5,6 @@ import torch.nn as nn
 
 from uner.metainfo import Encoders
 from .base import ENCODERS, Encoder
-from .nezha.configuration_nezha import NeZhaConfig
-from .nezha.modeling_nezha import NeZhaModel
 
 
 @ENCODERS.register_module(module_name=Encoders.span_encoder)

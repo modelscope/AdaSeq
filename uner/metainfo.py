@@ -16,7 +16,6 @@ class Models:
 
 
 class Encoders:
-    nezha = 'nezha'
     span_encoder = 'span-encoder'
 
 
