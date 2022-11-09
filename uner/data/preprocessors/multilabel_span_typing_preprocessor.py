@@ -10,6 +10,12 @@ from .nlp_preprocessor import NLPPreprocessor
 @PREPROCESSORS.register_module(
     module_name=Preprocessors.multilabel_span_typing_preprocessor)
 class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
+    """Preprocessor for multilabel (aka multi-type) span typing task.
+    span targets are processed into mention_boundary, type_ids.
+    examples:
+        span: {'start':1, 'end':2, 'type': ['PER']}
+        processed: {'mention_boundary': [[1], [2]], 'type_ids':[1]}
+    """
 
     def __init__(self, model_dir: str, labels: List[str], **kwargs):
         super().__init__(model_dir, return_offsets_mapping=True, **kwargs)
@@ -17,12 +23,6 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
         label2id = kwargs.get('label2id', None)
         self.label2id = self.map_label_to_id(labels, label2id)
 
-    # label_boundary:
-    #    in: [{'start': s, 'end': e, 'types': l}]
-    #    out: [[s,e]]
-    # label_ids:
-    #    in: [{'start': s, 'end': e, 'types': l}]
-    #    out: [[0,1,0]] # [[*] * num_classes(one-hot type vector)]
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
 

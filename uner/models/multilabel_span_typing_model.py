@@ -15,6 +15,7 @@ from uner.modules.encoders import Encoder, SpanEncoder
 
 @MODELS.register_module(module_name=Models.multilabel_span_typing_model)
 class MultiLabelSpanTypingModel(Model):
+    """Multi type span typing model using BCE loss."""
 
     def __init__(self,
                  num_labels: int,

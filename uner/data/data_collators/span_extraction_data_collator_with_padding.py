@@ -13,6 +13,7 @@ from .base import DATA_COLLATORS, DataCollatorWithPadding
     module_name=DataCollators.span_extraction_data_collator)
 @dataclass
 class SpanExtractionDataCollatorWithPadding(DataCollatorWithPadding):
+    """Padding method for span extraction dataset."""
 
     def __init__(self, tokenizer, **kwargs):
         super().__init__(tokenizer)
@@ -21,6 +22,8 @@ class SpanExtractionDataCollatorWithPadding(DataCollatorWithPadding):
     def padding(self, batch: Dict[str,
                                   Any], fields: List[str], batch_size: int,
                 max_length: int, padding_side: str) -> Dict[str, Any]:
+        """Padding a batch. In addition to the fields padded by base class DataCollatorWithPadding, label_matrix is padded here.
+        """
 
         for i in range(batch_size):
             field = 'label_matrix'

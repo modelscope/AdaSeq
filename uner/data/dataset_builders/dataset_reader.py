@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any, Dict
 
 import json
 
@@ -173,9 +174,24 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
 
 
 class EntityTypingDatasetReader(DatasetReader):
+    """Entity typing dataset reader."""
 
     @classmethod
-    def load_data_file(cls, file_path, corpus_config):
+    def load_data_file(cls, file_path: str, corpus_config: Dict[str, Any]):
+        """Load data file.
+        Args:
+        file_path: string, data file path.
+        corpus_config: dictionary, required keys:
+                       tokenizer: string, specify the tokenization method,
+                                  'char' list(text) and 'blank' for text.split(' ')
+                       is_end_included: bool, wheather the end index pointer to the
+                                        last token or the token next to the last token.
+                                         e.g., text = 'This is an example.',
+                                               mention = 'example',
+                                               end = 3 if is_end_included is True.
+
+        """
+
         with open(file_path, encoding='utf-8') as f:
             guid = 0
             for line in f:

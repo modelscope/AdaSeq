@@ -13,6 +13,12 @@ from uner.metainfo import Metrics
 
 
 class EntityScore:
+    """Span based scorer.
+       usage:
+       scorer = EntityScore()
+       scorer.update(golden_spans_batch, pred_spans_batch)
+       scorer.result()
+    """
 
     def __init__(self):
         self.reset()
@@ -31,7 +37,9 @@ class EntityScore:
             precision + recall)
         return recall, precision, f1
 
-    def result(self):
+    def result(self) -> Dict[str, float]:
+        """Calculate performance, return precision, recall, f1-score in a dictionary"""
+
         detailed_report = 'evaluation report:\n'
         origin_counter = Counter([x['type'] for x in self.origins])
         found_counter = Counter([x['type'] for x in self.founds])
@@ -65,7 +73,7 @@ class EntityScore:
         }
 
     @staticmethod
-    def join_entities(pre_entities, label_entities):
+    def _join_entities(pre_entities, label_entities):
         ret = []
         for pre_entity in pre_entities:
             for label_entity in label_entities:
@@ -76,6 +84,8 @@ class EntityScore:
         return ret
 
     def update(self, batch_gold_entities, batch_pred_entities):
+        """Add golden, pred pairs to inner data structure."""
+
         self.n_sentences += len(batch_gold_entities)
         for gold_entities, pred_entities in zip(batch_gold_entities,
                                                 batch_pred_entities):
@@ -107,17 +117,20 @@ class EntityScore:
                 if pre_entity in gold_entities
             ])
             self.loc_rights.extend(
-                self.join_entities(pred_entities, gold_entities))
+                self._join_entities(pred_entities, gold_entities))
 
 
 @METRICS.register_module(module_name=Metrics.span_extraction_metric)
 class SpanExtractionMetric(Metric):
+    """Metric for evalute span extraction tasks."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.scorer = EntityScore()
 
     def add(self, outputs: Dict, inputs: Dict):
+        """Add golden, pred pairs to inner data structure."""
+
         token_mapping = inputs['offset_mapping']
         id2label = self.trainer.id2label
         pred_results = outputs['predicts']
@@ -138,6 +151,8 @@ class SpanExtractionMetric(Metric):
         self.scorer.update(ground_truths, pred_entities_batch)
 
     def evaluate(self):
+        """Calculate performance, return precision, recall, f1-score in a dictionary"""
+
         score_detail = self.scorer.result()
         scores = {}
         scores[MetricKeys.PRECISION] = score_detail['precision']

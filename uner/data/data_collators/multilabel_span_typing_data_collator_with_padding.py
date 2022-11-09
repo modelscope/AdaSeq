@@ -13,6 +13,7 @@ from .base import DATA_COLLATORS, DataCollatorWithPadding
     module_name=DataCollators.multi_label_span_typing_data_collator)
 @dataclass
 class MultiLabelSpanTypingDataCollatorWithPadding(DataCollatorWithPadding):
+    """Padding method for multilabel span typing dataset."""
 
     def __init__(self, tokenizer, **kwargs):
         super().__init__(tokenizer)
@@ -21,6 +22,9 @@ class MultiLabelSpanTypingDataCollatorWithPadding(DataCollatorWithPadding):
     def padding(self, batch: Dict[str,
                                   Any], fields: List[str], batch_size: int,
                 max_length: int, padding_side: str) -> Dict[str, Any]:
+        """Padding a batch. In addition to the fields padded by base class DataCollatorWithPadding,
+           'mention_boundary'、'type_ids'、'mention_msk' are padded here.
+        """
 
         max_span_count = max([len(x[0]) for x in batch['mention_boundary']])
         for i in range(batch_size):

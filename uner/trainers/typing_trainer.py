@@ -19,6 +19,7 @@ from .default_trainer import DefaultTrainer
 
 @TRAINERS.register_module(module_name=Trainers.typing_trainer)
 class TypingTrainer(DefaultTrainer):
+    """Trainer for span typing task."""
 
     def after_build_dataset(self, **kwargs):
         # get label info from dataset

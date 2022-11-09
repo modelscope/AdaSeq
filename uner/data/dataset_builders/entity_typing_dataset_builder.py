@@ -9,6 +9,7 @@ from .base import CustomDatasetBuilder
 
 
 class EntityTypingDatasetBuilderConfig(datasets.BuilderConfig):
+    """BuilderConfig for entity typing datasets"""
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
         super(EntityTypingDatasetBuilderConfig, self).__init__(
@@ -17,6 +18,14 @@ class EntityTypingDatasetBuilderConfig(datasets.BuilderConfig):
 
 
 class EntityTypingDatasetBuilder(CustomDatasetBuilder):
+    """ Builder for entity typing datasets.
+
+        features:
+            id: string, data record id.
+            tokens: list[str] input tokens.
+            spans: List[Dict],  mentions like: [{'start': 0, 'end': 2, 'type': ['PER', 'MAN']}]
+            mask: bool, mention mask.
+    """
 
     BUILDER_CONFIG_CLASS = EntityTypingDatasetBuilderConfig
 

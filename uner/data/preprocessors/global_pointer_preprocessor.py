@@ -10,6 +10,9 @@ from .nlp_preprocessor import NLPPreprocessor
 @PREPROCESSORS.register_module(
     module_name=Preprocessors.global_pointer_preprocessor)
 class GlobalPointerPreprocessor(NLPPreprocessor):
+    """Preprocessor of global pointer model.
+    span targets are processed into label_matrixes
+    """
 
     def __init__(self, model_dir: str, labels: List[str], **kwargs):
         super().__init__(model_dir, return_offsets_mapping=True, **kwargs)

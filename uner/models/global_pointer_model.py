@@ -1,7 +1,3 @@
-# Auther: xuanjie.wxb
-# Date: 2022-07-06 19:07
-# Comments:
-
 import sys
 from typing import Any, Dict, Union
 
@@ -17,13 +13,13 @@ from uner.modules.encoders import Encoder
 
 
 class SinusoidalPositionEmbedding(nn.Module):
-    """定义Sin-Cos位置Embedding
-       ref: https://spaces.ac.cn/archives/8265
+    """Sin-Cos Embedding.
+    ref: https://spaces.ac.cn/archives/8265
     """
 
     def __init__(self,
-                 output_dim,
-                 merge_mode='add',
+                 output_dim: int,
+                 merge_mode: str = 'add',
                  custom_position_ids=False):
         super(SinusoidalPositionEmbedding, self).__init__()
         self.output_dim = output_dim
@@ -57,6 +53,10 @@ class SinusoidalPositionEmbedding(nn.Module):
 
 @MODELS.register_module(module_name=Models.global_pointer_model)
 class GlobalPointerModel(Model):
+    """GlobalPointer model.
+    ref: https://arxiv.org/abs/2208.03054
+    ref: https://github.com/xhw205/Efficient-GlobalPointer-torch
+    """
 
     def __init__(self,
                  num_labels: int,
@@ -173,7 +173,7 @@ class GlobalPointerModel(Model):
         return entity_score
 
     def multilabel_categorical_crossentropy(self, targets, entity_score):
-        """
+        """Multi-label cross entropy loss.
         https://kexue.fm/archives/7359
         """
         entity_score = (1 - 2 * targets

@@ -1,23 +1,78 @@
 import os
 from abc import ABC, abstractmethod
+from typing import Set
 
 import datasets
 from datasets import Features, Value
+from torch.utils.data import Dataset
 
 
 class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
+    """ Base class for custumized dataset builder."""
 
-    # datasets.load_dataset从builder script import_main_class时取得第一个非抽象类，
-    # 所以需要把这个基类做成抽象类，否则load的是这个基类。（import 基类在前，继承类定义在后）
     @abstractmethod
     def stub():
+        """ Useless stub function.
+
+       The datasets.load_dataset import the builder class from path via import_main_class.
+       According to the source code, import_main_class will return the first non-abstract class.
+       So we should make this base class a abstract class by adding this stub function.
+       Otherwise, this base class will be returned by import_main_class,simce it is imported
+       before the definition of sub-classes.
+       """
+
         pass
 
     @classmethod
-    def parse_label(cls, data):
+    def parse_label(cls, data: Dataset) -> Set[str]:
+        """Collect type labels from dataset."""
+
         pass
 
     def _split_generators(self, dl_manager):
+        """Specify feature dictionary generators and dataset splits.
+
+        This function returns a list of `SplitGenerator`s defining how to generate
+        data and what splits to use.
+
+        Example:
+
+            return[
+                    datasets.SplitGenerator(
+                            name=datasets.Split.TRAIN,
+                            gen_kwargs={'file': 'train_data.zip'},
+                    ),
+                    datasets.SplitGenerator(
+                            name=datasets.Split.TEST,
+                            gen_kwargs={'file': 'test_data.zip'},
+                    ),
+            ]
+
+        The above code will first call `_generate_examples(file='train_data.zip')`
+        to write the train data, then `_generate_examples(file='test_data.zip')` to
+        write the test data.
+
+        Datasets are typically split into different subsets to be used at various
+        stages of training and evaluation.
+
+        Note that for datasets without a `VALIDATION` split, you can use a
+        fraction of the `TRAIN` data for evaluation as you iterate on your model
+        so as not to overfit to the `TEST` data.
+
+        For downloads and extractions, use the given `download_manager`.
+        Note that the `DownloadManager` caches downloads, so it is fine to have each
+        generator attempt to download the source data.
+
+        A good practice is to download all data in this function, and then
+        distribute the relevant parts to each split with the `gen_kwargs` argument
+
+        Args:
+            dl_manager: (DownloadManager) Download manager to download the data
+
+        Returns:
+            `list<SplitGenerator>`.
+        """
+
         if self.config.data_files is not None:
             data_files = dl_manager.download_and_extract(
                 self.config.data_files)
@@ -56,6 +111,8 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
 
 
 def get_file_by_keyword(files, keyword):
+    """Get file by keyword, such as: train/test/dev."""
+
     for filename in files:
         if keyword in filename:
             return filename
