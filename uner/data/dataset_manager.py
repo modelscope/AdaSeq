@@ -1,4 +1,4 @@
-import os
+import os.path as osp
 from typing import Optional
 
 import yaml
@@ -15,6 +15,7 @@ class DatasetManager:
                  valid: Optional[str] = None,
                  test: Optional[str] = None,
                  **corpus_config):
+        self._data_root = osp.dirname(osp.realpath(__file__))
         self._init_predefined_corpus_config()
         data_url = None
         data_files = None
@@ -39,12 +40,12 @@ class DatasetManager:
 
         _task = task.replace('-', '_')
         self.datasets = load_dataset(
-            os.path.join('uner', 'data', 'dataset_builders',
-                         f'{_task}_dataset_builder.py'),
+            osp.join(self._data_root, 'dataset_builders',
+                     f'{_task}_dataset_builder.py'),
             data_dir=data_url,
             data_files=data_files,
             **corpus_config
-        )  # tell the builder how to reader corpus files. if someone wants to use a custumized reader other than column based or json based, he can pass a reader function.  # noqa
+        )  # tell the builder how to reader corpus files. if someone wants to use a customized reader other than column based or json based, he can pass a reader function.  # noqa
 
         if self.valid is None and self.test is not None:
             self.datasets['valid'] = self.datasets['test']
@@ -66,7 +67,7 @@ class DatasetManager:
         return self.datasets.get('test', None)
 
     def _init_predefined_corpus_config(self):
-        config_file = os.path.join('uner', 'data', 'corpus.yaml')
+        config_file = osp.join(self._data_root, 'corpus.yaml')
         with open(config_file, 'r') as f:
             self._predefined_corpus_config = yaml.safe_load(f)
 
