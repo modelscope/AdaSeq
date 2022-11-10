@@ -1,12 +1,20 @@
-import sys
+from typing import Dict, Tuple
 
-import json
 import numpy as np
 import torch
 import torch.nn as nn
 
 
-def load_vocab(vocab_file):
+def load_vocab(vocab_file: str) -> Tuple[Dict[str, int], Dict[int, str]]:
+    """ Load from vocab file
+
+    Args:
+        vocab_file (str): vocab file to be loaded
+
+    Returns:
+        word2id (Dict[str, int]): a dict mapping word to id
+        id2word (Dict[int, str]): a dict mapping id to word
+    """
     idx = 0
     word2id = {}
     id2word = {}
@@ -19,8 +27,19 @@ def load_vocab(vocab_file):
 
 
 class Embedding(nn.Module):
+    """ A simple lookup table for word embedding.
 
-    def __init__(self, config):
+    This module implements a simple lookup table that stores embeddings of a fixed dictionary and size.
+    It is often used to store word embeddings and retrieve them using indices.
+    The input to the module is a list of indices, and the output is the corresponding word embeddings.
+
+    Args:
+        config (Dict): a config dict containing
+            vocab (str): vocab file
+            vocab_size (int): size of vocabulary
+    """
+
+    def __init__(self, config: Dict):
         super(Embedding, self).__init__()
         self.vocab_file = config['vocab']
         self.word2id, self.id2word = load_vocab(self.vocab_file)
@@ -45,5 +64,5 @@ class Embedding(nn.Module):
         else:
             self.embedding = nn.Embedding(self.vocab_size, self.width)
 
-    def forward(self, input_ids):
+    def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
         return self.embedding(input_ids)

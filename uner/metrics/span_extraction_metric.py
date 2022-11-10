@@ -3,11 +3,6 @@ from typing import Dict
 
 from modelscope.metrics.base import Metric
 from modelscope.metrics.builder import METRICS, MetricKeys
-from modelscope.utils.tensor_utils import (
-    torch_nested_detach,
-    torch_nested_numpify,
-)
-from seqeval.metrics import accuracy_score, classification_report
 
 from uner.metainfo import Metrics
 
@@ -122,7 +117,7 @@ class EntityScore:
 
 @METRICS.register_module(module_name=Metrics.span_extraction_metric)
 class SpanExtractionMetric(Metric):
-    """Metric for evalute span extraction tasks."""
+    """The metric computation class for span-extraction tasks."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

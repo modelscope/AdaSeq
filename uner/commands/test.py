@@ -1,5 +1,4 @@
 import argparse
-import os
 
 from modelscope.trainers import build_trainer
 from modelscope.utils.config import Config

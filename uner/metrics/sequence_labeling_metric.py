@@ -15,6 +15,14 @@ from uner.metainfo import Metrics
 @METRICS.register_module(module_name=Metrics.sequence_labeling_metric)
 @METRICS.register_module(module_name=Metrics.ner_metric)
 class SequenceLabelingMetric(Metric):
+    """The metric computation class for sequence-labeling tasks.
+
+    This metric class uses seqeval to calculate scores.
+
+    Args:
+        return_class_level_metric (bool, *optional*):
+            Whether to return every class's detailed metrics, default False.
+    """
 
     def __init__(self,
                  return_class_level_metric=False,

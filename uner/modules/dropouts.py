@@ -3,13 +3,18 @@ import torch.nn as nn
 
 
 class WordDropout(nn.Module):
+    """ Word-level Dropout module
 
-    def __init__(self, dropout_rate=0.1):
+    Args:
+        dropout_rate (float): dropout rate for each word
+    """
+
+    def __init__(self, dropout_rate: float = 0.1):
         super(WordDropout, self).__init__()
         assert 0.0 <= dropout_rate < 1.0, '0.0 <= dropout rate < 1.0 must be satisfied!'
         self.dropout_rate = dropout_rate
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         if not self.training or not self.dropout_rate:
             return inputs
 

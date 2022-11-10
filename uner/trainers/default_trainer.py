@@ -1,21 +1,20 @@
 import os
 import random
-from typing import Callable, Mapping, Optional, Tuple, Union
+from typing import Callable, List, Mapping, Optional, Tuple, Union
 
 import torch
-from modelscope.metrics import build_metric
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import build_preprocessor
 from modelscope.trainers.builder import TRAINERS
+from modelscope.trainers.hooks import Hook
 from modelscope.trainers.lrscheduler.builder import build_lr_scheduler
-from modelscope.trainers.optimizer.builder import OPTIMIZERS, build_optimizer
+from modelscope.trainers.optimizer.builder import build_optimizer
 from modelscope.trainers.parallel.utils import is_parallel
 from modelscope.trainers.trainer import EpochBasedTrainer
 from modelscope.utils.config import ConfigDict
 from modelscope.utils.constant import ConfigFields, ConfigKeys, ModeKeys
-from modelscope.utils.device import create_device, verify_device
+from modelscope.utils.device import create_device
 from modelscope.utils.logger import get_logger
-from modelscope.utils.registry import build_from_cfg, default_group
 from modelscope.utils.torch_utils import (
     get_dist_info,
     get_local_rank,
@@ -23,7 +22,7 @@ from modelscope.utils.torch_utils import (
     set_random_seed,
 )
 from torch import nn
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 from transformers.data.data_collator import DataCollatorMixin
 
 from uner.data.data_collators.base import build_data_collator
@@ -36,6 +35,12 @@ from .default_config import DEFAULT_CONFIG
 
 @TRAINERS.register_module(module_name=Trainers.default_trainer)
 class DefaultTrainer(EpochBasedTrainer):
+    """ Default trainer class for AdaSeq.
+
+    This trainer inherits from EpochBasedTrainer with some modifications.
+    It implements some common data processing functions which are convenient for training a model.
+    It also implements a basic test function for evaluate a trained model on the test dataset.
+    """
 
     def __init__(
             self,
@@ -312,6 +317,9 @@ class DefaultTrainer(EpochBasedTrainer):
     def dump_log(self, log_dict):
         if self._file_logger is not None:
             self._file_logger._dump_log(log_dict)
+
+    def train(self, checkpoint_path=None, *args, **kwargs):
+        return super().train(checkpoint_path=checkpoint_path, *args, **kwargs)
 
     def test(self, checkpoint_path=None):
         backup_eval_dataset = self.eval_dataset

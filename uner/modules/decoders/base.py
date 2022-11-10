@@ -1,11 +1,10 @@
-import functools
 from abc import abstractmethod
 from os import path as osp
 from typing import Dict, Union
 
 import torch
 import torch.nn as nn
-from modelscope.utils.config import Config
+from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.registry import Registry, build_from_cfg
 from transformers import AutoModel
 
@@ -14,12 +13,24 @@ from uner.utils.common_utils import has_keys
 DECODERS = Registry('decoders')
 
 
-def build_decoder(decoder_type: str, **kwargs):
+def build_decoder(cfg: ConfigDict, default_args: dict = None):
+    """ Build decoder from config dict
+
+    Args:
+        cfg (:obj:`ConfigDict`): config dict for decoder object
+        default_args (dict): default initialization arguments
+
+    Returns:
+        encoder (:obj:`Decoder`): an decoder instance
+    """
     return build_from_cfg(
-        DECODERS, decoder_type, group_key='default', **kwargs)
+        cfg, DECODERS, group_key='default', default_args=default_args)
 
 
 class Decoder(nn.Module):
+    """
+    The decoder base class for downstream tasks
+    """
 
     def __init__(self, **kwargs):
         super().__init__()

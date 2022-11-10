@@ -1,10 +1,9 @@
-import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
-import numpy as np
 import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
+from modelscope.utils.config import ConfigDict
 
 from uner.data.constant import PAD_LABEL_ID
 from uner.metainfo import Models
@@ -16,10 +15,23 @@ from uner.modules.encoders import Encoder
 
 @MODELS.register_module(module_name=Models.sequence_labeling_model)
 class SequenceLabelingModel(Model):
+    """ Sequence labeling model
+
+    This model is used for sequence labeling tasks.
+    Various decoders are supported, including argmax, crf, partial-crf, etc.
+
+    Args:
+        num_labels (int): number of labels
+        encoder (Union[Encoder, str], `optional`): encoder used in the model.
+            It can be an `Encoder` instance or an encoder config file or an encoder config dict.
+        word_dropout (float, `optional`): word dropout rate, default `0.0`.
+        use_crf (bool, `optional`): whether to use crf, default `True`.
+        **kwargs: other arguments
+    """
 
     def __init__(self,
                  num_labels: int,
-                 encoder: Union[Encoder, str] = None,
+                 encoder: Union[Encoder, str, ConfigDict] = None,
                  word_dropout: Optional[float] = 0.0,
                  use_crf: Optional[bool] = True,
                  partial: Optional[bool] = False,
@@ -87,7 +99,8 @@ class SequenceLabelingModel(Model):
 
         return outputs
 
-    def _calculate_loss(self, logits, targets, mask):
+    def _calculate_loss(self, logits: torch.Tensor, targets: torch.Tensor,
+                        mask: torch.Tensor) -> torch.Tensor:
         if self.use_crf:
             targets = targets * mask
             loss = -self.crf(logits, targets, reduction='mean', mask=mask)
@@ -95,7 +108,8 @@ class SequenceLabelingModel(Model):
             loss = self.loss_fn(logits.transpose(1, 2), targets)
         return loss
 
-    def decode(self, logits, mask):
+    def decode(self, logits: torch.Tensor,
+               mask: torch.Tensor) -> Union[List, torch.LongTensor]:
         if self.use_crf:
             predicts = self.crf.decode(logits, mask=mask).squeeze(0)
         else:

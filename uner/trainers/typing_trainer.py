@@ -1,19 +1,11 @@
-import os
-import random
-from typing import Callable, Mapping, Optional, Tuple, Union
+from typing import Tuple
 
-import torch
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.trainers.builder import TRAINERS
-from modelscope.trainers.optimizer.builder import OPTIMIZERS
-from modelscope.utils.config import ConfigDict
-from modelscope.utils.registry import build_from_cfg, default_group
-from torch import nn
 
 from uner.metainfo import Trainers
-from uner.models.base import Model
 from uner.utils.common_utils import has_keys
-from uner.utils.data_utils import gen_label2id, get_labels
+from uner.utils.data_utils import get_labels
 from .default_trainer import DefaultTrainer
 
 

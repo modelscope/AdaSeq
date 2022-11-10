@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from os import path as osp
 from typing import Dict, Union
 
@@ -7,19 +6,27 @@ from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.registry import Registry, build_from_cfg
 from transformers import AutoModel
 
-from uner.utils.common_utils import has_keys
-
 ENCODERS = Registry('encoders')
 
 
-def build_encoder(cfg: ConfigDict,
-                  task_name: str = None,
-                  default_args: dict = None):
+def build_encoder(cfg: ConfigDict, default_args: dict = None):
+    """ Build encoder from config dict
+
+    Args:
+        cfg (:obj:`ConfigDict`): config dict for encoder object
+        default_args (dict): default initialization arguments
+
+    Returns:
+        encoder (:obj:`Encoder`): an encoder instance
+    """
     return build_from_cfg(
-        cfg, ENCODERS, group_key=task_name, default_args=default_args)
+        cfg, ENCODERS, group_key='default', default_args=default_args)
 
 
 class Encoder(nn.Module):
+    """
+    The encoder base class for encoding input_ids to hidden-states
+    """
 
     @classmethod
     def _instantiate(cls, **kwargs):
