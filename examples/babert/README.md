@@ -1,9 +1,48 @@
 # Unsupervised Boundary-Aware Language Model Pretraining for Chinese Sequence Labeling 
 
-In order to enhance the language model's ability to recognize Chinese boundaries in various sequence labeling tasks, we seek to leverage unsupervised statistical boundary information and propose an architecture to encode the information directly into pre-trained language models, resulting in Boundary-Aware BERT (BABERT). [BABERT](https://arxiv.org/abs/2210.15231). 
+In order to enhance the language model's ability to recognize Chinese boundaries in various sequence labeling tasks, we seek to leverage unsupervised statistical boundary information and propose an architecture to encode the information directly into pre-trained language models, resulting in Boundary-Aware BERT (BABERT). [BABERT(EMNLP2022)](https://arxiv.org/abs/2210.15231). 
 
 The overall architecture of the boundary-aware pre-trained language model:
 <div align=center><img src="./resource/babert.png" /></div>
+
+## Dataset
+We adopt the conll dataset format for all datasets. We use **BIES** label type for cws/pos tasks and **BIOES** for the ner task. 
+```
+无      O
+法      O
+进      O
+入      O
+外      O
+门      O
+功      B-LOC
+法      I-LOC
+殿      E-LOC
+挑      O
+选      O
+功      O
+法      O
+``` 
+
+If you are using dataset that already exists in ``msdataset``, you can directly specify the name of the dataset in the yaml file as:
+```
+dataset:
+  corpus: ontonotes4
+```
+You can also use local training data by specifying the dataset path in the yaml file
+```
+data_type: sequence_labeling
+  data_format: column
+  train: local_path_to/train.txt
+  valid: local_path_to/dev.txt
+  test: local_path_to/test.txt
+```
+
+## Model Checkpoint
+The pretrained BABERT-base checkpoint is available:
+
+| Model         |  Link         | 
+|------------   |:-----:        |
+| BABERT-base   |               |
 
 ## Experiment results
 
@@ -16,7 +55,7 @@ The overall architecture of the boundary-aware pre-trained language model:
 | ERINE      	| 97.37 	| 95.25 	| 96.30 	|
 | ERINE-Gram 	| 97.28 	| 98.27 	| 96.36 	|
 | Nezha      	| 97.53 	| 98.61 	| 96.67 	|
-| BEBERT     	| 97.45 	| 98.44 	| 96.70 	|
+| BABERT     	| 97.45 	| 98.44 	| 96.70 	|
 
 ### Chinese Part of Speech
 
@@ -27,7 +66,7 @@ The overall architecture of the boundary-aware pre-trained language model:
 | ERINE | 94.90 | 95.28 | 95.12 |
 | ERINE-Gram| 94.93| 95.26 | 95.16 |
 | Nezha | 94.98 | 95.57 | 95.52 |
-| BEBERT | 95.05 | 95.65 | 95.54 |
+| BABERT | 95.05 | 95.65 | 95.54 |
 
 ### Chinese Named Entity Recognition
 
@@ -38,23 +77,23 @@ The overall architecture of the boundary-aware pre-trained language model:
 | ERINE      	|   80.38   	| 76.56 	| 80.36 	| 86.03   	|
 | ERINE-Gram 	|   80.96   	| 77.19 	| 79.96 	| 85.31   	|
 | Nezha      	|   81.74   	| 77.03 	| 79.81 	| 85.15   	|
-| BEBERT     	|   81.90   	| 76.84 	| 80.27 	| 86.89   	|
+| BABERT     	|   81.90   	| 76.84 	| 80.27 	| 86.89   	|
 
 ### Example of training
 
 - Chinese Word Segmentation
 ```
-CUDA_VISIBLE_DEVICES=7 python -m scripts.train -c examples/babert/configs/cws/msra.yaml -t ner-trainer --seed $seed
+python -m scripts.train -c examples/babert/configs/cws/msra.yaml -t ner-trainer --seed $seed
 ```
 
 - Part of Speech
 ```
-CUDA_VISIBLE_DEVICES=7 python -m scripts.train -c examples/babert/configs/pos/ud1.yaml -t ner-trainer --seed $seed
+python -m scripts.train -c examples/babert/configs/pos/ud1.yaml -t ner-trainer --seed $seed
 ```
 
 - Named Entity Recognition
 ```
-CUDA_VISIBLE_DEVICES=7 python -m scripts.train -c examples/babert/configs/ner/ontonotes4.yaml -t ner-trainer --seed $seed
+python -m scripts.train -c examples/babert/configs/ner/ontonotes4.yaml -t ner-trainer --seed $seed
 ```
 
 ## Citation
