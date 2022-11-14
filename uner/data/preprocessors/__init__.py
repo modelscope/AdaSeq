@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 from .global_pointer_preprocessor import GlobalPointerPreprocessor
 from .multilabel_span_typing_preprocessor import \
     MultiLabelSpanTypingPreprocessor  # noqa

@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 from .multilabel_span_typing_data_collator_with_padding import \
     MultiLabelSpanTypingDataCollatorWithPadding  # noqa
 from .relation_extraction_data_collator_with_padding import \

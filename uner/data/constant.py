@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 NON_ENTITY_LABEL = 'O'
 NON_ENTITY_LABEL_ID = 0
 PAD_LABEL = 'X'

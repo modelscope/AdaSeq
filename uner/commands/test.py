@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 import argparse
 
 from modelscope.trainers import build_trainer

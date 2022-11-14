@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 import sys
 from typing import Any, Dict, Union
 

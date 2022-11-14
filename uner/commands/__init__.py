@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 import argparse
 from typing import Optional, Tuple
 

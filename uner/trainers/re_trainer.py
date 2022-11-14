@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 import os
 import random
 from typing import Callable, Mapping, Optional, Tuple, Union

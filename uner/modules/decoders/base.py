@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 from abc import abstractmethod
 from os import path as osp
 from typing import Dict, Union

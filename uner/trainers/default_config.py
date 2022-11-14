@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 DEFAULT_CONFIG = {
     'train': {
         'hooks': [{

@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 import datetime
 import os.path as osp
 from typing import Dict

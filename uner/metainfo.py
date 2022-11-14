@@ -1,3 +1,4 @@
+# Copyright (c) Alibaba, Inc. and its affiliates.
 class Tasks:
     chinese_word_segmentation = 'chinese-word-segmentation'
     part_of_speech = 'part-of-speech'
