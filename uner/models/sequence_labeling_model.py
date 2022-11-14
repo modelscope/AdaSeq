@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from modelscope.models.builder import MODELS
 from modelscope.utils.config import ConfigDict
 
@@ -34,6 +35,10 @@ class SequenceLabelingModel(Model):
                  encoder: Union[Encoder, str, ConfigDict] = None,
                  word_dropout: Optional[float] = 0.0,
                  use_crf: Optional[bool] = True,
+                 multiview: Optional[bool] = False,
+                 temperature: Optional[float] = 1.0,
+                 mv_loss_type: Optional[str] = 'kl',
+                 mv_interpolation: Optional[float] = 0.5,
                  partial: Optional[bool] = False,
                  **kwargs):
         super(SequenceLabelingModel, self).__init__()
@@ -59,6 +64,11 @@ class SequenceLabelingModel(Model):
             self.loss_fn = nn.CrossEntropyLoss(
                 reduction='mean', ignore_index=PAD_LABEL_ID)
 
+        self.multiview = multiview
+        self.mv_loss_type = mv_loss_type
+        self.temperature = temperature
+        self.mv_interpolation = mv_interpolation
+
     def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         embed = self.encoder(
             inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
@@ -70,6 +80,28 @@ class SequenceLabelingModel(Model):
 
         if 'emission_mask' in inputs:
             mask = inputs['emission_mask']
+            masked_lengths = mask.sum(-1).long()
+            masked_logits = torch.zeros_like(logits)
+            for i in range(len(mask)):
+                masked_logits[
+                    i, :masked_lengths[i], :] = logits[i].masked_select(
+                        mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
+            logits = masked_logits
+
+        return {'logits': logits}
+
+    def _forward_origin_view(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        embed = self.encoder(
+            inputs['origin_input_ids'],
+            attention_mask=inputs['origin_attention_mask'])[0]
+
+        if self.use_dropout:
+            embed = self.dropout(embed)
+
+        logits = self.linear(embed)
+
+        if 'origin_emission_mask' in inputs:
+            mask = inputs['origin_emission_mask']
             masked_lengths = mask.sum(-1).long()
             masked_logits = torch.zeros_like(logits)
             for i in range(len(mask)):
@@ -92,6 +124,23 @@ class SequenceLabelingModel(Model):
 
         if self.training:
             loss = self._calculate_loss(logits, label_ids, mask)
+            if self.multiview:  # for multiview training
+                origin_view_outputs = self._forward_origin_view(inputs)
+                origin_view_logits = origin_view_outputs['logits']
+                origin_view_loss = self._calculate_loss(
+                    origin_view_logits, label_ids, mask)
+                if self.mv_loss_type == 'kl':
+                    cl_kl_loss = self._calculate_cl_loss(
+                        logits, origin_view_logits, mask, T=self.temperature)
+                    loss = self.mv_interpolation * (
+                        loss + origin_view_loss) + (
+                            1 - self.mv_interpolation) * cl_kl_loss
+                elif self.mv_loss_type == 'crf_kl':
+                    cl_kl_loss = self._calculate_cl_loss(
+                        logits, origin_view_logits, mask, T=self.temperature)
+                    loss = self.mv_interpolation * (
+                        loss + origin_view_loss) + (
+                            1 - self.mv_interpolation) * cl_kl_loss
             outputs = {'logits': logits, 'loss': loss}
         else:
             predicts = self.decode(logits, mask)
@@ -106,6 +155,38 @@ class SequenceLabelingModel(Model):
             loss = -self.crf(logits, targets, reduction='mean', mask=mask)
         else:
             loss = self.loss_fn(logits.transpose(1, 2), targets)
+        return loss
+
+    def _calculate_cl_loss(self,
+                           ext_view_logits,
+                           origin_view_logits,
+                           mask,
+                           T=1.0):
+        if self.multiview:
+            batch_size, max_seq_len, num_classes = ext_view_logits.shape
+            ext_view_logits = ext_view_logits.detach()
+            if self.mv_loss_type == 'kl':
+                _loss = F.kl_div(
+                    F.log_softmax(origin_view_logits / T, dim=-1),
+                    F.softmax(ext_view_logits / T, dim=-1),
+                    reduction='none') * mask.unsqueeze(-1) * T * T
+            elif self.mv_loss_type == 'crf_kl':
+                if self.use_crf:
+                    origin_view_log_posterior = self.crf.compute_posterior(
+                        origin_view_logits, mask)
+                    ext_view_log_posterior = self.crf.compute_posterior(
+                        ext_view_logits, mask)
+                    _loss = F.kl_div(
+                        F.log_softmax(origin_view_log_posterior / T, dim=-1),
+                        F.softmax(ext_view_log_posterior / T, dim=-1),
+                        reduction='none') * mask.unsqueeze(-1) * T * T
+                else:
+                    raise NotImplementedError
+            else:
+                raise NotImplementedError
+            loss = _loss.sum() / batch_size
+        else:
+            loss = 0.
         return loss
 
     def decode(self, logits: torch.Tensor,

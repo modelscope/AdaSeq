@@ -75,14 +75,16 @@ class DataBatch(Mapping):
     module_name=DataCollators.data_collator_with_padding)
 @dataclass
 class DataCollatorWithPadding:
-
     tokenizer: PreTrainedTokenizerBase
 
     def __init__(self, tokenizer, **kwargs):
         self.tokenizer = tokenizer
         self.keep_fields = [
-            'tokens', 'offset_mapping', 'reverse_offset_mapping'
+            'tokens',
+            'offset_mapping',
+            'reverse_offset_mapping',
         ]
+        self.keep_fields.extend([f'origin_{f}' for f in self.keep_fields])
 
     def padding_token(self, batch: Dict[str, Any], fields: List[str],
                       batch_size: int, max_length: int,

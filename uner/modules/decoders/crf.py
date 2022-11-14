@@ -207,17 +207,60 @@ class CRF(Decoder):
 
         return score
 
-    def _compute_normalizer(self, emissions: torch.Tensor,
-                            mask: torch.ByteTensor) -> torch.Tensor:
+    def _forward_backward_algorithm(
+        self,
+        emissions: torch.Tensor,
+        mask: torch.ByteTensor,
+        mode: str = 'forward',
+    ) -> torch.Tensor:
+        """
+        Args:
+            emissions (`~torch.Tensor`): Emission score tensor of size
+                ``(seq_length, batch_size, num_tags)``
+            mask (`~torch.ByteTensor`): Mask tensor of size ``(seq_length, batch_size)``
+            mode (`str`): Specifies the calculation mode: ``partition|forward|backward``.
+        Returns:
+            A PyTorch tensor of the shape
+            ``(batch_size, batch_size, num_tags)`` for `partition`,
+            ``(seq_length, batch_size, num_tags)`` for `forward`,
+            the difference between `partition` and `forward` is whether add the `end_transtions` or not.
+            ``(seq_length, batch_size, num_tags)`` for `backward`.
+
+        """
         # emissions: (seq_length, batch_size, num_tags)
         # mask: (seq_length, batch_size)
-        seq_length = emissions.size(0)
+
+        if mode in ('forward', 'partition'):
+            start_transitions = self.start_transitions
+            end_transitions = self.end_transitions
+            current_emissions = emissions
+        elif mode == 'backward':
+            start_transitions = self.end_transitions
+            end_transitions = self.start_transitions
+            current_emissions = torch.zeros_like(emissions)
+            batch_size = emissions.shape[1]
+            for batch_idx in range(batch_size):
+                length = mask[:, batch_idx].sum()
+                current_emissions[:length,
+                                  batch_idx, :] = emissions[:length,
+                                                            batch_idx, :].flip(
+                                                                [0])
+        else:
+            raise NotImplementedError
+
+        seq_length = current_emissions.size(0)
+        scores = torch.zeros_like(current_emissions)
 
         # Start transition score and first emission; score has size of
         # (batch_size, num_tags) where for each batch, the j-th column stores
         # the score that the first timestep has tag j
         # shape: (batch_size, num_tags)
-        score = self.start_transitions + emissions[0]
+        if mode in ('forward', 'partition'):
+            score = start_transitions + current_emissions[0]
+        elif mode == 'backward':
+            score = start_transitions + torch.zeros_like(current_emissions[0])
+
+        scores[0, :, :] = score
 
         for i in range(1, seq_length):
             # Broadcast score for every possible next tag
@@ -226,7 +269,10 @@ class CRF(Decoder):
 
             # Broadcast emission score for every possible current tag
             # shape: (batch_size, 1, num_tags)
-            broadcast_emissions = emissions[i].unsqueeze(1)
+            if mode in ('forward', 'partition'):
+                broadcast_emissions = current_emissions[i].unsqueeze(1)
+            elif mode == 'backward':
+                broadcast_emissions = current_emissions[i - 1].unsqueeze(1)
 
             # Compute the score tensor of size (batch_size, num_tags, num_tags) where
             # for each sample, entry at row i and column j stores the sum of scores of all
@@ -244,14 +290,45 @@ class CRF(Decoder):
             # Set score to the next score if this timestep is valid (mask == 1)
             # shape: (batch_size, num_tags)
             score = torch.where(mask[i].unsqueeze(1), next_score, score)
+            scores[i, :, :] = score
 
         # End transition score
         # shape: (batch_size, num_tags)
-        score += self.end_transitions
+        if mode == 'partition':
+            score += end_transitions
+        scores[seq_length - 1, :, :] = score
 
-        # Sum (log-sum-exp) over all possible tags
-        # shape: (batch_size,)
-        return torch.logsumexp(score, dim=1)
+        if mode == 'backward':
+            batch_size = emissions.shape[1]
+            for batch_idx in range(batch_size):
+                length = mask[:, batch_idx].sum()
+                scores[:length, batch_idx, :] = scores[:length,
+                                                       batch_idx, :].flip([0])
+
+        return scores
+
+    def compute_posterior(self, emissions: torch.Tensor,
+                          mask: torch.ByteTensor) -> torch.Tensor:
+        if self.batch_first:
+            emissions = emissions.transpose(0, 1)
+            mask = mask.transpose(0, 1)
+
+        fw_scores = self._forward_backward_algorithm(
+            emissions, mask, mode='forward')
+        bw_scores = self._forward_backward_algorithm(
+            emissions, mask, mode='backward')
+        partition = self._compute_normalizer(emissions, mask)
+        log_posterior = fw_scores + bw_scores - partition.view(1, -1, 1)
+
+        if self.batch_first:
+            log_posterior = log_posterior.transpose(0, 1)
+        return log_posterior
+
+    def _compute_normalizer(self, emissions: torch.Tensor,
+                            mask: torch.ByteTensor) -> torch.Tensor:
+        fw_scores = self._forward_backward_algorithm(
+            emissions, mask, mode='partition')
+        return torch.logsumexp(fw_scores[-1, :, :], dim=1)
 
     def _viterbi_decode(self,
                         emissions: torch.FloatTensor,
@@ -413,7 +490,7 @@ class CRF(Decoder):
                                     dtype=torch.long,
                                     device=device)
         best_tags = torch.arange(nbest, dtype=torch.long, device=device) \
-                         .view(1, -1).expand(batch_size, -1)
+            .view(1, -1).expand(batch_size, -1)
         for idx in range(seq_length - 1, -1, -1):
             best_tags = torch.gather(history_idx[idx].view(batch_size, -1), 1,
                                      best_tags)
@@ -461,7 +538,6 @@ def viterbi_decode_inner_loop1(score, history_idx, emissions, transitions,
 def viterbi_decode_inner_loop2(mask, history_idx, best_tags, best_tags_arr):
     seq_length, batch_size = mask.shape
     for idx in range(seq_length - 1, -1, -1):
-
         best_tags = torch.gather(history_idx[idx], 1, best_tags)
         best_tags_arr[idx] = best_tags.data.view(batch_size)
     return best_tags_arr

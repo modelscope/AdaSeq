@@ -21,6 +21,7 @@ class NLPPreprocessor(Preprocessor):
         self.return_emission_mask = kwargs.pop('return_emission_mask', False)
         self.return_offsets_mapping = kwargs.pop('return_offsets_mapping',
                                                  False)
+        self.return_original_view = kwargs.pop('return_original_view', False)
         self.tokenizer = self.build_tokenizer(model_dir)
 
     def build_tokenizer(self, model_dir):
@@ -38,6 +39,8 @@ class NLPPreprocessor(Preprocessor):
             data = {'tokens': data}
         if 'tokens' in data:
             output = self.encode_tokens(data)
+            if self.return_original_view:
+                output.update(self.encode_tokens_origin_view(data))
         elif 'text' in data:
             output = self.encode_text(data)
         else:
@@ -83,6 +86,55 @@ class NLPPreprocessor(Preprocessor):
             output['emission_mask'] = emission_mask
         if self.return_offsets_mapping:
             output['offset_mapping'] = offset_mapping
+        return output
+
+    def encode_tokens_origin_view(self, data: Dict[str,
+                                                   Any]) -> Dict[str, Any]:
+        tokens = data['tokens']
+        mask = data.get('mask', [True] * len(tokens))
+
+        # remove the padded context
+        sent_length = sum(mask)
+        origin_tokens = tokens[:sent_length]
+        origin_mask = mask[:sent_length]
+
+        input_ids = []
+        emission_mask = []
+        offset_mapping = []
+        for offset, (token,
+                     token_mask) in enumerate(zip(origin_tokens, origin_mask)):
+            subtoken_ids = self.tokenizer.encode(
+                token, add_special_tokens=False)
+            if len(subtoken_ids) == 0:
+                subtoken_ids = [self.tokenizer.unk_token_id]
+            input_ids.extend(subtoken_ids)
+            offset_mapping.extend([(offset, offset + 1)]
+                                  + [(offset + 1, offset + 1)]
+                                  * (len(subtoken_ids) - 1))
+            emission_mask.extend([token_mask]
+                                 + [False] * (len(subtoken_ids) - 1))
+        if len(input_ids) > self.max_length - 2:
+            input_ids = input_ids[:self.max_length - 2]
+            offset_mapping = offset_mapping[:self.max_length - 2]
+            emission_mask = emission_mask[:self.max_length - 2]
+        if self.add_cls_sep:
+            input_ids = [self.tokenizer.cls_token_id
+                         ] + input_ids + [self.tokenizer.sep_token_id]
+            offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
+            emission_mask = [False] + emission_mask + [False]
+        attention_mask = [1] * len(input_ids)
+
+        output = {
+            'origin_input_ids': input_ids,
+        }
+        if self.return_tokens_or_text:
+            output['origin_tokens'] = origin_tokens
+        if self.return_attention_mask:
+            output['origin_attention_mask'] = attention_mask
+        if self.return_emission_mask:
+            output['origin_emission_mask'] = emission_mask
+        if self.return_offsets_mapping:
+            output['origin_offset_mapping'] = offset_mapping
         return output
 
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
