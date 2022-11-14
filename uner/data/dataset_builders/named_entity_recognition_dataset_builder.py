@@ -11,8 +11,7 @@ from .base import CustomDatasetBuilder
 class NamedEntityRecognitionDatasetBuilderConfig(datasets.BuilderConfig):
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(NamedEntityRecognitionDatasetBuilderConfig, self).__init__(
-            data_dir=data_dir, data_files=data_files)
+        super().__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
@@ -22,13 +21,6 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
 
     def stub():
         pass
-
-    @classmethod
-    def parse_label(cls, data):
-        labels = []
-        for span in data['spans']:
-            labels.append(span['type'])
-        return set(labels)
 
     def _info(self):
         info = datasets.DatasetInfo(

@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Set
 
 import datasets
-from datasets import Features, Value
+from datasets import DownloadManager, Features, Value
+from datasets.utils.file_utils import is_remote_url
 from torch.utils.data import Dataset
 
 
@@ -23,13 +24,7 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
 
         pass
 
-    @classmethod
-    def parse_label(cls, data: Dataset) -> Set[str]:
-        """Collect type labels from dataset."""
-
-        pass
-
-    def _split_generators(self, dl_manager):
+    def _split_generators(self, dl_manager: DownloadManager):
         """Specify feature dictionary generators and dataset splits.
 
         This function returns a list of `SplitGenerator`s defining how to generate
@@ -73,41 +68,47 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
             `list<SplitGenerator>`.
         """
 
-        if self.config.data_files is not None:
-            data_files = dl_manager.download_and_extract(
-                self.config.data_files)
-            if isinstance(data_files, dict):
-                return [
-                    datasets.SplitGenerator(
-                        name=split_name,
-                        gen_kwargs={'filepath': data_files[split_name][0]})
-                    for split_name in data_files.keys()
-                ]
-            elif isinstance(data_files, (str, list, tuple)):
-                if isinstance(data_files, str):
-                    data_files = [data_files]
-                return [
-                    datasets.SplitGenerator(
-                        name=datasets.Split.TRAIN,
-                        gen_kwargs={'filepath': data_files[0]})
-                ]
-        elif self.config.data_dir is not None:
-            data_dir = dl_manager.download_and_extract(self.config.data_dir)
-            all_files = os.listdir(data_dir)
-            splits = []
+        if self.config.data_dir is not None:
+            if is_remote_url(self.config.data_dir):
+                _data_dir = dl_manager.download_and_extract(
+                    self.config.data_dir)
+            elif not os.path.isdir(self.config.data_dir):
+                # could be some archieve files like `DIR/FILE.zip`
+                _data_dir = dl_manager.extract(self.config.data_dir)
+            else:
+                _data_dir = self.config.data_dir
+
+            data_files = dict()
+            _all_files = os.listdir(_data_dir)
             for split_name in ['train', 'valid', 'test']:
-                data_file = get_file_by_keyword(all_files, split_name)
-                if data_file is None and split_name == 'valid':
-                    data_file = get_file_by_keyword(all_files, 'dev')
-                if data_file is None:
+                _file = get_file_by_keyword(_all_files, split_name)
+                if _file is None and split_name == 'valid':
+                    _file = get_file_by_keyword(_all_files, 'dev')
+                if _file is None:
                     continue
-                data_file = os.path.join(data_dir, data_file)
-                splits.append(
-                    datasets.SplitGenerator(
-                        name=split_name, gen_kwargs={'filepath': data_file}))
-            return splits
+                data_files[split_name] = os.path.join(_data_dir, _file)
+
+        elif self.config.data_files is not None:
+            assert isinstance(self.config.data_files, dict)
+
+            data_files = dict()
+            for k, v in self.config.data_files.items():
+                if isinstance(v, list):
+                    v = v[0]
+                if not isinstance(v, str):
+                    v = v.as_posix()
+                if is_remote_url(v):
+                    v = dl_manager.download(v)
+                data_files[k] = v
         else:
             raise ValueError('Datasets cannot be resolved!')
+
+        return [
+            datasets.SplitGenerator(
+                name=split_name,
+                gen_kwargs={'filepath': data_files[split_name]})
+            for split_name in data_files.keys()
+        ]
 
 
 def get_file_by_keyword(files, keyword):

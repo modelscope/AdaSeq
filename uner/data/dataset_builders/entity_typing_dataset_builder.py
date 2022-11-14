@@ -12,8 +12,7 @@ class EntityTypingDatasetBuilderConfig(datasets.BuilderConfig):
     """BuilderConfig for entity typing datasets"""
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(EntityTypingDatasetBuilderConfig, self).__init__(
-            data_dir=data_dir, data_files=data_files)
+        super().__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
@@ -54,10 +53,3 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
         else:
             return EntityTypingDatasetReader.load_data_file(
                 filepath, self.config.corpus_config)
-
-    @classmethod
-    def parse_label(cls, data):
-        labels = []
-        for entity in data['spans']:
-            labels.extend(entity['type'])
-        return set(labels)

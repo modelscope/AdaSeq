@@ -102,7 +102,11 @@ class DefaultTrainer(EpochBasedTrainer):
             if dataset.test is not None:
                 test_dataset = dataset.test
 
-        self.after_build_dataset(train_dataset=train_dataset, **kwargs)
+        self.after_build_dataset(
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            test_dataset=test_dataset,
+            **kwargs)
 
         # preprocessor
         self.train_preprocessor, self.eval_preprocessor = None, None

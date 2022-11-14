@@ -1,16 +1,17 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
+import torch
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.trainers.builder import TRAINERS
 from modelscope.trainers.optimizer.builder import OPTIMIZERS
 from modelscope.utils.config import ConfigDict
 from modelscope.utils.registry import build_from_cfg, default_group
 from torch import nn
+from torch.utils.data import Dataset
 
 from uner.metainfo import Trainers
 from uner.models.base import Model
 from uner.utils.common_utils import has_keys
-from uner.utils.data_utils import get_labels
 from .default_trainer import DefaultTrainer
 
 
@@ -18,16 +19,24 @@ from .default_trainer import DefaultTrainer
 class NERTrainer(DefaultTrainer):
     """ Trainer for NER task."""
 
-    def after_build_dataset(self, **kwargs):
+    def after_build_dataset(self,
+                            train_dataset: Optional[Dataset] = None,
+                            eval_dataset: Optional[Dataset] = None,
+                            test_dataset: Optional[Dataset] = None,
+                            **kwargs):
         # get label info from dataset
         self.labels = None
         self.label2id = None
         if 'label2id' in kwargs:
             self.label2id = kwargs.pop('label2id')
-        elif 'train_dataset' in kwargs and kwargs[
-                'train_dataset'] is not None and has_keys(
-                    self.cfg, 'preprocessor', 'type'):
-            self.labels = get_labels(kwargs.pop('train_dataset'))
+        elif has_keys(self.cfg, 'preprocessor', 'type'):
+            labels = set()
+            for dataset in (train_dataset, eval_dataset, test_dataset):
+                if dataset is not None:
+                    for data in dataset:
+                        for span in data['spans']:
+                            labels.add(span['type'])
+            self.labels = sorted(labels)
         else:
             raise ValueError('label2id must be set!')
 

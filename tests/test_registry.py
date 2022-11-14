@@ -19,7 +19,7 @@ class TestRegistry(unittest.TestCase):
     def test_get_encoder(self):
         """可以不指定配置文件并初始化一个Encoder
         """
-        model = Encoder.from_config(model_name_or_path='bert-base-uncased')
+        model = Encoder.from_config(model_name_or_path='bert-base-cased')
         self.assertTrue(isinstance(model, BertModel))
 
     def test_get_encoder_from_cfg_bert(self):
@@ -34,7 +34,7 @@ class TestRegistry(unittest.TestCase):
         model = Model.from_config(
             type=Models.sequence_labeling_model,
             num_labels=2,
-            encoder={'model_name_or_path': 'bert-base-uncased'})
+            encoder={'model_name_or_path': 'bert-base-cased'})
         self.assertTrue(isinstance(model, SequenceLabelingModel))
 
     def test_get_model_from_cfg_bert(self):

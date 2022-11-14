@@ -179,3 +179,4 @@ cython_debug/
 *.pth
 *.tar.gz
 *.swp
+*.lock
