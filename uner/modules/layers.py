@@ -60,8 +60,7 @@ class Embedding(nn.Module):
                     word_embed = [float(x) for x in fields[1:]]
                     embedding[idx] = word_embed
 
-            self.embedding = nn.Embedding.from_pretrained(
-                torch.tensor(embedding, dtype=torch.float32), freeze=False)
+            self.embedding = nn.Embedding.from_pretrained(torch.tensor(embedding, dtype=torch.float32), freeze=False)
         else:
             self.embedding = nn.Embedding(self.vocab_size, self.width)
 

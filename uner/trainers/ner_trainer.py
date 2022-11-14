@@ -51,10 +51,8 @@ class NERTrainer(DefaultTrainer):
         self.id2label = {v: k for k, v in self.label2id.items()}
         self.logger.info('label2id:', self.label2id)
 
-    def build_preprocessor(self,
-                           **kwargs) -> Tuple[Preprocessor, Preprocessor]:
-        return super().build_preprocessor(
-            labels=self.labels, label2id=self.label2id, **kwargs)
+    def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
+        return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)
 
     def build_model(self) -> nn.Module:
         cfg = self.cfg.model
@@ -63,22 +61,14 @@ class NERTrainer(DefaultTrainer):
         return Model.from_config(cfg)
 
     @staticmethod
-    def build_optimizer(model: nn.Module,
-                        cfg: ConfigDict,
-                        default_args: dict = None):
+    def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
         if hasattr(model, 'module'):
             model = model.module
         if default_args is None:
             default_args = {}
         if 'crf_lr' in cfg:
-            finetune_parameters = [
-                v for k, v in model.named_parameters()
-                if v.requires_grad and 'crf' not in k
-            ]
-            transition_parameters = [
-                v for k, v in model.named_parameters()
-                if v.requires_grad and 'crf' in k
-            ]
+            finetune_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' not in k]
+            transition_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' in k]
             default_args['params'] = [{
                 'params': finetune_parameters
             }, {
@@ -87,8 +77,4 @@ class NERTrainer(DefaultTrainer):
             }]
         else:
             default_args['params'] = model.parameters()
-        return build_from_cfg(
-            cfg,
-            OPTIMIZERS,
-            group_key=default_group,
-            default_args=default_args)
+        return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)

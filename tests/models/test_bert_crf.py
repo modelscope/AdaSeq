@@ -10,14 +10,8 @@ from uner.metainfo import Trainers
 class TestBertCRF(TestModel):
 
     def test_bert_crf(self):
-        cfg_file = os.path.join('tests', 'resources', 'configs',
-                                'train_bert_crf.yaml')
-        trainer = build_trainer(
-            Trainers.ner_trainer,
-            default_args={
-                'cfg_file': cfg_file,
-                'seed': 42
-            })
+        cfg_file = os.path.join('tests', 'resources', 'configs', 'train_bert_crf.yaml')
+        trainer = build_trainer(Trainers.ner_trainer, default_args={'cfg_file': cfg_file, 'seed': 42})
 
         with self.regress_tool.monitor_ms_train(
                 trainer,

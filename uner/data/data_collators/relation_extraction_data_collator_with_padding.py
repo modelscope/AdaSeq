@@ -7,8 +7,7 @@ from uner.metainfo import DataCollators
 from .base import DATA_COLLATORS, DataCollatorWithPadding
 
 
-@DATA_COLLATORS.register_module(
-    module_name=DataCollators.relation_extraction_data_collator)
+@DATA_COLLATORS.register_module(module_name=DataCollators.relation_extraction_data_collator)
 @dataclass
 class RelationExtractionDataCollatorWithPadding(DataCollatorWithPadding):
     pad_label_id: int = PAD_LABEL_ID
@@ -16,7 +15,6 @@ class RelationExtractionDataCollatorWithPadding(DataCollatorWithPadding):
     def __init__(self, tokenizer, **kwargs):
         super().__init__(tokenizer)
 
-    def padding(self, batch: Dict[str,
-                                  Any], fields: List[str], batch_size: int,
-                max_length: int, padding_side: str) -> Dict[str, Any]:
+    def padding(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,
+                padding_side: str) -> Dict[str, Any]:
         return batch

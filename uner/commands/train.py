@@ -11,21 +11,12 @@ from uner.commands.subcommand import Subcommand
 class Train(Subcommand):
 
     @classmethod
-    def add_subparser(
-            cls,
-            parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
+    def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
         subparser = parser.add_parser('train', help='train a model')
-        subparser.add_argument(
-            '-c', '--cfg_file', required=True, help='configuration YAML file')
-        subparser.add_argument(
-            '-t', '--trainer', default=None, help='trainer name')
-        subparser.add_argument(
-            '-cp', '--checkpoint_path', default=None, help='model checkpoint')
-        subparser.add_argument(
-            '--seed',
-            type=int,
-            default=None,
-            help='random seed for everything')
+        subparser.add_argument('-c', '--cfg_file', required=True, help='configuration YAML file')
+        subparser.add_argument('-t', '--trainer', default=None, help='trainer name')
+        subparser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
+        subparser.add_argument('--seed', type=int, default=None, help='random seed for everything')
         subparser.add_argument('--local_rank', type=int, default=0)
 
         subparser.set_defaults(func=train_model_from_args)

@@ -8,8 +8,7 @@ from uner.metainfo import Preprocessors
 from .nlp_preprocessor import NLPPreprocessor
 
 
-@PREPROCESSORS.register_module(
-    module_name=Preprocessors.multilabel_span_typing_preprocessor)
+@PREPROCESSORS.register_module(module_name=Preprocessors.multilabel_span_typing_preprocessor)
 class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
     """Preprocessor for multilabel (aka multi-type) span typing task.
     span targets are processed into mention_boundary, type_ids.
@@ -41,8 +40,7 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
         boundary_ends = []
         mention_mask = []
         for span in data['spans']:
-            if span['start'] > len(token_span_mapping) or span[
-                    'end'] + 1 > len(token_span_mapping):
+            if span['start'] > len(token_span_mapping) or span['end'] + 1 > len(token_span_mapping):
                 continue
             start = token_span_mapping[span['start'] + 1][0]
             end = token_span_mapping[span['end']][1] - 1
@@ -57,8 +55,7 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
             mention_type_ids.append(padded_type_ids)
 
         output['mention_boundary'] = [boundary_starts, boundary_ends]
-        output[
-            'mention_msk'] = mention_mask  # msk, 为了避开nlp_preprocessor对他做padding.
+        output['mention_msk'] = mention_mask  # msk, 为了避开nlp_preprocessor对他做padding.
         output['type_ids'] = mention_type_ids
         output['spans'] = data['spans']
         return output

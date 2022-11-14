@@ -38,10 +38,7 @@ class Model(nn.Module, ABC):
         return cls(**kwargs)
 
     @classmethod
-    def from_config(cls,
-                    cfg_dict_or_path: Optional[Union[str, Dict,
-                                                     Config]] = None,
-                    **kwargs):
+    def from_config(cls, cfg_dict_or_path: Optional[Union[str, Dict, Config]] = None, **kwargs):
         """ Instantiate a model from config dict or path.
 
         Args:
@@ -63,9 +60,7 @@ class Model(nn.Module, ABC):
             cfg['type'] = kwargs.pop('type')
 
         if 'type' not in cfg:
-            raise ValueError(
-                'Please pass a correct cfg dict, which should be a reachable file or a dict.'
-            )
+            raise ValueError('Please pass a correct cfg dict, which should be a reachable file or a dict.')
 
         model = build_model(cfg, default_args=kwargs)
         return model

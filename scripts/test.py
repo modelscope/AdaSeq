@@ -35,11 +35,9 @@ def build_trainer(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('train.py')
-    parser.add_argument(
-        '-c', '--cfg_file', required=True, help='configuration YAML file')
+    parser.add_argument('-c', '--cfg_file', required=True, help='configuration YAML file')
     parser.add_argument('-t', '--trainer', default=None, help='trainer name')
-    parser.add_argument(
-        '-cp', '--checkpoint_path', required=True, help='model checkpoint')
+    parser.add_argument('-cp', '--checkpoint_path', required=True, help='model checkpoint')
     args = parser.parse_args()
 
     main(args)

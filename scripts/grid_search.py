@@ -34,15 +34,13 @@ def tune(args):
     # expand configs
     all_configs = expand_config(config.to_dict())
 
-    op_gen = input(f'use it to generate {len(all_configs)} '
-                   'config files? (y/n): ').lower()
+    op_gen = input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
     if op_gen in ['y', 'yes']:
         print('generating configs...')
     else:
         exit(0)
 
-    config_path = os.path.join(config.experiment.exp_dir,
-                               config.experiment.exp_name, 'configs')
+    config_path = os.path.join(config.experiment.exp_dir, config.experiment.exp_name, 'configs')
 
     os.makedirs(config_path, exist_ok=True)
 
@@ -70,8 +68,7 @@ def tune(args):
     config_files = glob.glob(os.path.join(config_path, '*.yaml'))
     splitted_files = np.array_split(config_files, n_gpu)
 
-    scripts_path = os.path.join(config.experiment.exp_dir,
-                                config.experiment.exp_name, 'scripts')
+    scripts_path = os.path.join(config.experiment.exp_dir, config.experiment.exp_name, 'scripts')
 
     env_settings = ''
     for e in env_config.get('envs', []):
@@ -111,10 +108,7 @@ def tune(args):
 def expand_config(config):
     flattened_config = flatten_config(config)
     keys = [item[0] for item in flattened_config]
-    values = [
-        item[1] if isinstance(item[1], list) else [item[1]]
-        for item in flattened_config
-    ]
+    values = [item[1] if isinstance(item[1], list) else [item[1]] for item in flattened_config]
     configs = []
     for single_values in product(*values):
         assert len(keys) == len(single_values)
@@ -140,9 +134,8 @@ def flatten_config(obj, path=[]):
                 ret.extend(flatten_config(x, path + [i]))
             return ret
     else:
-        raise ValueError(
-            'Unsupported value type: {}'.format(type(obj)),
-            'Only the following value types are supported: str, int, float')
+        raise ValueError('Unsupported value type: {}'.format(type(obj)),
+                         'Only the following value types are supported: str, int, float')
 
 
 def create_config(data):
@@ -171,8 +164,7 @@ def collect(args):
     assert 'experiment' in config
     assert 'exp_name' in config.experiment
 
-    output_path = os.path.join(config.experiment.exp_dir,
-                               config.experiment.exp_name, 'outputs')
+    output_path = os.path.join(config.experiment.exp_dir, config.experiment.exp_name, 'outputs')
 
     keys = None
     records = []
@@ -185,10 +177,9 @@ def collect(args):
     df = pd.DataFrame.from_records(records, columns=keys)
     df.to_csv(args.output_file)
 
-    df_seed_avg = df.groupby(by=[
-        k for k in list(df.columns)
-        if k not in ['experiment_seed', 'p', 'r', 'f1', 'dev_f1', 'log_file']
-    ]).agg(['mean', 'std'])
+    df_seed_avg = df.groupby(
+        by=[k for k in list(df.columns)
+            if k not in ['experiment_seed', 'p', 'r', 'f1', 'dev_f1', 'log_file']]).agg(['mean', 'std'])
     df_seed_avg.to_csv(args.output_avg_file)
 
 
@@ -231,28 +222,16 @@ def kill():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('grid_search.py')
-    parser.add_argument(
-        'mode',
-        choices=['tune', 'collect', 'kill'],
-        help='[tune, collect, kill]')
+    parser.add_argument('mode', choices=['tune', 'collect', 'kill'], help='[tune, collect, kill]')
     parser.add_argument('-c', '--cfg_file', help='configuration YAML file')
     parser.add_argument(
         '-c_env',
         '--config_env',
         help='configuration YAML file for environment',
         default='examples/grid_search/env.yaml')
-    parser.add_argument(
-        '-to', '--to', help='stdout and stderr to', default='/dev/null')
-    parser.add_argument(
-        '-o',
-        '--output_file',
-        help='output file for collect',
-        default='res.csv')
-    parser.add_argument(
-        '-oa',
-        '--output_avg_file',
-        help='output avg file for collect',
-        default='res_seed_avg.csv')
+    parser.add_argument('-to', '--to', help='stdout and stderr to', default='/dev/null')
+    parser.add_argument('-o', '--output_file', help='output file for collect', default='res.csv')
+    parser.add_argument('-oa', '--output_avg_file', help='output avg file for collect', default='res_seed_avg.csv')
     args = parser.parse_args()
 
     if args.mode == 'tune':

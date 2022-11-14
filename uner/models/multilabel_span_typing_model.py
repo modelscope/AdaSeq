@@ -32,11 +32,9 @@ class MultiLabelSpanTypingModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(
-                cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
 
-        self.span_encoder = SpanEncoder(self.encoder.config.hidden_size,
-                                        span_encoder_method, **kwargs)
+        self.span_encoder = SpanEncoder(self.encoder.config.hidden_size, span_encoder_method, **kwargs)
         self.linear_input_dim = self.span_encoder.output_dim
 
         self.num_labels = num_labels
@@ -55,8 +53,7 @@ class MultiLabelSpanTypingModel(Model):
             self.loss_fn = BCELoss()
 
     def token2span_encoder(self, inputs, **kwargs):
-        embed = self.encoder(
-            inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
+        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
         # embed: B x W x K
         if self.use_dropout:
             embed = self.dropout(embed)
@@ -83,13 +80,11 @@ class MultiLabelSpanTypingModel(Model):
         outputs = self._forward(inputs)
         mask = inputs['mention_msk'].reshape(-1).unsqueeze(-1)
         if self.training:
-            loss = self._calculate_loss(outputs['logits'], inputs['type_ids'],
-                                        mask)
+            loss = self._calculate_loss(outputs['logits'], inputs['type_ids'], mask)
             outputs = {'logits': outputs['logits'], 'loss': loss}
         else:
             batch_size, max_mention_per_sent = inputs['type_ids'].shape[0:2]
-            logits = outputs['logits'].reshape(batch_size,
-                                               max_mention_per_sent, -1)
+            logits = outputs['logits'].reshape(batch_size, max_mention_per_sent, -1)
             predicts = self.classify(logits, inputs['mention_boundary'], mask)
             outputs = {'logits': outputs['logits'], 'predicts': predicts}
         return outputs
@@ -98,8 +93,7 @@ class MultiLabelSpanTypingModel(Model):
         logits = logits * mask  # B*M x L
         if self.loss_function_type == 'BCE':
             logits = self.sigmoid(logits)  # B*M x L
-            targets = targets.reshape(-1, self.num_labels).to(
-                torch.float32)  # B*M x L
+            targets = targets.reshape(-1, self.num_labels).to(torch.float32)  # B*M x L
             loss = self.loss_fn(logits, targets) * mask
         loss = loss.sum() / (mask.sum())
         return loss
@@ -107,8 +101,7 @@ class MultiLabelSpanTypingModel(Model):
     def classify(self, logits, mention_boundary, mask):
         if self.loss_function_type == 'BCE':
             logits = self.sigmoid(logits)  # B*M x L
-            predicts = torch.where(logits > self.class_threshold, 1,
-                                   0)  # B*M x L
+            predicts = torch.where(logits > self.class_threshold, 1, 0)  # B*M x L
         predicts = predicts.detach().cpu().numpy()
         batch_mention_boundaries = mention_boundary.detach().cpu().numpy()
         batch_mentions = []
@@ -119,8 +112,7 @@ class MultiLabelSpanTypingModel(Model):
             for mention_idx, mention_pred in enumerate(sent_predict):
                 types = [i for i, p in enumerate(mention_pred) if p == 1]
                 sent_mentions.append(
-                    (sent_mention_boundary[0][mention_idx],
-                     sent_mention_boundary[1][mention_idx], types))
+                    (sent_mention_boundary[0][mention_idx], sent_mention_boundary[1][mention_idx], types))
             batch_mentions.append(sent_mentions)
 
         return batch_mentions

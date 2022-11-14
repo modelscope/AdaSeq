@@ -10,17 +10,11 @@ from uner.commands.subcommand import Subcommand
 class Test(Subcommand):
 
     @classmethod
-    def add_subparser(
-            cls,
-            parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
-        subparser = parser.add_parser(
-            'test', help='test with a model checkpoint')
-        subparser.add_argument(
-            '-c', '--cfg_file', required=True, help='configuration YAML file')
-        subparser.add_argument(
-            '-t', '--trainer', default=None, help='trainer name')
-        subparser.add_argument(
-            '-cp', '--checkpoint_path', default=None, help='model checkpoint')
+    def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
+        subparser = parser.add_parser('test', help='test with a model checkpoint')
+        subparser.add_argument('-c', '--cfg_file', required=True, help='configuration YAML file')
+        subparser.add_argument('-t', '--trainer', default=None, help='trainer name')
+        subparser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
 
         subparser.set_defaults(func=test_model_from_args)
         return subparser

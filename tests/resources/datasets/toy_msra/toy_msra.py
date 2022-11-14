@@ -70,10 +70,7 @@ class MsraNer(datasets.GeneratorBasedBuilder):
     """MSRA NER dataset."""
 
     BUILDER_CONFIGS = [
-        MsraNerConfig(
-            name='adaseq',
-            version=datasets.Version('1.0.0'),
-            description='MSRA NER dataset'),
+        MsraNerConfig(name='adaseq', version=datasets.Version('1.0.0'), description='MSRA NER dataset'),
     ]
 
     def _info(self):
@@ -103,12 +100,8 @@ class MsraNer(datasets.GeneratorBasedBuilder):
         downloaded_files = dl_manager.download_and_extract(urls_to_download)
 
         return [
-            datasets.SplitGenerator(
-                name=datasets.Split.TRAIN,
-                gen_kwargs={'filepath': downloaded_files['train']}),
-            datasets.SplitGenerator(
-                name=datasets.Split.TEST,
-                gen_kwargs={'filepath': downloaded_files['test']}),
+            datasets.SplitGenerator(name=datasets.Split.TRAIN, gen_kwargs={'filepath': downloaded_files['train']}),
+            datasets.SplitGenerator(name=datasets.Split.TEST, gen_kwargs={'filepath': downloaded_files['test']}),
         ]
 
     def _generate_examples(self, filepath):
@@ -152,20 +145,12 @@ class MsraNer(datasets.GeneratorBasedBuilder):
                 if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
                     start = i
                 else:
-                    spans.append({
-                        'start': i,
-                        'end': i + 1,
-                        'type': labels[i][2:]
-                    })
+                    spans.append({'start': i, 'end': i + 1, 'type': labels[i][2:]})
             elif labels[i][0] in 'IE':
                 if i + 1 >= len(labels) or labels[i + 1][0] not in 'IE':
                     assert start >= 0, \
                         'Invalid label sequence found: {}'.format(labels)
-                    spans.append({
-                        'start': start,
-                        'end': i + 1,
-                        'type': labels[i][2:]
-                    })
+                    spans.append({'start': start, 'end': i + 1, 'type': labels[i][2:]})
                     start = -1
             if labels[i][0] in 'B':
                 in_entity = True

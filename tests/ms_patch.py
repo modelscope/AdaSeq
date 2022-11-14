@@ -20,8 +20,7 @@ def train_step(self, model, inputs):
         default_keys_pattern = ['loss']
         match_keys = set([])
         for key_p in default_keys_pattern:
-            match_keys.update(
-                [key for key in train_outputs.keys() if key_p in key])
+            match_keys.update([key for key in train_outputs.keys() if key_p in key])
 
         log_vars = {}
         for key in match_keys:
@@ -44,13 +43,9 @@ def numpify_tensor_nested(tensors, reduction=None, clip_value=10000):
     #     print()
     "Numpify `tensors` (even if it's a nested list/tuple of tensors)."
     if isinstance(tensors, (list, tuple)):
-        return type(tensors)(
-            numpify_tensor_nested(t, reduction, clip_value) for t in tensors)
+        return type(tensors)(numpify_tensor_nested(t, reduction, clip_value) for t in tensors)
     if isinstance(tensors, Mapping):
-        return {
-            k: numpify_tensor_nested(t, reduction, clip_value)
-            for k, t in tensors.items()
-        }
+        return {k: numpify_tensor_nested(t, reduction, clip_value) for k, t in tensors.items()}
     if isinstance(tensors, torch.Tensor):
         t: np.ndarray = tensors.cpu().numpy()
         if clip_value is not None:

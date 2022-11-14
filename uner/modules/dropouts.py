@@ -19,8 +19,7 @@ class WordDropout(nn.Module):
         if not self.training or not self.dropout_rate:
             return inputs
 
-        m = inputs.data.new(inputs.size(0), 1,
-                            1).bernoulli_(1.0 - self.dropout_rate)
+        m = inputs.data.new(inputs.size(0), 1, 1).bernoulli_(1.0 - self.dropout_rate)
         mask = torch.autograd.Variable(m, requires_grad=False)
         mask = mask.expand_as(inputs)
         return inputs * mask

@@ -7,7 +7,5 @@ class Subcommand(ABC):
 
     @classmethod
     @abstractmethod
-    def add_subparser(
-            cls,
-            parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
+    def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
         pass

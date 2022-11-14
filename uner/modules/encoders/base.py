@@ -20,8 +20,7 @@ def build_encoder(cfg: ConfigDict, default_args: dict = None):
     Returns:
         encoder (:obj:`Encoder`): an encoder instance
     """
-    return build_from_cfg(
-        cfg, ENCODERS, group_key='default', default_args=default_args)
+    return build_from_cfg(cfg, ENCODERS, group_key='default', default_args=default_args)
 
 
 class Encoder(nn.Module):
@@ -34,9 +33,7 @@ class Encoder(nn.Module):
         return cls(**kwargs)
 
     @classmethod
-    def from_config(cls,
-                    cfg_dict_or_path: Union[str, Dict, Config] = None,
-                    **kwargs):
+    def from_config(cls, cfg_dict_or_path: Union[str, Dict, Config] = None, **kwargs):
         if isinstance(cfg_dict_or_path, str) and osp.isfile(cfg_dict_or_path):
             cfg = Config.from_file(cfg_dict_or_path).model.encoder
         elif isinstance(cfg_dict_or_path, (dict, Config)):
@@ -54,13 +51,11 @@ class Encoder(nn.Module):
         if 'model_name_or_path' in kwargs:
             cfg['model_name_or_path'] = kwargs.pop('model_name_or_path')
 
-        if cfg['type'] is not None and cfg['type'] in ENCODERS.modules[
-                'default']:
+        if cfg['type'] is not None and cfg['type'] in ENCODERS.modules['default']:
             return build_encoder(cfg, default_args=kwargs)
         else:
             assert cfg['model_name_or_path'] is not None, \
                 'Model is not found in registry, ' \
                 'so it is considered a huggingface backbone ' \
                 'and the model_name_or_path param should not be None'
-            return AutoModel.from_pretrained(cfg['model_name_or_path'],
-                                             **kwargs)
+            return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)

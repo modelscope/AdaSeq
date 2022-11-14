@@ -4,16 +4,14 @@ import os
 import datasets
 from datasets import Features, Value
 
-from uner.data.dataset_builders.dataset_reader import \
-    NamedEntityRecognitionDatasetReader  # yapf: disable
+from uner.data.dataset_builders.dataset_reader import NamedEntityRecognitionDatasetReader  # yapf: disable
 from .base import CustomDatasetBuilder
 
 
 class PartOfSpeechDatasetBuilderConfig(datasets.BuilderConfig):
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(PartOfSpeechDatasetBuilderConfig, self).__init__(
-            data_dir=data_dir, data_files=data_files)
+        super(PartOfSpeechDatasetBuilderConfig, self).__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
@@ -51,5 +49,4 @@ class PartOfSpeechDatasetBuilder(CustomDatasetBuilder):
             # TODO: get the reder via reflection
             raise NotImplementedError
         else:
-            return NamedEntityRecognitionDatasetReader.load_data_file(
-                filepath, self.config.corpus_config)
+            return NamedEntityRecognitionDatasetReader.load_data_file(filepath, self.config.corpus_config)

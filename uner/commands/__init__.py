@@ -7,12 +7,9 @@ from uner.commands.test import Test
 from uner.commands.train import Train
 
 
-def parse_args(
-    prog: Optional[str] = None
-) -> Tuple[argparse.ArgumentParser, argparse.Namespace]:
+def parse_args(prog: Optional[str] = None) -> Tuple[argparse.ArgumentParser, argparse.Namespace]:
     parser = argparse.ArgumentParser(prog=prog)
-    parser.add_argument(
-        '--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
     subparsers = parser.add_subparsers(help='commands')
     Train.add_subparser(subparsers)

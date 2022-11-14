@@ -29,8 +29,7 @@ class EntityScore:
     def _compute(self, origin, found, right):
         recall = 0 if origin == 0 else (right / origin)
         precision = 0 if found == 0 else (right / found)
-        f1 = 0. if recall + precision == 0 else (2 * precision * recall) / (
-            precision + recall)
+        f1 = 0. if recall + precision == 0 else (2 * precision * recall) / (precision + recall)
         return recall, precision, f1
 
     def result(self) -> Dict[str, float]:
@@ -45,36 +44,27 @@ class EntityScore:
             found = found_counter.get(type, 0)
             right = right_counter.get(type, 0)
             recall, precision, f1 = self._compute(origin, found, right)
-            detailed_report += 'Type: %s - precision: %.4f - recall: %.4f - f1: %.4f\n' % (
-                type, precision, recall, f1)
+            detailed_report += 'Type: %s - precision: %.4f - recall: %.4f - f1: %.4f\n' % (type, precision, recall, f1)
         # ALL
         origin = sum(origin_counter.values())
         found = sum(found_counter.values())
         right = sum(right_counter.values())
         recall, precision, f1 = self._compute(origin, found, right)
-        detailed_report += 'All Types - precision: %.4f - recall: %.4f - f1: %.4f\n' % (
-            precision, recall, f1)
+        detailed_report += 'All Types - precision: %.4f - recall: %.4f - f1: %.4f\n' % (precision, recall, f1)
         # loc level
         loc_right = len(self.loc_rights)
-        loc_recall, loc_precision, loc_f1 = self._compute(
-            origin, found, loc_right)
-        detailed_report += 'All Types(loc) - precision: %.4f - recall: %.4f - f1: %.4f\n' % (
-            loc_precision, loc_recall, loc_f1)
+        loc_recall, loc_precision, loc_f1 = self._compute(origin, found, loc_right)
+        detailed_report += 'All Types(loc) - precision: %.4f - recall: %.4f - f1: %.4f\n' % (loc_precision, loc_recall,
+                                                                                             loc_f1)
 
-        return {
-            'precision': precision,
-            'recall': recall,
-            'f1': f1,
-            'detailed_report': detailed_report
-        }
+        return {'precision': precision, 'recall': recall, 'f1': f1, 'detailed_report': detailed_report}
 
     @staticmethod
     def _join_entities(pre_entities, label_entities):
         ret = []
         for pre_entity in pre_entities:
             for label_entity in label_entities:
-                if pre_entity['start'] == label_entity['start'] and pre_entity[
-                        'end'] == label_entity['end']:
+                if pre_entity['start'] == label_entity['start'] and pre_entity['end'] == label_entity['end']:
                     ret.append(pre_entity)
                     break
         return ret
@@ -83,10 +73,8 @@ class EntityScore:
         """Add golden, pred pairs to inner data structure."""
 
         self.n_sentences += len(batch_gold_entities)
-        for gold_entities, pred_entities in zip(batch_gold_entities,
-                                                batch_pred_entities):
-            if len(gold_entities) > 0 and isinstance(gold_entities[0]['type'],
-                                                     list):
+        for gold_entities, pred_entities in zip(batch_gold_entities, batch_pred_entities):
+            if len(gold_entities) > 0 and isinstance(gold_entities[0]['type'], list):
                 expanded_golden_mentions = []
                 for mention in gold_entities:
                     expanded_golden_mentions.extend([{
@@ -95,8 +83,7 @@ class EntityScore:
                         'type': t
                     } for t in mention['type']])
                 gold_entities = expanded_golden_mentions
-            if len(pred_entities) > 0 and isinstance(pred_entities[0]['type'],
-                                                     list):
+            if len(pred_entities) > 0 and isinstance(pred_entities[0]['type'], list):
                 expanded_pred_mentions = []
                 for mention in pred_entities:
                     expanded_pred_mentions.extend([{
@@ -108,12 +95,8 @@ class EntityScore:
 
             self.origins.extend(gold_entities)
             self.founds.extend(pred_entities)
-            self.rights.extend([
-                pre_entity for pre_entity in pred_entities
-                if pre_entity in gold_entities
-            ])
-            self.loc_rights.extend(
-                self._join_entities(pred_entities, gold_entities))
+            self.rights.extend([pre_entity for pre_entity in pred_entities if pre_entity in gold_entities])
+            self.loc_rights.extend(self._join_entities(pred_entities, gold_entities))
 
 
 @METRICS.register_module(module_name=Metrics.span_extraction_metric)

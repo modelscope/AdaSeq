@@ -11,8 +11,7 @@ from uner.metainfo import DataCollators
 from .base import DATA_COLLATORS, DataCollatorWithPadding
 
 
-@DATA_COLLATORS.register_module(
-    module_name=DataCollators.sequence_labeling_data_collator)
+@DATA_COLLATORS.register_module(module_name=DataCollators.sequence_labeling_data_collator)
 @dataclass
 class SequenceLabelingDataCollatorWithPadding(DataCollatorWithPadding):
     pad_label_id: int = PAD_LABEL_ID
@@ -20,9 +19,8 @@ class SequenceLabelingDataCollatorWithPadding(DataCollatorWithPadding):
     def __init__(self, tokenizer, **kwargs):
         super().__init__(tokenizer)
 
-    def padding(self, batch: Dict[str,
-                                  Any], fields: List[str], batch_size: int,
-                max_length: int, padding_side: str) -> Dict[str, Any]:
+    def padding(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,
+                padding_side: str) -> Dict[str, Any]:
         for i in range(batch_size):
             field = 'label_ids'
             difference = max_length - len(batch[field][i])
@@ -34,7 +32,6 @@ class SequenceLabelingDataCollatorWithPadding(DataCollatorWithPadding):
                 elif padding_side == 'left':
                     batch[field][i] = [pad_id] * difference + batch[field][i]
                 else:
-                    raise ValueError('Invalid padding strategy:'
-                                     + str(self.padding_side))
+                    raise ValueError('Invalid padding strategy:' + str(self.padding_side))
 
         return batch

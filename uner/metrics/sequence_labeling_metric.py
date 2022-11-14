@@ -3,10 +3,7 @@ from typing import Dict
 
 from modelscope.metrics.base import Metric
 from modelscope.metrics.builder import METRICS, MetricKeys
-from modelscope.utils.tensor_utils import (
-    torch_nested_detach,
-    torch_nested_numpify,
-)
+from modelscope.utils.tensor_utils import torch_nested_detach, torch_nested_numpify
 from seqeval.metrics import accuracy_score, classification_report
 
 from uner.data.constant import PAD_LABEL_ID
@@ -25,11 +22,7 @@ class SequenceLabelingMetric(Metric):
             Whether to return every class's detailed metrics, default False.
     """
 
-    def __init__(self,
-                 return_class_level_metric=False,
-                 mode=None,
-                 *args,
-                 **kwargs):
+    def __init__(self, return_class_level_metric=False, mode=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.return_class_level_metric = return_class_level_metric
         self.mode = mode
@@ -39,22 +32,17 @@ class SequenceLabelingMetric(Metric):
     def add(self, outputs: Dict, inputs: Dict):
         pred_results = outputs['predicts']
         ground_truths = inputs['label_ids']
-        self.preds.extend(
-            torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
-        self.golds.extend(
-            torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
+        self.preds.extend(torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
+        self.golds.extend(torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
 
     def evaluate(self):
         id2label = self.trainer.id2label
 
-        pred_labels = [[
-            id2label[p] for p, g in zip(pred, gold) if g != PAD_LABEL_ID
-        ] for pred, gold in zip(self.preds, self.golds)]
-        gold_labels = [[id2label[g] for g in gold if g != PAD_LABEL_ID]
-                       for gold in self.golds]
+        pred_labels = [[id2label[p] for p, g in zip(pred, gold) if g != PAD_LABEL_ID]
+                       for pred, gold in zip(self.preds, self.golds)]
+        gold_labels = [[id2label[g] for g in gold if g != PAD_LABEL_ID] for gold in self.golds]
 
-        report = classification_report(
-            gold_labels, pred_labels, output_dict=True, mode=self.mode)
+        report = classification_report(gold_labels, pred_labels, output_dict=True, mode=self.mode)
 
         report.pop('macro avg')
         report.pop('weighted avg')
@@ -64,13 +52,11 @@ class SequenceLabelingMetric(Metric):
         scores[MetricKeys.PRECISION] = overall_score['precision']
         scores[MetricKeys.RECALL] = overall_score['recall']
         scores[MetricKeys.F1] = overall_score['f1-score']
-        scores[MetricKeys.ACCURACY] = accuracy_score(
-            y_true=gold_labels, y_pred=pred_labels)
+        scores[MetricKeys.ACCURACY] = accuracy_score(y_true=gold_labels, y_pred=pred_labels)
         if self.return_class_level_metric:
             for tp, tp_score in report.items():
                 scores[tp] = {}
-                scores[tp][MetricKeys.PRECISION] = round(
-                    tp_score['precision'], 4)
+                scores[tp][MetricKeys.PRECISION] = round(tp_score['precision'], 4)
                 scores[tp][MetricKeys.RECALL] = round(tp_score['recall'], 4)
                 scores[tp][MetricKeys.F1] = round(tp_score['f1-score'], 4)
                 scores[tp]['support'] = tp_score['support']

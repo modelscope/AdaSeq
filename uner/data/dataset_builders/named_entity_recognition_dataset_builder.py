@@ -4,8 +4,7 @@ import os
 import datasets
 from datasets import Features, Value
 
-from uner.data.dataset_builders.dataset_reader import \
-    NamedEntityRecognitionDatasetReader  # yapf: disable
+from uner.data.dataset_builders.dataset_reader import NamedEntityRecognitionDatasetReader  # yapf: disable
 from .base import CustomDatasetBuilder
 
 
@@ -43,5 +42,4 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
             # TODO: get the reder via reflection
             raise NotImplementedError
         else:
-            return NamedEntityRecognitionDatasetReader.load_data_file(
-                filepath, self.config.corpus_config)
+            return NamedEntityRecognitionDatasetReader.load_data_file(filepath, self.config.corpus_config)

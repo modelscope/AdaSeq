@@ -27,10 +27,8 @@ class SpanEncoder(Encoder):
             self.span_hidden_size = input_dim
             if span_hidden_size is not None:
                 self.span_hidden_size = span_hidden_size
-            self.start_linear_mapping = nn.Linear(input_dim,
-                                                  self.span_hidden_size)
-            self.end_linear_mapping = nn.Linear(input_dim,
-                                                self.span_hidden_size)
+            self.start_linear_mapping = nn.Linear(input_dim, self.span_hidden_size)
+            self.end_linear_mapping = nn.Linear(input_dim, self.span_hidden_size)
         self.use_biaffine = use_biaffine
         if self.use_biaffine:
             if self.add_span_linear:
@@ -51,10 +49,8 @@ class SpanEncoder(Encoder):
         token_embed = token_embed.reshape(batch_size, -1, self.input_dim)
         span_start_idx = span_boundary[:, 0, :]
         span_end_idx = span_boundary[:, 1, :]
-        span_start_embed = token_embed[torch.arange(batch_size)[:, None],
-                                       span_start_idx]
-        span_end_embed = token_embed[torch.arange(batch_size)[:, None],
-                                     span_end_idx]
+        span_start_embed = token_embed[torch.arange(batch_size)[:, None], span_start_idx]
+        span_end_embed = token_embed[torch.arange(batch_size)[:, None], span_end_idx]
         if self.add_span_linear:
             span_start_reprs = self.start_linear_mapping(span_start_embed)
             span_end_reprs = self.end_linear_mapping(span_end_embed)
@@ -62,9 +58,8 @@ class SpanEncoder(Encoder):
             span_start_reprs = span_start_embed
             span_end_reprs = span_end_embed
         if self.use_biaffine:
-            return span_start_reprs.reshape(
-                -1, self.span_hidden_size), span_end_reprs.reshape(
-                    -1, self.span_hidden_size)
+            return span_start_reprs.reshape(-1,
+                                            self.span_hidden_size), span_end_reprs.reshape(-1, self.span_hidden_size)
         if self.encode_span_method == 'concat':
             span_reprs = torch.cat((span_start_reprs, span_end_reprs), -1)
         else:

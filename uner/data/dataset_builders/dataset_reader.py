@@ -4,12 +4,7 @@ from typing import Any, Dict
 
 import json
 
-from uner.data.constant import (
-    NONE_REL_LABEL,
-    OBJECT_START_TOKEN,
-    PAD_LABEL,
-    SUBJECT_START_TOKEN,
-)
+from uner.data.constant import NONE_REL_LABEL, OBJECT_START_TOKEN, PAD_LABEL, SUBJECT_START_TOKEN
 
 
 class DatasetReader(ABC):
@@ -26,17 +21,13 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
     def load_data_file(cls, file_path, corpus_config):
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
-                return cls._load_column_data_file(
-                    file_path, delimiter=corpus_config.get('delimiter', None))
+                return cls._load_column_data_file(file_path, delimiter=corpus_config.get('delimiter', None))
             elif corpus_config['data_format'] == 'json':
-                return cls._load_sequence_labeling_json_data_file(
-                    file_path, corpus_config)
+                return cls._load_sequence_labeling_json_data_file(file_path, corpus_config)
         elif corpus_config['data_type'] == 'span_based':
-            return cls._load_span_based_json_data_file(
-                file_path, corpus_config.get('is_end_included', False))
+            return cls._load_span_based_json_data_file(file_path, corpus_config.get('is_end_included', False))
         else:
-            raise ValueError('Unknown corpus format type [%s]'
-                             % corpus_config['data_type'])
+            raise ValueError('Unknown corpus format type [%s]' % corpus_config['data_type'])
 
     @classmethod
     def _load_column_data_file(cls, file_path, delimiter):
@@ -49,12 +40,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                     if tokens:
                         spans = cls._labels_to_spans(labels)
                         mask = cls._labels_to_mask(labels)
-                        yield guid, {
-                            'id': str(guid),
-                            'tokens': tokens,
-                            'spans': spans,
-                            'mask': mask
-                        }
+                        yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans, 'mask': mask}
                         guid += 1
                         tokens = []
                         labels = []
@@ -65,12 +51,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
             if tokens:
                 spans = cls._labels_to_spans(labels)
                 mask = cls._labels_to_mask(labels)
-                yield guid, {
-                    'id': str(guid),
-                    'tokens': tokens,
-                    'spans': spans,
-                    'mask': mask
-                }
+                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans, 'mask': mask}
 
     @classmethod
     def _load_sequence_labeling_json_data_file(cls, filepath, corpus_config):
@@ -92,12 +73,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 assert len(tokens) == len(labels)
                 spans = cls._labels_to_spans(labels)
                 mask = cls._labels_to_mask(labels)
-                yield guid, {
-                    'id': str(guid),
-                    'tokens': tokens,
-                    'spans': spans,
-                    'mask': mask
-                }
+                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans, 'mask': mask}
                 guid += 1
 
     @classmethod
@@ -123,18 +99,9 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                         end_offset = 0
                         if corpus_config['is_end_included'] is True:
                             end_offset = 1
-                        entity_list.append({
-                            'start': span[0][0],
-                            'end': span[0][1] + end_offset,
-                            'type': entity_type
-                        })
+                        entity_list.append({'start': span[0][0], 'end': span[0][1] + end_offset, 'type': entity_type})
                 mask = [True] * len(tokens)
-                yield guid, {
-                    'id': str(guid),
-                    'tokens': tokens,
-                    'spans': entity_list,
-                    'mask': mask
-                }
+                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': entity_list, 'mask': mask}
                 guid += 1
 
     @classmethod
@@ -150,20 +117,12 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
                     start = i
                 else:
-                    spans.append({
-                        'start': i,
-                        'end': i + 1,
-                        'type': labels[i][2:]
-                    })
+                    spans.append({'start': i, 'end': i + 1, 'type': labels[i][2:]})
             elif labels[i][0] in 'IE':
                 if i + 1 >= len(labels) or labels[i + 1][0] not in 'IE':
                     assert start >= 0, \
                         'Invalid label sequence found: {}'.format(labels)
-                    spans.append({
-                        'start': start,
-                        'end': i + 1,
-                        'type': labels[i][2:]
-                    })
+                    spans.append({'start': start, 'end': i + 1, 'type': labels[i][2:]})
                     start = -1
             if labels[i][0] in 'B':
                 in_entity = True
@@ -224,12 +183,7 @@ class EntityTypingDatasetReader(DatasetReader):
                         'type': entity['type']
                     })
                 mask = [True] * len(tokens)
-                yield guid, {
-                    'id': str(guid),
-                    'tokens': tokens,
-                    'spans': entity_list,
-                    'mask': mask
-                }
+                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': entity_list, 'mask': mask}
                 guid += 1
 
 
@@ -239,11 +193,9 @@ class RelationExtractionDatasetReader(DatasetReader):
     def load_data_file(cls, file_path, corpus_config):
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
-                return cls._load_column_data_file(
-                    file_path, delimiter=corpus_config.get('delimiter', None))
+                return cls._load_column_data_file(file_path, delimiter=corpus_config.get('delimiter', None))
         else:
-            raise ValueError('Unknown corpus format type [%s]'
-                             % corpus_config['data_type'])
+            raise ValueError('Unknown corpus format type [%s]' % corpus_config['data_type'])
 
     @classmethod
     def _load_column_data_file(cls, file_path, delimiter):

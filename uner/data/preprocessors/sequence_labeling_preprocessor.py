@@ -3,24 +3,15 @@ from typing import Any, Dict, List, Union
 
 from modelscope.preprocessors.builder import PREPROCESSORS
 
-from uner.data.constant import (
-    NON_ENTITY_LABEL,
-    PARTIAL_LABEL,
-    PARTIAL_LABEL_ID,
-)
+from uner.data.constant import NON_ENTITY_LABEL, PARTIAL_LABEL, PARTIAL_LABEL_ID
 from uner.metainfo import Preprocessors
 from .nlp_preprocessor import NLPPreprocessor
 
 
-@PREPROCESSORS.register_module(
-    module_name=Preprocessors.sequence_labeling_preprocessor)
+@PREPROCESSORS.register_module(module_name=Preprocessors.sequence_labeling_preprocessor)
 class SequenceLabelingPreprocessor(NLPPreprocessor):
 
-    def __init__(self,
-                 model_dir: str,
-                 labels: List[str] = None,
-                 tag_scheme: str = 'BIOES',
-                 **kwargs):
+    def __init__(self, model_dir: str, labels: List[str] = None, tag_scheme: str = 'BIOES', **kwargs):
         super().__init__(model_dir, return_emission_mask=True, **kwargs)
 
         self.tag_scheme = tag_scheme.upper()
@@ -32,14 +23,11 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
-        if self.label2id is not None and isinstance(data,
-                                                    Dict) and 'spans' in data:
+        if self.label2id is not None and isinstance(data, Dict) and 'spans' in data:
             input_length = sum(output['emission_mask'])
-            labels = self._spans_to_bio_labels(data['spans'], input_length,
-                                               self.tag_scheme)
+            labels = self._spans_to_bio_labels(data['spans'], input_length, self.tag_scheme)
             output['label_ids'] = [
-                PARTIAL_LABEL_ID
-                if labels[i] == PARTIAL_LABEL else self.label2id[labels[i]]
+                PARTIAL_LABEL_ID if labels[i] == PARTIAL_LABEL else self.label2id[labels[i]]
                 for i in range(input_length)
             ]
         return output
@@ -52,8 +40,7 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
         return tag_scheme in ['BIO', 'BIOES']
 
     @staticmethod
-    def _gen_label2id_with_bio(labels: List[str],
-                               tag_scheme: str = 'BIOES') -> Dict[str, int]:
+    def _gen_label2id_with_bio(labels: List[str], tag_scheme: str = 'BIOES') -> Dict[str, int]:
         label2id = {}
         if 'O' in tag_scheme:
             label2id['O'] = 0
@@ -63,9 +50,7 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
         return label2id
 
     @staticmethod
-    def _spans_to_bio_labels(spans: List[Dict],
-                             length: int,
-                             tag_scheme: str = 'BIOES'):
+    def _spans_to_bio_labels(spans: List[Dict], length: int, tag_scheme: str = 'BIOES'):
         labels = [NON_ENTITY_LABEL] * length
         for span in spans:
             for i in range(span['start'], min(span['end'], length)):

@@ -20,8 +20,7 @@ class NLPPreprocessor(Preprocessor):
         self.return_tokens_or_text = kwargs.pop('return_tokens_or_text', True)
         self.return_attention_mask = kwargs.pop('return_attention_mask', True)
         self.return_emission_mask = kwargs.pop('return_emission_mask', False)
-        self.return_offsets_mapping = kwargs.pop('return_offsets_mapping',
-                                                 False)
+        self.return_offsets_mapping = kwargs.pop('return_offsets_mapping', False)
         self.return_original_view = kwargs.pop('return_original_view', False)
         self.tokenizer = self.build_tokenizer(model_dir)
 
@@ -55,23 +54,18 @@ class NLPPreprocessor(Preprocessor):
         emission_mask = []
         offset_mapping = []
         for offset, (token, token_mask) in enumerate(zip(tokens, mask)):
-            subtoken_ids = self.tokenizer.encode(
-                token, add_special_tokens=False)
+            subtoken_ids = self.tokenizer.encode(token, add_special_tokens=False)
             if len(subtoken_ids) == 0:
                 subtoken_ids = [self.tokenizer.unk_token_id]
             input_ids.extend(subtoken_ids)
-            emission_mask.extend([token_mask]
-                                 + [False] * (len(subtoken_ids) - 1))
-            offset_mapping.extend([(offset, offset + 1)]
-                                  + [(offset + 1, offset + 1)]
-                                  * (len(subtoken_ids) - 1))
+            emission_mask.extend([token_mask] + [False] * (len(subtoken_ids) - 1))
+            offset_mapping.extend([(offset, offset + 1)] + [(offset + 1, offset + 1)] * (len(subtoken_ids) - 1))
         if len(input_ids) > self.max_length - 2:
             input_ids = input_ids[:self.max_length - 2]
             emission_mask = emission_mask[:self.max_length - 2]
             offset_mapping = offset_mapping[:self.max_length - 2]
         if self.add_cls_sep:
-            input_ids = [self.tokenizer.cls_token_id
-                         ] + input_ids + [self.tokenizer.sep_token_id]
+            input_ids = [self.tokenizer.cls_token_id] + input_ids + [self.tokenizer.sep_token_id]
             emission_mask = [False] + emission_mask + [False]
             offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
         attention_mask = [1] * len(input_ids)
@@ -89,8 +83,7 @@ class NLPPreprocessor(Preprocessor):
             output['offset_mapping'] = offset_mapping
         return output
 
-    def encode_tokens_origin_view(self, data: Dict[str,
-                                                   Any]) -> Dict[str, Any]:
+    def encode_tokens_origin_view(self, data: Dict[str, Any]) -> Dict[str, Any]:
         tokens = data['tokens']
         mask = data.get('mask', [True] * len(tokens))
 
@@ -102,25 +95,19 @@ class NLPPreprocessor(Preprocessor):
         input_ids = []
         emission_mask = []
         offset_mapping = []
-        for offset, (token,
-                     token_mask) in enumerate(zip(origin_tokens, origin_mask)):
-            subtoken_ids = self.tokenizer.encode(
-                token, add_special_tokens=False)
+        for offset, (token, token_mask) in enumerate(zip(origin_tokens, origin_mask)):
+            subtoken_ids = self.tokenizer.encode(token, add_special_tokens=False)
             if len(subtoken_ids) == 0:
                 subtoken_ids = [self.tokenizer.unk_token_id]
             input_ids.extend(subtoken_ids)
-            offset_mapping.extend([(offset, offset + 1)]
-                                  + [(offset + 1, offset + 1)]
-                                  * (len(subtoken_ids) - 1))
-            emission_mask.extend([token_mask]
-                                 + [False] * (len(subtoken_ids) - 1))
+            offset_mapping.extend([(offset, offset + 1)] + [(offset + 1, offset + 1)] * (len(subtoken_ids) - 1))
+            emission_mask.extend([token_mask] + [False] * (len(subtoken_ids) - 1))
         if len(input_ids) > self.max_length - 2:
             input_ids = input_ids[:self.max_length - 2]
             offset_mapping = offset_mapping[:self.max_length - 2]
             emission_mask = emission_mask[:self.max_length - 2]
         if self.add_cls_sep:
-            input_ids = [self.tokenizer.cls_token_id
-                         ] + input_ids + [self.tokenizer.sep_token_id]
+            input_ids = [self.tokenizer.cls_token_id] + input_ids + [self.tokenizer.sep_token_id]
             offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
             emission_mask = [False] + emission_mask + [False]
         attention_mask = [1] * len(input_ids)
@@ -141,9 +128,7 @@ class NLPPreprocessor(Preprocessor):
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def map_label_to_id(self,
-                        labels: List[str] = None,
-                        label2id: Dict[str, int] = None) -> Dict[str, int]:
+    def map_label_to_id(self, labels: List[str] = None, label2id: Dict[str, int] = None) -> Dict[str, int]:
         if label2id is not None:
             return label2id
         elif labels is not None:

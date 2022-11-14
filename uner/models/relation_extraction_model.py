@@ -30,15 +30,13 @@ class RelationExtractionModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(
-                cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
             self.dropout = WordDropout(word_dropout)
 
-        self.linear = nn.Linear(2 * self.encoder.config.hidden_size,
-                                num_labels)
+        self.linear = nn.Linear(2 * self.encoder.config.hidden_size, num_labels)
         self.layer_norm = LayerNorm(2 * self.encoder.config.hidden_size)
 
         self.loss_fn = nn.CrossEntropyLoss(reduction='mean')
@@ -47,16 +45,15 @@ class RelationExtractionModel(Model):
         self.temperature = temperature
 
     def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(
-            inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
+        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
 
         if 'emission_mask' in inputs:
             mask = inputs['emission_mask']
             masked_lengths = mask.sum(-1).long()
             masked_reps = torch.zeros_like(embed)
             for i in range(len(mask)):
-                masked_reps[i, :masked_lengths[i], :] = embed[i].masked_select(
-                    mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
+                masked_reps[i, :masked_lengths[i], :] = embed[i].masked_select(mask[i].unsqueeze(-1)).view(
+                    masked_lengths[i], -1)
             reps = masked_reps
         else:
             reps = embed
@@ -66,8 +63,7 @@ class RelationExtractionModel(Model):
 
         so_head_mask = inputs['so_head_mask']
         batch_size = so_head_mask.shape[0]
-        so_emb = reps.masked_select(so_head_mask.unsqueeze(-1)).view(
-            batch_size, -1)
+        so_emb = reps.masked_select(so_head_mask.unsqueeze(-1)).view(batch_size, -1)
 
         so_emb = self.layer_norm(so_emb)
         logits = self.linear(so_emb)
@@ -75,17 +71,15 @@ class RelationExtractionModel(Model):
         return {'logits': logits}
 
     def _forward_origin_view(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(
-            inputs['origin_input_ids'],
-            attention_mask=inputs['origin_attention_mask'])[0]
+        embed = self.encoder(inputs['origin_input_ids'], attention_mask=inputs['origin_attention_mask'])[0]
 
         if 'origin_emission_mask' in inputs:
             mask = inputs['origin_emission_mask']
             masked_lengths = mask.sum(-1).long()
             masked_reps = torch.zeros_like(embed)
             for i in range(len(mask)):
-                masked_reps[i, :masked_lengths[i], :] = embed[i].masked_select(
-                    mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
+                masked_reps[i, :masked_lengths[i], :] = embed[i].masked_select(mask[i].unsqueeze(-1)).view(
+                    masked_lengths[i], -1)
             reps = masked_reps
         else:
             reps = embed
@@ -95,8 +89,7 @@ class RelationExtractionModel(Model):
 
         so_head_mask = inputs['so_head_mask']
         batch_size = so_head_mask.shape[0]
-        so_emb = reps.masked_select(so_head_mask.unsqueeze(-1)).view(
-            batch_size, -1)
+        so_emb = reps.masked_select(so_head_mask.unsqueeze(-1)).view(batch_size, -1)
 
         so_emb = self.layer_norm(so_emb)
         logits = self.linear(so_emb)
@@ -114,10 +107,8 @@ class RelationExtractionModel(Model):
             if self.multiview:  # for multiview training
                 origin_view_outputs = self._forward_origin_view(inputs)
                 origin_view_logits = origin_view_outputs['logits']
-                origin_view_loss = self._calculate_loss(
-                    origin_view_logits, label_id.view(-1))
-                cl_kl_loss = self._calculate_cl_loss(
-                    logits, origin_view_logits, T=self.temperature)
+                origin_view_loss = self._calculate_loss(origin_view_logits, label_id.view(-1))
+                cl_kl_loss = self._calculate_cl_loss(logits, origin_view_logits, T=self.temperature)
                 loss = loss + origin_view_loss + cl_kl_loss
             outputs = {'logits': logits, 'loss': loss}
         else:
@@ -131,8 +122,7 @@ class RelationExtractionModel(Model):
             batch_size, num_classes = ext_view_logits.shape
             ext_view_logits = ext_view_logits.detach()
             _loss = F.kl_div(
-                F.log_softmax(origin_view_logits / T, dim=-1),
-                F.softmax(ext_view_logits / T, dim=-1),
+                F.log_softmax(origin_view_logits / T, dim=-1), F.softmax(ext_view_logits / T, dim=-1),
                 reduction='none') * T * T
             loss = _loss.sum() / batch_size
         else:

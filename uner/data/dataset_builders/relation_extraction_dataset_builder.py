@@ -4,16 +4,14 @@ import os
 import datasets
 from datasets import Features, Value
 
-from uner.data.dataset_builders.dataset_reader import \
-    RelationExtractionDatasetReader  # yapf: disable
+from uner.data.dataset_builders.dataset_reader import RelationExtractionDatasetReader  # yapf: disable
 from .base import CustomDatasetBuilder
 
 
 class RelationExtractionDatasetBuilderConfig(datasets.BuilderConfig):
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(RelationExtractionDatasetBuilderConfig, self).__init__(
-            data_dir=data_dir, data_files=data_files)
+        super(RelationExtractionDatasetBuilderConfig, self).__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
@@ -43,5 +41,4 @@ class RelationExtractionDatasetBuilder(CustomDatasetBuilder):
             # TODO: get the reder via reflection
             raise NotImplementedError
         else:
-            return RelationExtractionDatasetReader.load_data_file(
-                filepath, self.config.corpus_config)
+            return RelationExtractionDatasetReader.load_data_file(filepath, self.config.corpus_config)

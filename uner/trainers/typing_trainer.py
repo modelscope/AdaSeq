@@ -45,7 +45,5 @@ class TypingTrainer(DefaultTrainer):
         # num_labels is one of the models super params.
         cfg['num_labels'] = len(self.label2id)
 
-    def build_preprocessor(self,
-                           **kwargs) -> Tuple[Preprocessor, Preprocessor]:
-        return super().build_preprocessor(
-            labels=self.labels, label2id=self.label2id, **kwargs)
+    def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
+        return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)

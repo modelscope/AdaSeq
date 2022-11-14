@@ -4,8 +4,7 @@ import os
 import datasets
 from datasets import Features, Value
 
-from uner.data.dataset_builders.dataset_reader import \
-    EntityTypingDatasetReader  # yapf: disable
+from uner.data.dataset_builders.dataset_reader import EntityTypingDatasetReader  # yapf: disable
 from .base import CustomDatasetBuilder
 
 
@@ -52,5 +51,4 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
             # TODO: get the reder via reflection
             raise NotImplementedError
         else:
-            return EntityTypingDatasetReader.load_data_file(
-                filepath, self.config.corpus_config)
+            return EntityTypingDatasetReader.load_data_file(filepath, self.config.corpus_config)

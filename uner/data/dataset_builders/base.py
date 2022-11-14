@@ -71,8 +71,7 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
 
         if self.config.data_dir is not None:
             if is_remote_url(self.config.data_dir):
-                _data_dir = dl_manager.download_and_extract(
-                    self.config.data_dir)
+                _data_dir = dl_manager.download_and_extract(self.config.data_dir)
             elif not os.path.isdir(self.config.data_dir):
                 # could be some archieve files like `DIR/FILE.zip`
                 _data_dir = dl_manager.extract(self.config.data_dir)
@@ -105,9 +104,7 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
             raise ValueError('Datasets cannot be resolved!')
 
         return [
-            datasets.SplitGenerator(
-                name=split_name,
-                gen_kwargs={'filepath': data_files[split_name]})
+            datasets.SplitGenerator(name=split_name, gen_kwargs={'filepath': data_files[split_name]})
             for split_name in data_files.keys()
         ]
 

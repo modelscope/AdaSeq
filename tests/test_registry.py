@@ -13,8 +13,7 @@ from uner.modules.encoders import Encoder
 class TestRegistry(unittest.TestCase):
 
     def setUp(self):
-        self.bert_config_file = os.path.join('tests', 'resources', 'configs',
-                                             'bert.yaml')
+        self.bert_config_file = os.path.join('tests', 'resources', 'configs', 'bert.yaml')
 
     def test_get_encoder(self):
         """可以不指定配置文件并初始化一个Encoder
@@ -32,9 +31,7 @@ class TestRegistry(unittest.TestCase):
         """可以不配置文件初始化一个模型
         """
         model = Model.from_config(
-            type=Models.sequence_labeling_model,
-            num_labels=2,
-            encoder={'model_name_or_path': 'bert-base-cased'})
+            type=Models.sequence_labeling_model, num_labels=2, encoder={'model_name_or_path': 'bert-base-cased'})
         self.assertTrue(isinstance(model, SequenceLabelingModel))
 
     def test_get_model_from_cfg_bert(self):

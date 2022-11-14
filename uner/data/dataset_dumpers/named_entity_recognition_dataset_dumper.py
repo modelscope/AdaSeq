@@ -2,10 +2,7 @@
 from typing import Dict
 
 from modelscope.metrics.builder import METRICS
-from modelscope.utils.tensor_utils import (
-    torch_nested_detach,
-    torch_nested_numpify,
-)
+from modelscope.utils.tensor_utils import torch_nested_detach, torch_nested_numpify
 
 from uner.data.constant import PAD_LABEL_ID
 from uner.metainfo import DatasetDumpers
@@ -35,28 +32,18 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
     def _add_sequence_labeling_data(self, outputs: Dict, inputs: Dict):
         id2label = self.trainer.id2label
         batch_tokens = inputs['tokens']
-        batch_labels = torch_nested_numpify(
-            torch_nested_detach(inputs['label_ids'])).tolist()
-        batch_predicts = torch_nested_numpify(
-            torch_nested_detach(outputs['predicts'])).tolist()
-        for tokens, labels, predicts in zip(batch_tokens, batch_labels,
-                                            batch_predicts):
+        batch_labels = torch_nested_numpify(torch_nested_detach(inputs['label_ids'])).tolist()
+        batch_predicts = torch_nested_numpify(torch_nested_detach(outputs['predicts'])).tolist()
+        for tokens, labels, predicts in zip(batch_tokens, batch_labels, batch_predicts):
             self.data.append({
-                'tokens':
-                tokens,
+                'tokens': tokens,
                 'labels': [id2label[x] for x in labels if x != PAD_LABEL_ID],
-                'predicts':
-                [id2label[x] for x in predicts if x != PAD_LABEL_ID]
+                'predicts': [id2label[x] for x in predicts if x != PAD_LABEL_ID]
             })
 
     def _dump_to_column(self):
         with open(self.save_path, 'w', encoding='utf8') as fout:
             for example in self.data:
                 for i in range(len(example['labels'])):
-                    print(
-                        example['tokens'][i],
-                        example['labels'][i],
-                        example['predicts'][i],
-                        sep='\t',
-                        file=fout)
+                    print(example['tokens'][i], example['labels'][i], example['predicts'][i], sep='\t', file=fout)
                 print('', file=fout)

@@ -8,8 +8,7 @@ from ..constant import NONE_REL_LABEL, NONE_REL_LABEL_ID
 from .nlp_preprocessor import NLPPreprocessor
 
 
-@PREPROCESSORS.register_module(
-    module_name=Preprocessors.relation_extraction_preprocessor)
+@PREPROCESSORS.register_module(module_name=Preprocessors.relation_extraction_preprocessor)
 class RelationExtractionPreprocessor(NLPPreprocessor):
 
     def __init__(self, model_dir: str, labels: List[str] = None, **kwargs):
@@ -21,8 +20,7 @@ class RelationExtractionPreprocessor(NLPPreprocessor):
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         output = super().__call__(data)
 
-        if self.label2id is not None and isinstance(data,
-                                                    Dict) and 'label' in data:
+        if self.label2id is not None and isinstance(data, Dict) and 'label' in data:
             label = data['label']
             output['label_id'] = [self.label2id[label]]
         output['so_head_mask'] = data['so_head_mask']

@@ -3,10 +3,7 @@ from typing import Dict
 
 from modelscope.metrics.base import Metric
 from modelscope.metrics.builder import METRICS, MetricKeys
-from modelscope.utils.tensor_utils import (
-    torch_nested_detach,
-    torch_nested_numpify,
-)
+from modelscope.utils.tensor_utils import torch_nested_detach, torch_nested_numpify
 
 from uner.data.constant import NONE_REL_LABEL, PAD_LABEL_ID
 from uner.metainfo import Metrics
@@ -47,10 +44,8 @@ class RelationExtractionMetric(Metric):
     def add(self, outputs: Dict, inputs: Dict):
         pred_results = outputs['predicts']
         ground_truths = inputs['label_id'].view(-1)
-        self.preds.extend(
-            torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
-        self.golds.extend(
-            torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
+        self.preds.extend(torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
+        self.golds.extend(torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
 
     def evaluate(self):
         id2label = self.trainer.id2label

@@ -7,10 +7,7 @@ from datasets.utils.file_utils import is_remote_url
 from modelscope.msdatasets import MsDataset
 from modelscope.utils.logger import get_logger
 
-SUPPORTED_LOCAL_TASK = {
-    'chinese-word-segmentation', 'entity-typing', 'named-entity-recognition',
-    'part-of-speech'
-}
+SUPPORTED_LOCAL_TASK = {'chinese-word-segmentation', 'entity-typing', 'named-entity-recognition', 'part-of-speech'}
 logger = get_logger(log_level='INFO')
 
 
@@ -68,13 +65,10 @@ class DatasetManager:
             elif isinstance(data_files, dict):
                 for k, v in data_files.items():
                     if not is_remote_url(data_dir) and not osp.exists(v):
-                        raise RuntimeError('`data_file[%s]` not exists: %s', k,
-                                           v)
+                        raise RuntimeError('`data_file[%s]` not exists: %s', k, v)
                     if not osp.isabs(v):
                         # since datasets
-                        raise RuntimeError(
-                            '`data_file[%s]` must be a absolute path: %s', k,
-                            v)
+                        raise RuntimeError('`data_file[%s]` must be a absolute path: %s', k, v)
 
                 # we rename all `dev` key to `valid`
                 if 'dev' in data_files:
@@ -85,14 +79,12 @@ class DatasetManager:
             code_path = osp.join(
                 osp.dirname(osp.abspath(__file__)), 'dataset_builders',
                 task.replace('-', '_') + '_dataset_builder.py')
-            self.datasets = hf_load_dataset(
-                code_path, data_dir=data_dir, data_files=data_files, **kwargs)
+            self.datasets = hf_load_dataset(code_path, data_dir=data_dir, data_files=data_files, **kwargs)
 
         elif isinstance(name_or_path, str):
             if name_or_path.endswith('.py') or osp.isdir(name_or_path):
                 # user defined
-                logger.info('Will use a custom dataset loading script: %s',
-                            name_or_path)
+                logger.info('Will use a custom dataset loading script: %s', name_or_path)
                 self.datasets = hf_load_dataset(name_or_path, **kwargs)
             else:
                 # to access private datasets from modelscope
@@ -101,8 +93,7 @@ class DatasetManager:
                     HubApi().login(access_token)
 
                 # only support some datasets with "adaseq" subset.
-                msdataset = MsDataset.load(
-                    name_or_path, **kwargs, subset_name='adaseq')
+                msdataset = MsDataset.load(name_or_path, **kwargs, subset_name='adaseq')
                 self.datasets = {k: v._hf_ds for k, v in msdataset.items()}
 
         else:
