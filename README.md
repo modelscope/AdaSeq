@@ -16,7 +16,7 @@
 ## Supported Models
 - [Transformer-based CRF](./examples/bert_crf)
 - [Partial CRF](./examples/partial_bert_crf)
-- [Retrieval Augmented NER](./examples/raner)
+- [Retrieval Augmented NER](./examples/RaNER)
 - [Global-Pointer](./examples/global_pointer)
 - [Multi-label Entity Typing](./examples/entity_typing)
 - ...
