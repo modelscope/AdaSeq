@@ -113,7 +113,6 @@ setup(
     long_description_content_type='text/markdown',
     url='TBD',
     author='Alibaba Damo Academy NLP foundation team',
-    author_email='pangda@alibaba-inc.com',
     platforms='any',
     python_requires='>=3.6.0',
     dependency_links=[
