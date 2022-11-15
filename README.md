@@ -1,13 +1,28 @@
 # AdaSeq: An All-in-One Library for Developing State-of-the-Art Sequence Understanding Models
-***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence understanding toolkit) is an easy-to-use all-in-one toolkit that allows researchers and developers to train custom models for sequence understanding tasks, including word segmentation, POS tagging, chunking, NER, entity typing, relation extraction, etc.
+***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence understanding toolkit) is an easy-to-use all-in-one library, built on [ModelScope](https://modelscope.cn/home), that allows researchers and developers to train custom models for sequence understanding tasks, including word segmentation, POS tagging, chunking, NER, entity typing, relation extraction, etc.
+
+⚠️**Notice:** This project is under quick development. This means some interfaces could be changed in the future.
 
 ---
 
 ### Features
+- **State-of-the-Art**: we provide plenty of cutting-edge models, training methods and useful toolkits for sequence understanding tasks.
+- **Easy-to-Use**: one line of command is all you need to obtain the best model.
+- **Extensible**: easily register new tasks, models, modules, criterions, optimizers, lr_schedulers and training methods.
 
 ### What's New
+- November 2022: [BABERT models released](./examples/babert)
+
+## Supported Models
+- [Transformer-based CRF](./examples/bert_crf)
+- [Partial CRF](./examples/partial_bert_crf)
+- [Retrieval Augmented NER](./examples/raner)
+- [Global-Pointer](./examples/global_pointer)
+- [Multi-label Entity Typing](./examples/entity_typing)
+- ...
 
 ## State-of-the-Art Models
+TODO
 
 ## Quick Start
 ### Requirements
@@ -26,13 +41,10 @@ python scripts/test.py -c examples/bert_crf/configs/resume.yaml -cp ${checkpoint
 ```
 
 ## Tutorials
-- Tutorial 1: Train a model & How to writing a config file
-- Tutorial 2: Hyperparameter Tuning with Grid Search
-- Tutorial 3: Train with multiple gpus
-
-## Contributing
-1. [UNER开发规约](https://yuque.antfin-inc.com/docs/share/7088e485-5817-4beb-8a28-f8de7dd95a9a?# 《UNER开发规约》)
-2. [Modelscope文档中心](https://modelscope.cn/docs/%E9%A6%96%E9%A1%B5)
+- Tutorial 1: [Training a Model & Configuration Explanation](./docs/tutorials/training_a_model.md)
+- Tutorial 2: [Preparing Custom Dataset](./docs/tutorials/preparing_custom_dataset.md)
+- Tutorial 3: [Hyperparameter Tuning with Grid Search](./docs/tutorials/hyperparameter_tuning_with_grid_search.md)
+- Tutorial 4: [Training with Multiple GPUs](./docs/tutorials/training_with_multiple_gpus.md)
 
 ## License
 This project is licensed under the Apache License (Version 2.0).
