@@ -1,12 +1,10 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 import os
 from abc import ABC, abstractmethod
-from typing import Set
 
 import datasets
-from datasets import DownloadManager, Features, Value
+from datasets import DownloadManager
 from datasets.utils.file_utils import is_remote_url
-from torch.utils.data import Dataset
 
 
 class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
@@ -16,12 +14,12 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
     def stub():
         """ Useless stub function.
 
-       The datasets.load_dataset import the builder class from path via import_main_class.
-       According to the source code, import_main_class will return the first non-abstract class.
-       So we should make this base class a abstract class by adding this stub function.
-       Otherwise, this base class will be returned by import_main_class,simce it is imported
-       before the definition of sub-classes.
-       """
+        The datasets.load_dataset import the builder class from path via import_main_class.
+        According to the source code, import_main_class will return the first non-abstract class.
+        So we should make this base class a abstract class by adding this stub function.
+        Otherwise, this base class will be returned by import_main_class,simce it is imported
+        before the definition of sub-classes.
+        """
 
         pass
 

@@ -30,12 +30,27 @@ class SequenceLabelingMetric(Metric):
         self.golds = []
 
     def add(self, outputs: Dict, inputs: Dict):
+        """ Collect batch outputs """
         pred_results = outputs['predicts']
         ground_truths = inputs['label_ids']
         self.preds.extend(torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
         self.golds.extend(torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
 
     def evaluate(self):
+        """ Calculate metrics, returning precision, recall, f1-score, accuracy in a dictionary
+
+        Returns:
+            scores (Dict):
+                precision (float): micro averaged precision
+                recall (float): micro averaged recall
+                f1 (float): micro averaged f1-score
+                accuracy (float): micro averaged accuracy
+                tp (Dict): metrics for each label
+                    precision (float): precision of each label
+                    recall (float): recall of each label
+                    f1 (float): f1 of each label
+                    support (int): the number of occurrences of each label in ground truth
+        """
         id2label = self.trainer.id2label
 
         pred_labels = [[id2label[p] for p, g in zip(pred, gold) if g != PAD_LABEL_ID]

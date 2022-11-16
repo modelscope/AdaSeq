@@ -11,6 +11,7 @@ from .base import DatasetDumper
 
 @METRICS.register_module(module_name=DatasetDumpers.ner_dumper)
 class NamedEntityRecognitionDatasetDumper(DatasetDumper):
+    """ Named Entity Recognition dumper. """
 
     def __init__(self, model_type: str, dump_format: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -18,12 +19,14 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
         self.dump_format = dump_format
 
     def add(self, outputs: Dict, inputs: Dict):
+        """ Only support sequence_labeling models now.  """
         if self.model_type == 'sequence_labeling':
             self._add_sequence_labeling_data(outputs, inputs)
         else:
             raise NotImplementedError
 
     def dump(self):
+        """ Only support dump CoNLL format now.  """
         if self.dump_format == 'column':
             self._dump_to_column()
         else:

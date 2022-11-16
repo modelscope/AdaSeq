@@ -25,6 +25,7 @@ class NERTrainer(DefaultTrainer):
                             eval_dataset: Optional[Dataset] = None,
                             test_dataset: Optional[Dataset] = None,
                             **kwargs):
+        """ Collect labels from train/eval/test datasets and create label to id mapping """
         # get label info from dataset
         self.labels = None
         self.label2id = None
@@ -42,7 +43,7 @@ class NERTrainer(DefaultTrainer):
             raise ValueError('label2id must be set!')
 
     def after_build_preprocessor(self, **kwargs):
-        # update label2id, since label set was exteded. e.g., B-X->S-X
+        """ Update label2id, since label set was extended. e.g., B-X->S-X """
         if self.train_preprocessor is not None:
             self.label2id = self.train_preprocessor.label2id
         elif self.eval_preprocessor is not None:
@@ -52,9 +53,11 @@ class NERTrainer(DefaultTrainer):
         self.logger.info('label2id:', self.label2id)
 
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
+        """ Build preprocessor with labels and label2id """
         return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)
 
     def build_model(self) -> nn.Module:
+        """ Build model with labels """
         cfg = self.cfg.model
         # num_labels is one of the models super params.
         cfg['num_labels'] = len(self.label2id)
@@ -62,6 +65,7 @@ class NERTrainer(DefaultTrainer):
 
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
+        """ Build optimizer with layer-wise learning rate """
         if hasattr(model, 'module'):
             model = model.module
         if default_args is None:

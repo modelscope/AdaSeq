@@ -24,7 +24,7 @@ class SinusoidalPositionEmbedding(nn.Module):
         self.merge_mode = merge_mode
         self.custom_position_ids = custom_position_ids
 
-    def forward(self, inputs):
+    def forward(self, inputs):  # noqa
         if self.custom_position_ids:
             seq_len = inputs.shape[1]
             inputs, position_ids = inputs
@@ -102,10 +102,10 @@ class GlobalPointerModel(Model):
         typing_score = torch.einsum('bnh->bhn', self.type_score_ffn(embed)) / 2
         entity_score = span_score[:, None] + typing_score[:, ::2, None] + typing_score[:, 1::2, :,
                                                                                        None]  # [:, None] 增加一个维度
-        entity_score = self.add_mask_tril(entity_score, mask=inputs['attention_mask'])
+        entity_score = self._add_mask_tril(entity_score, mask=inputs['attention_mask'])
         return {'entity_score': entity_score}
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
         outputs = self._forward(inputs)
         if self.training:
             loss = self._calculate_loss(outputs['entity_score'], inputs['label_matrix'])
@@ -126,7 +126,9 @@ class GlobalPointerModel(Model):
         loss = self.multilabel_categorical_crossentropy(targets, entity_score)
         return loss
 
-    def sequence_masking(self, x, mask, value='-inf', axis=None):
+    def _sequence_masking(self, x, mask, value='-inf', axis=None):
+        """Mask X according to the mask."""
+
         if mask is None:
             return x
         else:
@@ -142,9 +144,9 @@ class GlobalPointerModel(Model):
             # return x * mask + value * (1 - mask)
             return x * mask + value * ~mask
 
-    def add_mask_tril(self, entity_score, mask):
-        entity_score = self.sequence_masking(entity_score, mask, '-inf', entity_score.ndim - 2)
-        entity_score = self.sequence_masking(entity_score, mask, '-inf', entity_score.ndim - 1)
+    def _add_mask_tril(self, entity_score, mask):
+        entity_score = self._sequence_masking(entity_score, mask, '-inf', entity_score.ndim - 2)
+        entity_score = self._sequence_masking(entity_score, mask, '-inf', entity_score.ndim - 1)
         # 排除下三角
         mask = torch.tril(torch.ones_like(entity_score), diagonal=-1)
         entity_score = entity_score - mask * 1e12
@@ -165,7 +167,7 @@ class GlobalPointerModel(Model):
 
         return (neg_loss + pos_loss).mean()
 
-    def decode(self, entity_score):
+    def decode(self, entity_score):  # noqa
         score_matrixes = entity_score.detach().cpu().numpy()
         pred_entities_batch = []
         for score_matrix in score_matrixes:

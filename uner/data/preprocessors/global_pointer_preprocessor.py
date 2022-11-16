@@ -21,6 +21,8 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
         self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
+        """ prepare inputs for Global Pointer model. """
+
         output = super().__call__(data)
 
         token_span_mapping = []
@@ -32,7 +34,7 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
             else:
                 token_span_mapping.append([i, i + 1])
 
-        # 计算span矩阵，注意修正offset: 1, offset_mapping, 2, cls_token
+        # calculate span matrix，be careful to fix offset: 1, offset_mapping, 2, cls_token
         label_matrix = np.zeros([len(self.label2id), len(output['input_ids']), len(output['input_ids'])])
         spans = data['spans']
         for span in spans:

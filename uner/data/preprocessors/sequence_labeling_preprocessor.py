@@ -10,6 +10,7 @@ from .nlp_preprocessor import NLPPreprocessor
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.sequence_labeling_preprocessor)
 class SequenceLabelingPreprocessor(NLPPreprocessor):
+    """ Preprocessor for Sequence Labeling """
 
     def __init__(self, model_dir: str, labels: List[str] = None, tag_scheme: str = 'BIOES', **kwargs):
         super().__init__(model_dir, return_emission_mask=True, **kwargs)
@@ -22,6 +23,7 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
         self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
+        """ prepare inputs for Sequence Labeling models. """
         output = super().__call__(data)
         if self.label2id is not None and isinstance(data, Dict) and 'spans' in data:
             input_length = sum(output['emission_mask'])

@@ -17,6 +17,10 @@ from uner.modules.encoders import Encoder
 
 @MODELS.register_module(module_name=Models.relation_extraction_model)
 class RelationExtractionModel(Model):
+    """ Relation extraction model
+
+    This model is used for relation extraction tasks.
+    """
 
     def __init__(self,
                  num_labels: int,
@@ -96,7 +100,7 @@ class RelationExtractionModel(Model):
 
         return {'logits': logits}
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
         outputs = self._forward(inputs)
 
         logits = outputs['logits']
@@ -133,6 +137,6 @@ class RelationExtractionModel(Model):
         loss = self.loss_fn(logits, targets)
         return loss
 
-    def decode(self, logits):
+    def decode(self, logits):  # noqa
         predicts = logits.argmax(-1)
         return predicts

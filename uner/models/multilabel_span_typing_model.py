@@ -52,7 +52,7 @@ class MultiLabelSpanTypingModel(Model):
             self.sigmoid = nn.Sigmoid()
             self.loss_fn = BCELoss()
 
-    def token2span_encoder(self, inputs, **kwargs):
+    def _get_span_representation(self, inputs, **kwargs):
         embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
         # embed: B x W x K
         if self.use_dropout:
@@ -66,16 +66,16 @@ class MultiLabelSpanTypingModel(Model):
     def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         # B*M x K
         if self.use_biaffine:
-            span_start_reprs, span_end_reprs = self.token2span_encoder(inputs)
+            span_start_reprs, span_end_reprs = self._get_span_representation(inputs)
             span_reprs = span_start_reprs * span_end_reprs
         else:
-            span_reprs = self.token2span_encoder(inputs)
+            span_reprs = self._get_span_representation(inputs)
 
         # B*M x label_num
         logits = self.linear(span_reprs)
         return {'logits': logits}
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
         # B x M -> B*M x 1
         outputs = self._forward(inputs)
         mask = inputs['mention_msk'].reshape(-1).unsqueeze(-1)
@@ -85,7 +85,7 @@ class MultiLabelSpanTypingModel(Model):
         else:
             batch_size, max_mention_per_sent = inputs['type_ids'].shape[0:2]
             logits = outputs['logits'].reshape(batch_size, max_mention_per_sent, -1)
-            predicts = self.classify(logits, inputs['mention_boundary'], mask)
+            predicts = self._classify(logits, inputs['mention_boundary'], mask)
             outputs = {'logits': outputs['logits'], 'predicts': predicts}
         return outputs
 
@@ -98,7 +98,7 @@ class MultiLabelSpanTypingModel(Model):
         loss = loss.sum() / (mask.sum())
         return loss
 
-    def classify(self, logits, mention_boundary, mask):
+    def _classify(self, logits, mention_boundary, mask):
         if self.loss_function_type == 'BCE':
             logits = self.sigmoid(logits)  # B*M x L
             predicts = torch.where(logits > self.class_threshold, 1, 0)  # B*M x L

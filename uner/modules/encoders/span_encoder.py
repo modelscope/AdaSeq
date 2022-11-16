@@ -10,6 +10,7 @@ from .base import ENCODERS, Encoder
 
 @ENCODERS.register_module(module_name=Encoders.span_encoder)
 class SpanEncoder(Encoder):
+    """Turn token embedding sequenece to a single vector."""
 
     def __init__(self,
                  input_dim: int,
@@ -18,7 +19,6 @@ class SpanEncoder(Encoder):
                  span_hidden_size: Optional[int] = None,
                  use_biaffine: bool = False,
                  **kwargs):
-        # encoder_span_method: 'coherent', 'mean_pooling', 'max_pooling', 'attention'... need to implement
         super(SpanEncoder, self).__init__()
         self.add_span_linear = add_span_linear
         self.encode_span_method = encode_span_method
@@ -43,7 +43,7 @@ class SpanEncoder(Encoder):
                 self.span_reprs_dim = 2 * self.input_dim
                 self.output_dim = self.span_reprs_dim
 
-    def forward(self, token_embed, span_boundary):
+    def forward(self, token_embed, span_boundary):  # noqa
         # B x N x K -> select accroding to span_boundary -> B x M x K
         batch_size = span_boundary.shape[0]
         token_embed = token_embed.reshape(batch_size, -1, self.input_dim)
@@ -65,5 +65,4 @@ class SpanEncoder(Encoder):
         else:
             raise NotImplementedError
         span_reprs = span_reprs.reshape(-1, self.span_reprs_dim)
-        # span_reprs = self.span_linear_mapping(span_reprs)
         return span_reprs

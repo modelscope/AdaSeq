@@ -1,5 +1,4 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-import os
 
 import datasets
 from datasets import Features, Value
@@ -9,25 +8,20 @@ from .base import CustomDatasetBuilder
 
 
 class PartOfSpeechDatasetBuilderConfig(datasets.BuilderConfig):
+    """ Builder Config for the Part of Speech task """
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(PartOfSpeechDatasetBuilderConfig, self).__init__(data_dir=data_dir, data_files=data_files)
+        super().__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
 class PartOfSpeechDatasetBuilder(CustomDatasetBuilder):
+    """ Dataset Builder for the Part of Speech task """
 
     BUILDER_CONFIG_CLASS = PartOfSpeechDatasetBuilderConfig
 
-    def stub():
+    def stub():  # noqa: D102
         pass
-
-    @classmethod
-    def parse_label(cls, data):
-        labels = []
-        for span in data['spans']:
-            labels.append(span['type'])
-        return set(labels)
 
     def _info(self):
         info = datasets.DatasetInfo(

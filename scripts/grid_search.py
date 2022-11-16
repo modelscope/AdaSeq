@@ -15,6 +15,24 @@ from tqdm import tqdm
 
 
 def tune(args):
+    """ hyperparameter tuning via grid search
+
+    This function will launch experiments with multiple hyperparameter settings in parallel.
+    To use this function, modify the configuration file by changing the hyperparameters you want to tune to LIST.
+    for example:
+    ```
+      optimizer:
+        type: AdamW
+        lr:
+          - 5.0e-5
+          - 2.0e-5
+        crf_lr:
+          - 5.0e-1
+          - 5.0e-2
+    ```
+
+    usage: python scripts/grid_search.py tune -c ${cfg_file} [-c_env ${env_file} -to ${log_file}]
+    """
     from modelscope.utils.config import Config
     assert args.cfg_file is not None, 'cfg_file must be specified!'
     config = Config.from_file(args.cfg_file)
@@ -32,7 +50,7 @@ def tune(args):
     print(config.to_dict())
 
     # expand configs
-    all_configs = expand_config(config.to_dict())
+    all_configs = _expand_config(config.to_dict())
 
     op_gen = input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
     if op_gen in ['y', 'yes']:
@@ -105,25 +123,25 @@ def tune(args):
     print('===== running =====')
 
 
-def expand_config(config):
-    flattened_config = flatten_config(config)
+def _expand_config(config):
+    flattened_config = _flatten_config(config)
     keys = [item[0] for item in flattened_config]
     values = [item[1] if isinstance(item[1], list) else [item[1]] for item in flattened_config]
     configs = []
     for single_values in product(*values):
         assert len(keys) == len(single_values)
         data = list(zip(keys, single_values))
-        configs.append(create_config(data))
+        configs.append(_create_config(data))
     return configs
 
 
-def flatten_config(obj, path=[]):
+def _flatten_config(obj, path=[]):
     if isinstance(obj, (str, int, float)):
         return [(path, obj)]
     elif isinstance(obj, dict):
         ret = []
         for k, v in obj.items():
-            ret.extend(flatten_config(v, path + [k]))
+            ret.extend(_flatten_config(v, path + [k]))
         return ret
     elif isinstance(obj, list):
         if all(isinstance(x, (str, int, float)) for x in obj):
@@ -131,14 +149,14 @@ def flatten_config(obj, path=[]):
         else:
             ret = []
             for i, x in enumerate(obj):
-                ret.extend(flatten_config(x, path + [i]))
+                ret.extend(_flatten_config(x, path + [i]))
             return ret
     else:
         raise ValueError('Unsupported value type: {}'.format(type(obj)),
                          'Only the following value types are supported: str, int, float')
 
 
-def create_config(data):
+def _create_config(data):
     config = {}
     for path, v in data:
         temp_dict = config
@@ -158,6 +176,7 @@ def create_config(data):
 
 
 def collect(args):
+    """ Collect experiment results launched by tune and save into a csv file """
     from modelscope.utils.config import Config
     assert args.cfg_file is not None, 'cfg_file must be specified!'
     config = Config.from_file(args.cfg_file)
@@ -170,7 +189,7 @@ def collect(args):
     records = []
     log_files = glob.glob(os.path.join(output_path, '*/*.log.json'))
     for log_file in tqdm(log_files):
-        result = parse_log(log_file)
+        result = _parse_log(log_file)
         records.append(list(result.values()) + [log_file])
         keys = list(result.keys()) + ['log_file']
 
@@ -186,11 +205,11 @@ def collect(args):
 IGNORE_KEY_REGEX = re.compile('dataset|evaluation|experiment_exp|hooks')
 
 
-def parse_log(log_file):
+def _parse_log(log_file):
     ret = OrderedDict(dev_f1='NaN', p='NaN', r='NaN', f1='NaN')
     with open(log_file, 'r') as f:
         hp = json.loads(f.readline())
-        hp_list = flatten_config(hp)
+        hp_list = _flatten_config(hp)
         for k, v in hp_list:
             k = '_'.join(map(str, k))
             if IGNORE_KEY_REGEX.search(k):
@@ -209,6 +228,7 @@ def parse_log(log_file):
 
 
 def kill():
+    """ Kill all running processes launched by tune """
     subprocess.run(
         'kill_cnt=$((`ps -ef | grep $USER | grep -v "grep" | grep "sh experiments" |'
         'wc -l` + `ps -ef | grep $USER | grep -v "grep" | grep "scripts.train" | wc -l`));'

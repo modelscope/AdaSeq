@@ -51,6 +51,7 @@ class Decoder(nn.Module):
     @abstractmethod
     @torch.jit.export
     def decode(self, logits, mask=None, **kwargs):
+        """ Decode logits """
         raise NotImplementedError
 
     @classmethod

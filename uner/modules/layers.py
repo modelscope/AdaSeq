@@ -65,4 +65,12 @@ class Embedding(nn.Module):
             self.embedding = nn.Embedding(self.vocab_size, self.width)
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
+        """ Retrieve word embeddings using indices
+
+        Args:
+            input_ids (torch.Tensor): a list of indices
+
+        Returns:
+            embeddings (torch.Tensor): the corresponding word embeddings.
+        """
         return self.embedding(input_ids)

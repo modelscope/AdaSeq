@@ -294,6 +294,17 @@ class CRF(Decoder):
         return scores
 
     def compute_posterior(self, emissions: torch.Tensor, mask: torch.ByteTensor) -> torch.Tensor:
+        """ Compute posterior probability distribution from emission logits
+
+        Args:
+            emissions (`~torch.Tensor`): Emission score tensor of size
+                ``(seq_length, batch_size, num_tags)``
+            mask (`~torch.ByteTensor`): Mask tensor of size ``(seq_length, batch_size)``
+
+        Returns:
+            A PyTorch tensor of the shape
+            ``(seq_length, batch_size, num_tags)``
+        """
         if self.batch_first:
             emissions = emissions.transpose(0, 1)
             mask = mask.transpose(0, 1)
@@ -451,7 +462,7 @@ class CRF(Decoder):
 
 
 @torch.jit.script
-def viterbi_decode_inner_loop1(score, history_idx, emissions, transitions, mask, oor_idx):
+def viterbi_decode_inner_loop1(score, history_idx, emissions, transitions, mask, oor_idx):  # noqa
     # for every possible next tag
 
     seq_length, batch_size = mask.shape
@@ -484,7 +495,7 @@ def viterbi_decode_inner_loop1(score, history_idx, emissions, transitions, mask,
 
 
 @torch.jit.script
-def viterbi_decode_inner_loop2(mask, history_idx, best_tags, best_tags_arr):
+def viterbi_decode_inner_loop2(mask, history_idx, best_tags, best_tags_arr):  # noqa
     seq_length, batch_size = mask.shape
     for idx in range(seq_length - 1, -1, -1):
         best_tags = torch.gather(history_idx[idx], 1, best_tags)

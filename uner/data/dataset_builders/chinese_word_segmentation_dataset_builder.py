@@ -1,6 +1,4 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-import os
-
 import datasets
 from datasets import Features, Value
 
@@ -9,25 +7,27 @@ from .base import CustomDatasetBuilder
 
 
 class ChineseWordSegmentationDatasetBuilderConfig(datasets.BuilderConfig):
+    """ BuilderConfig for chinese word segmentation datasets """
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(ChineseWordSegmentationDatasetBuilderConfig, self).__init__(data_dir=data_dir, data_files=data_files)
+        super().__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
 class ChineseWordSegmentationDatasetBuilder(CustomDatasetBuilder):
+    """ Builder for entity typing datasets.
+
+        features:
+            id: string, data record id.
+            tokens: list[str] input tokens.
+            spans: List[Dict],  mentions like: [{'start': 0, 'end': 2, 'type': 'X'}]
+            mask: bool, mention mask.
+    """
 
     BUILDER_CONFIG_CLASS = ChineseWordSegmentationDatasetBuilderConfig
 
-    def stub():
+    def stub():  # noqa: D102
         pass
-
-    @classmethod
-    def parse_label(cls, data):
-        labels = []
-        for span in data['spans']:
-            labels.append(span['type'])
-        return set(labels)
 
     def _info(self):
         info = datasets.DatasetInfo(

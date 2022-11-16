@@ -3,12 +3,14 @@ from setuptools import find_packages, setup
 
 
 def readme():
+    """ Fetch readme content from README.md """
     with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
 
 
 def get_version():
+    """ Get version from version.py """
     version_file = 'uner/version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))

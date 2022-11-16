@@ -24,6 +24,7 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
         self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
+        """ prepare inputs for Entity Typing model """
         output = super().__call__(data)
 
         token_span_mapping = []

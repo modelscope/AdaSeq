@@ -34,6 +34,7 @@ class Encoder(nn.Module):
 
     @classmethod
     def from_config(cls, cfg_dict_or_path: Union[str, Dict, Config] = None, **kwargs):
+        """ Build encoder instance from config """
         if isinstance(cfg_dict_or_path, str) and osp.isfile(cfg_dict_or_path):
             cfg = Config.from_file(cfg_dict_or_path).model.encoder
         elif isinstance(cfg_dict_or_path, (dict, Config)):

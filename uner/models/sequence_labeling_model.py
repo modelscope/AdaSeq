@@ -106,7 +106,7 @@ class SequenceLabelingModel(Model):
 
         return {'logits': logits}
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
         outputs = self._forward(inputs)
 
         logits = outputs['logits']
@@ -167,7 +167,7 @@ class SequenceLabelingModel(Model):
             loss = 0.
         return loss
 
-    def decode(self, logits: torch.Tensor, mask: torch.Tensor) -> Union[List, torch.LongTensor]:
+    def decode(self, logits: torch.Tensor, mask: torch.Tensor) -> Union[List, torch.LongTensor]:  # noqa
         if self.use_crf:
             predicts = self.crf.decode(logits, mask=mask).squeeze(0)
         else:

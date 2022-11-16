@@ -213,16 +213,20 @@ class DefaultTrainer(EpochBasedTrainer):
         return DEFAULT_CONFIG
 
     def build_model(self) -> nn.Module:
+        """ Build model from config """
         return Model.from_config(self.cfg.model)
 
     def build_dataset(self) -> DatasetManager:
+        """ Build dataset from config """
         dataset = DatasetManager(task=self.cfg.task, **self.cfg.dataset)
         return dataset
 
     def after_build_dataset(self, **kwargs):
+        """ Do something after building dataset """
         pass
 
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
+        """ Build preprocessor from config """
         cfg = self.cfg.preprocessor
         if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder', 'model_dir'):
             cfg['model_dir'] = self.cfg.model.encoder.model_dir
@@ -234,9 +238,11 @@ class DefaultTrainer(EpochBasedTrainer):
         return train_preprocessor, eval_preprocessor
 
     def after_build_preprocessor(self, **kwargs):
+        """ Do something after building preprocessor """
         pass
 
     def build_data_collator(self) -> Tuple[DataCollatorMixin, DataCollatorMixin]:
+        """ Build data collator from config """
         cfg = self.cfg.preprocessor.data_collator
         if isinstance(cfg, str):
             cfg = dict(type=cfg)
@@ -246,6 +252,7 @@ class DefaultTrainer(EpochBasedTrainer):
         return train_data_collator, eval_data_collator
 
     def create_optimizer_and_scheduler(self):
+        """ Create optimizer and lr-scheduler from config """
         optimizer, lr_scheduler = self.optimizers
         if optimizer is None:
             optimizer_cfg = self.cfg.train.get('optimizer', None)
@@ -274,6 +281,7 @@ class DefaultTrainer(EpochBasedTrainer):
 
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
+        """ Build optimizer from config """
         return build_optimizer(model, cfg, default_args)
 
     def _init_file_logger(self):
@@ -285,13 +293,16 @@ class DefaultTrainer(EpochBasedTrainer):
                 break
 
     def dump_log(self, log_dict):
+        """ Dump dict to log file """
         if self._file_logger is not None:
             self._file_logger._dump_log(log_dict)
 
     def train(self, checkpoint_path=None, *args, **kwargs):
+        """ Train a model with training set """
         return super().train(checkpoint_path=checkpoint_path, *args, **kwargs)
 
     def test(self, checkpoint_path=None):
+        """ Evaluate a trained model on testing set """
         backup_eval_dataset = self.eval_dataset
         self.eval_dataset = self.test_dataset
         metric_values = self.evaluate(checkpoint_path)

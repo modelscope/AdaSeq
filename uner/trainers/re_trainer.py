@@ -20,8 +20,10 @@ from .default_trainer import DefaultTrainer
 
 @TRAINERS.register_module(module_name=Trainers.re_trainer)
 class RETrainer(DefaultTrainer):
+    """ Trainer for RE task """
 
     def after_build_dataset(self, **kwargs):
+        """ Collect labels from datasets and create label to id mapping """
         # get label info from dataset
         self.labels = None
         self.label2id = None
@@ -34,7 +36,7 @@ class RETrainer(DefaultTrainer):
             raise ValueError('label2id must be set!')
 
     def after_build_preprocessor(self, **kwargs):
-        # update label2id, since label set was exteded. e.g., B-X->S-X
+        """ Update label2id, since label set was exteded. e.g., B-X->S-X """
         if self.train_preprocessor is not None:
             self.label2id = self.train_preprocessor.label2id
         elif self.eval_preprocessor is not None:
@@ -44,15 +46,18 @@ class RETrainer(DefaultTrainer):
         self.logger.info('label2id:', self.label2id)
 
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
+        """ Build preprocessor with labels and label2id """
         return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)
 
     def build_model(self) -> nn.Module:
+        """ Build model with labels"""
         cfg = self.cfg.model
         cfg['num_labels'] = len(self.label2id)
         return Model.from_config(cfg)
 
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
+        """ Build optimizer with layer-wise learning rate """
         if hasattr(model, 'module'):
             model = model.module
         if default_args is None:

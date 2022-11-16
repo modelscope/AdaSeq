@@ -11,6 +11,7 @@ from uner.utils.data_utils import gen_label2id
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.nlp_preprocessor)
 class NLPPreprocessor(Preprocessor):
+    """ common pre-process operations for NLP tasks """
 
     def __init__(self, model_dir: str, **kwargs):
         super().__init__(**kwargs)
@@ -25,6 +26,7 @@ class NLPPreprocessor(Preprocessor):
         self.tokenizer = self.build_tokenizer(model_dir)
 
     def build_tokenizer(self, model_dir):
+        """ build tokenizer from `transformers`. """
         if 'word2vec' in model_dir:
             return BertTokenizer.from_pretrained(model_dir)
         elif 'nezha' in model_dir:
@@ -33,6 +35,7 @@ class NLPPreprocessor(Preprocessor):
             return AutoTokenizer.from_pretrained(model_dir)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
+        """ encode one instance, it could be a text str, a list of tokens for a dict """
         if isinstance(data, str):
             data = {'text': data}
         if isinstance(data, List):
@@ -48,6 +51,7 @@ class NLPPreprocessor(Preprocessor):
         return output
 
     def encode_tokens(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """ conver token to ids, add some mask. """
         tokens = data['tokens']
         mask = data.get('mask', [True] * len(tokens))
         input_ids = []
@@ -84,6 +88,7 @@ class NLPPreprocessor(Preprocessor):
         return output
 
     def encode_tokens_origin_view(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """ encode tokens when using multi-view model. """
         tokens = data['tokens']
         mask = data.get('mask', [True] * len(tokens))
 
@@ -126,9 +131,11 @@ class NLPPreprocessor(Preprocessor):
         return output
 
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """ encode 'text' to ids """
         raise NotImplementedError
 
     def map_label_to_id(self, labels: List[str] = None, label2id: Dict[str, int] = None) -> Dict[str, int]:
+        """ conver labels to ids """
         if label2id is not None:
             return label2id
         elif labels is not None:

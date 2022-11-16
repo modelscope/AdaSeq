@@ -9,21 +9,24 @@ from .base import CustomDatasetBuilder
 
 
 class RelationExtractionDatasetBuilderConfig(datasets.BuilderConfig):
+    """ Builder Config for Relation Extraction """
 
     def __init__(self, data_dir=None, data_files=None, **corpus_config):
-        super(RelationExtractionDatasetBuilderConfig, self).__init__(data_dir=data_dir, data_files=data_files)
+        super().__init__(data_dir=data_dir, data_files=data_files)
         self.corpus_config = corpus_config
 
 
 class RelationExtractionDatasetBuilder(CustomDatasetBuilder):
+    """ Dataset Builder for Relation Extraction """
+
     BUILDER_CONFIG_CLASS = RelationExtractionDatasetBuilderConfig
 
-    def stub():
+    def stub():  # noqa: D102
         pass
 
     @classmethod
-    def parse_label(cls, data):
-        return [data['label']]
+    def parse_label(cls, data):  # noqa: D102
+        return [data['label']]  # TODO fix
 
     def _info(self):
         info = datasets.DatasetInfo(

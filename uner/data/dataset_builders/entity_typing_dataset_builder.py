@@ -28,7 +28,7 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
 
     BUILDER_CONFIG_CLASS = EntityTypingDatasetBuilderConfig
 
-    def stub():
+    def stub():  # noqa: D102
         pass
 
     def _info(self):

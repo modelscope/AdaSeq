@@ -9,7 +9,8 @@ from uner.metainfo import Metrics
 
 
 class EntityScore:
-    """Span based scorer.
+    """ Span based scorer.
+
        usage:
        scorer = EntityScore()
        scorer.update(golden_spans_batch, pred_spans_batch)
@@ -20,6 +21,7 @@ class EntityScore:
         self.reset()
 
     def reset(self):
+        """ Reset all recorded data """
         self.origins = []
         self.founds = []
         self.rights = []
@@ -33,7 +35,7 @@ class EntityScore:
         return recall, precision, f1
 
     def result(self) -> Dict[str, float]:
-        """Calculate performance, return precision, recall, f1-score in a dictionary"""
+        """ Calculate performance, return precision, recall, f1-score in a dictionary """
 
         detailed_report = 'evaluation report:\n'
         origin_counter = Counter([x['type'] for x in self.origins])

@@ -8,17 +8,32 @@ from uner.data.constant import NONE_REL_LABEL, OBJECT_START_TOKEN, PAD_LABEL, SU
 
 
 class DatasetReader(ABC):
+    """ DatasetReader abstract class  """
 
     @classmethod
     @abstractmethod
     def load_data_file(cls, file_path, corpus_config):
+        """  Reads the instances from the given `file_path` and `corpus_config` """
         raise NotImplementedError
 
 
 class NamedEntityRecognitionDatasetReader(DatasetReader):
+    """ Implementation of NER reader. """
 
     @classmethod
     def load_data_file(cls, file_path, corpus_config):
+        """
+        NER reader supports CoNLL format ('column'),
+        json format `{'text': 'duck duck duck duck', 'labels': ['B-PER', 'O', ...]}`
+        and span_based json ```
+        {
+            'text': 'duck duck',
+            'label': {
+                'LOC': [[0, 1], ...]. TODO: what?
+            }
+        }
+        ```.
+        """
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
                 return cls._load_column_data_file(file_path, delimiter=corpus_config.get('delimiter', None))
@@ -188,9 +203,11 @@ class EntityTypingDatasetReader(DatasetReader):
 
 
 class RelationExtractionDatasetReader(DatasetReader):
+    """  Relation Extraction dataset reader """
 
     @classmethod
     def load_data_file(cls, file_path, corpus_config):
+        """ load CoNLL format file. """
         if corpus_config['data_type'] == 'sequence_labeling':
             if corpus_config['data_format'] == 'column':
                 return cls._load_column_data_file(file_path, delimiter=corpus_config.get('delimiter', None))

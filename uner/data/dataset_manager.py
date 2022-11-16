@@ -103,17 +103,17 @@ class DatasetManager:
             self.datasets['valid'] = self.datasets['test']
 
     @property
-    def train(self):
+    def train(self):  # noqa: D102
         return self.datasets.get('train', None)
 
     @property
-    def dev(self):
+    def dev(self):  # noqa: D102
         return self.datasets.get('valid', None)
 
     @property
-    def valid(self):
+    def valid(self):  # noqa: D102
         return self.datasets.get('valid', None)
 
     @property
-    def test(self):
+    def test(self):  # noqa: D102
         return self.datasets.get('test', None)

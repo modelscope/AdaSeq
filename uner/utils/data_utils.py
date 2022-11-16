@@ -7,6 +7,14 @@ from .common_utils import import_dataset_builder_class
 
 
 def get_labels(dataset: Union[Dataset, Dict[str, Dataset]]) -> List[str]:
+    """ [deprecated] Collect label set from datasets
+
+    Args:
+        dataset (Union[Dataset, Dict[str, Dataset]): dataset or a dict of datasets
+
+    Returns:
+        labels (List[str]): list of all unique labels in alphabetical order
+    """
     labels = []
     if isinstance(dataset, dict):
         for _dataset in dataset.values():
