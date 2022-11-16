@@ -40,9 +40,9 @@ data_type: sequence_labeling
 ## Model Checkpoint
 The pretrained BABERT-base checkpoint is available:
 
-| Model         |  Link         | 
+| Model         |  Download Link         | 
 |------------   |:-----:        |
-| BABERT-base   |               |
+| BABERT-base   |  [chinese-babert-base.tar](https://alice-open.oss-cn-zhangjiakou.aliyuncs.com/babert/chinese_babert-base.tar)             |
 
 ## Experiment results
 
