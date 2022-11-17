@@ -48,7 +48,8 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
             label2id['O'] = 0
         for label in labels:
             for tag in 'BIES':
-                label2id[f'{tag}-{label}'] = len(label2id)
+                if tag in tag_scheme:
+                    label2id[f'{tag}-{label}'] = len(label2id)
         return label2id
 
     @staticmethod
