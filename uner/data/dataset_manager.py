@@ -7,7 +7,10 @@ from datasets.utils.file_utils import is_remote_url
 from modelscope.msdatasets import MsDataset
 from modelscope.utils.logger import get_logger
 
-SUPPORTED_LOCAL_TASK = {'chinese-word-segmentation', 'entity-typing', 'named-entity-recognition', 'part-of-speech'}
+from uner.metainfo import Tasks
+
+SUPPORTED_LOCAL_TASK = set(getattr(Tasks, _a) for _a in dir(Tasks) if not _a.startswith('__'))
+
 logger = get_logger(log_level='INFO')
 
 
@@ -64,7 +67,9 @@ class DatasetManager:
                     raise RuntimeError('`data_dir` not exists: %s', data_dir)
             elif isinstance(data_files, dict):
                 for k, v in data_files.items():
-                    if not is_remote_url(data_dir) and not osp.exists(v):
+                    if is_remote_url(v):
+                        continue
+                    if not osp.exists(v):
                         raise RuntimeError('`data_file[%s]` not exists: %s', k, v)
                     if not osp.isabs(v):
                         # since datasets

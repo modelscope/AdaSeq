@@ -1,6 +1,7 @@
 # Partial Bert-CRF
 ## data preprocessing
-Partially annotated entity/span should be marked as B-P
+Partially annotated entity/span should be marked as B-P.
+You can process the trainset and set the path to `dataset: data_files: train` of `configs/msra.yml`.
  
 ## Training a new model
 ```

@@ -26,15 +26,17 @@ We adopt the conll dataset format for all datasets. We use **BIES** label type f
 If you are using dataset that already exists in ``msdataset``, you can directly specify the name of the dataset in the yaml file as:
 ```
 dataset:
-  corpus: ontonotes4
+  name_or_path: msra_cws
 ```
 You can also use local training data by specifying the dataset path in the yaml file
 ```
-data_type: sequence_labeling
+dataset:
+  data_files:
+    train: local_path_to/train.txt
+    valid: local_path_to/dev.txt
+    test: local_path_to/test.txt
+  data_type: sequence_labeling
   data_format: column
-  train: local_path_to/train.txt
-  valid: local_path_to/dev.txt
-  test: local_path_to/test.txt
 ```
 
 ## Model Checkpoint
