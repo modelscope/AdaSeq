@@ -3,7 +3,8 @@
 In order to enhance the language model's ability to recognize Chinese boundaries in various sequence labeling tasks, we seek to leverage unsupervised statistical boundary information and propose an architecture to encode the information directly into pre-trained language models, resulting in Boundary-Aware BERT (BABERT). [BABERT(EMNLP2022)](https://arxiv.org/abs/2210.15231). 
 
 The overall architecture of the boundary-aware pre-trained language model:
-<div align=center><img src="./resource/babert.png" /></div>
+
+![](./resource/babert.png)
 
 ## Dataset
 We adopt the conll dataset format for all datasets. We use **BIES** label type for cws/pos tasks and **BIOES** for the ner task. 
@@ -85,17 +86,17 @@ The pretrained BABERT-base checkpoint is available:
 
 - Chinese Word Segmentation
 ```
-python -m scripts.train -c examples/babert/configs/cws/msra.yaml -t ner-trainer --seed $seed
+python -m scripts.train -c examples/babert/configs/cws/msra.yaml --seed $seed
 ```
 
 - Part of Speech
 ```
-python -m scripts.train -c examples/babert/configs/pos/ud1.yaml -t ner-trainer --seed $seed
+python -m scripts.train -c examples/babert/configs/pos/ud1.yaml --seed $seed
 ```
 
 - Named Entity Recognition
 ```
-python -m scripts.train -c examples/babert/configs/ner/ontonotes4.yaml -t ner-trainer --seed $seed
+python -m scripts.train -c examples/babert/configs/ner/ontonotes4.yaml --seed $seed
 ```
 
 ## Citation
