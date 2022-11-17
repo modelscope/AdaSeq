@@ -25,8 +25,10 @@
 TODO
 
 ## Quick Start
-### Requirements
+### Requirements and Installation
+Python version >= 3.7
 ```
+git clone https://github.com/modelscope/adaseq.git
 pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
 ```
 
