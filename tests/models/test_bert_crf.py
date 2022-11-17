@@ -4,7 +4,7 @@ import unittest
 from modelscope.trainers import build_trainer
 from tests.models.base import TestModel, compare_fn
 
-from uner.metainfo import Trainers
+from adaseq.metainfo import Trainers
 
 
 class TestBertCRF(TestModel):

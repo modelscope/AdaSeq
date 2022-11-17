@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from modelscope.preprocessors.builder import build_preprocessor
 
-import uner
+import adaseq
 
 
 class TestPreprocessor(unittest.TestCase):

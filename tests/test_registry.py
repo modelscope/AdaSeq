@@ -4,10 +4,10 @@ import unittest
 
 from transformers import BertModel
 
-from uner.metainfo import Models
-from uner.models.base import Model
-from uner.models.sequence_labeling_model import SequenceLabelingModel
-from uner.modules.encoders import Encoder
+from adaseq.metainfo import Models
+from adaseq.models.base import Model
+from adaseq.models.sequence_labeling_model import SequenceLabelingModel
+from adaseq.modules.encoders import Encoder
 
 
 class TestRegistry(unittest.TestCase):

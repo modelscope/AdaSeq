@@ -11,7 +11,7 @@ def readme():
 
 def get_version():
     """ Get version from version.py """
-    version_file = 'uner/version.py'
+    version_file = 'adaseq/version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
@@ -122,11 +122,11 @@ setup(
     ],
     install_requires=parse_requirements('requirements.txt'),
     packages=find_packages(),
-    package_dir={'uner': 'uner'},
-    package_data={'uner': ['data/*.yaml']},
+    package_dir={'adaseq': 'adaseq'},
+    package_data={'adaseq': ['data/*.yaml']},
     license='Apache License 2.0',
     entry_points={
         'console_scripts':
-        ['adaseq=uner.main:run']  # TODO: rename uner to adaseq
+        ['adaseq=adaseq.main:run']
     },
 )  # yapf: disable

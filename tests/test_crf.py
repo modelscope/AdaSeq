@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 import torch
 
-from uner.modules.decoders import CRF
+from adaseq.modules.decoders import CRF
 
 
 class TestCRF(unittest.TestCase):
