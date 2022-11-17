@@ -14,14 +14,16 @@ class Metrics:
     sequence_labeling_metric = 'sequence-labeling-metric'
     span_extraction_metric = 'span-extraction-metric'
     relation_extraction_metric = 'relation-extraction-metric'
+    typing_metric = 'typing-metric'
 
 
 class Models:
     """ Names for different models """
     sequence_labeling_model = 'sequence-labeling-model'
     global_pointer_model = 'global-pointer-model'
-    multilabel_span_typing_model = 'multilabel-span-typing-model'
     relation_extraction_model = 'relation-extraction-model'
+    multilabel_concat_typing_model = 'multilabel-concat-typing-model'
+    multilabel_span_typing_model = 'multilabel-span-typing-model'
 
 
 class Encoders:
@@ -33,6 +35,8 @@ class Decoders:
     """ Names for different decoders """
     crf = 'crf'
     partial_crf = 'partial-crf'
+    pairwise_crf = 'pairwise-crf'
+    linear = 'linear'
 
 
 class Preprocessors:
@@ -42,6 +46,7 @@ class Preprocessors:
     relation_extraction_preprocessor = 'relation-extraction-preprocessor'
     global_pointer_preprocessor = 'global-pointer-preprocessor'
     multilabel_span_typing_preprocessor = 'multilabel-span-typing-preprocessor'
+    multilabel_concat_typing_preprocessor = 'multilabel-concat-typing-preprocessor'
 
 
 class DataCollators:
@@ -50,6 +55,7 @@ class DataCollators:
     sequence_labeling_data_collator = 'SequenceLabelingDataCollatorWithPadding'
     span_extraction_data_collator = 'SpanExtractionDataCollatorWithPadding'
     multi_label_span_typing_data_collator = 'MultiLabelSpanTypingDataCollatorWithPadding'
+    multi_label_concat_typing_data_collator = 'MultiLabelConcatTypingDataCollatorWithPadding'
     relation_extraction_data_collator = 'RelationExtractionDataCollatorWithPadding'
 
 

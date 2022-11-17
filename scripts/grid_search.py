@@ -6,7 +6,6 @@ import re
 import subprocess
 from collections import OrderedDict
 from itertools import product
-from typing import Optional
 
 import json
 import numpy as np
@@ -52,7 +51,7 @@ def tune(args):
     # expand configs
     all_configs = _expand_config(config.to_dict())
 
-    op_gen = input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
+    op_gen = 'y' if args.y else input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
     if op_gen in ['y', 'yes']:
         print('generating configs...')
     else:
@@ -70,7 +69,7 @@ def tune(args):
     print('===== listing gpu info ===== ')
     subprocess.run(['nvidia-smi'])
 
-    gpu = input('select gpus (e.g. 0 or 0,1 or 0,1,3,4): ').lower()
+    gpu = args.gpu if args.gpu else input('select gpus (e.g. 0 or 0,1 or 0,1,3,4): ').lower()
     gpus = None
     pattern = re.compile(r'(\d|,)*\d$')
     if re.match(pattern, gpu):
@@ -111,16 +110,20 @@ def tune(args):
                         config_file=config_file)
             f.write(output)
 
-    op_run = input('run scripts ? (y/n): ').lower()
+    op_run = 'y' if args.y else input('run scripts ? (y/n): ').lower()
     if op_run in ['y', 'yes']:
         print('start running scripts...')
     else:
         exit(0)
 
-    for f in all_script_files:
-        subprocess.run('nohup sh {} > {} &'.format(f, args.to), shell=True)
-
     print('===== running =====')
+    if not args.foreground:
+        for f in all_script_files:
+            subprocess.run('nohup sh {} > {} &'.format(f, args.to), shell=True)
+    else:
+        proc = [subprocess.Popen('sh {} > {}'.format(f, args.to), shell=True) for f in all_script_files]
+        exit_codes = [p.wait() for p in proc]
+        print('finished:', exit_codes)
 
 
 def _expand_config(config):
@@ -189,7 +192,11 @@ def collect(args):
     records = []
     log_files = glob.glob(os.path.join(output_path, '*/*.log.json'))
     for log_file in tqdm(log_files):
-        result = _parse_log(log_file)
+        try:
+            result = _parse_log(log_file)
+        except Exception:
+            print('error during parsing log file {}'.format(log_file))
+            continue
         records.append(list(result.values()) + [log_file])
         keys = list(result.keys()) + ['log_file']
 
@@ -207,6 +214,7 @@ IGNORE_KEY_REGEX = re.compile('dataset|evaluation|experiment_exp|hooks')
 
 def _parse_log(log_file):
     ret = OrderedDict(dev_f1='NaN', p='NaN', r='NaN', f1='NaN')
+    best_dev = -1
     with open(log_file, 'r') as f:
         hp = json.loads(f.readline())
         hp_list = _flatten_config(hp)
@@ -218,7 +226,9 @@ def _parse_log(log_file):
         for line in f:
             if '"eval"' in line:
                 result = json.loads(line)
-                ret['dev_f1'] = result['f1']
+                if result['f1'] > best_dev:
+                    best_dev = result['f1']
+                ret['dev_f1'] = best_dev
             elif '"test"' in line:
                 result = json.loads(line)
                 ret['p'] = result['precision']
@@ -252,6 +262,10 @@ if __name__ == '__main__':
     parser.add_argument('-to', '--to', help='stdout and stderr to', default='/dev/null')
     parser.add_argument('-o', '--output_file', help='output file for collect', default='res.csv')
     parser.add_argument('-oa', '--output_avg_file', help='output avg file for collect', default='res_seed_avg.csv')
+    parser.add_argument('-g', '--gpu', help='gpu', default='')
+    parser.add_argument('-y', '--y', help='default yes', action='store_true')
+    parser.add_argument('-f', '--foreground', help='run in foreground and wait for exits for dlc', action='store_true')
+
     args = parser.parse_args()
 
     if args.mode == 'tune':

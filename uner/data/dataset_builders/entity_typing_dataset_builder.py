@@ -48,7 +48,7 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
 
     def _generate_examples(self, filepath):
         if 'corpus_reader' in self.config.corpus_config:
-            # TODO: get the reder via reflection
+            # TODO: get the reader via reflection
             raise NotImplementedError
         else:
             return EntityTypingDatasetReader.load_data_file(filepath, self.config.corpus_config)

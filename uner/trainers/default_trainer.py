@@ -60,7 +60,6 @@ class DefaultTrainer(EpochBasedTrainer):
 
         # init logger
         self.logger = get_logger(log_level=self.cfg.get('log_level', 'INFO'))
-
         # seed
         self._seed = 0
         if seed is not None:

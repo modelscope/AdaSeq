@@ -34,3 +34,17 @@ class MultiLabelSpanTypingDataCollatorWithPadding(DataCollatorWithPadding):
                 batch['type_ids'][i] = batch['type_ids'][i] + ([[0] * len(batch['type_ids'][i][0])]) * difference
                 batch['mention_msk'][i] = batch['mention_msk'][i] + [0] * difference
         return batch
+
+
+@DATA_COLLATORS.register_module(module_name=DataCollators.multi_label_concat_typing_data_collator)
+@dataclass
+class MultiLabelConcatTypingDataCollatorWithPadding(DataCollatorWithPadding):
+    """Padding method for multilabel span concat typing dataset."""
+
+    def __init__(self, tokenizer, **kwargs):
+        super().__init__(tokenizer)
+        self.keep_fields.append('spans')
+
+    def padding(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,  # noqa
+                padding_side: str) -> Dict[str, Any]:  # yapf: disable
+        return batch

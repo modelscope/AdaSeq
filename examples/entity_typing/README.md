@@ -2,7 +2,7 @@
 
 ## Training a new model
 ```
-python -m scripts.train -c examples/entity_typing/configs/wiki_cfet.yaml
+python -m scripts.train -c examples/entity_typing/configs/cfet_span.yaml
 ```
 
 ## Benchmarks

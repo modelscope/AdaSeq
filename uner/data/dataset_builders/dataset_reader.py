@@ -183,7 +183,7 @@ class EntityTypingDatasetReader(DatasetReader):
                     if corpus_config['tokenizer'] == 'char':
                         tokens = list(text)
                     elif corpus_config['tokenizer'] == 'blank':
-                        tokens = text.split(' ')
+                        tokens = text.split()
                     else:
                         raise NotImplementedError
                 entity_list = []
@@ -198,8 +198,17 @@ class EntityTypingDatasetReader(DatasetReader):
                         'type': entity['type']
                     })
                 mask = [True] * len(tokens)
-                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': entity_list, 'mask': mask}
-                guid += 1
+
+                reading_format = corpus_config.get('encoding_format', 'span')
+                if reading_format == 'span':
+                    yield guid, {'id': str(guid), 'tokens': tokens, 'spans': entity_list, 'mask': mask}
+                    guid += 1
+                elif reading_format == 'concat':
+                    for entity in entity_list:
+                        yield guid, {'id': str(guid), 'tokens': tokens, 'spans': [entity], 'mask': mask}
+                        guid += 1
+                else:
+                    raise NotImplementedError('unimplemented reading_format')
 
 
 class RelationExtractionDatasetReader(DatasetReader):
