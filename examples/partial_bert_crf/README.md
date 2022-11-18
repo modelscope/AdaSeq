@@ -11,6 +11,4 @@ python -m scripts.train -c examples/partial_bert_crf/configs/resume.yaml
 ```
 
 ## Benchmarks
-### Chinese
-
-### English
+TODO

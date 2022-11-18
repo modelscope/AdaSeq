@@ -17,7 +17,6 @@ python -m scripts.train -c examples/npcrf/configs/ufet_concat_npcrf.yaml
 ```
 
 ## Benchmarks
-### English
 | UFET                | ma-F1 | ma-P | ma-R |
 |---------------------|-------|------|------|
 | NPCRF-roberta-large | 47.1  | 49.5 | 44.9 |

@@ -5,13 +5,21 @@
 
 ---
 
-### Features
+### Features:
 - **State-of-the-Art**: we provide plenty of cutting-edge models, training methods and useful toolkits for sequence understanding tasks.
 - **Easy-to-Use**: one line of command is all you need to obtain the best model.
 - **Extensible**: easily register new tasks, models, modules, criterions, optimizers, lr_schedulers and training methods.
 
-### What's New
-- November 2022: [BABERT models released](./examples/babert)
+### What's New:
+- 2022-11: [Released NPCRF code](./examples/NPCRF)
+- 2022-11: [Released BABERT models](./examples/babert)
+
+<details>
+<summary>Previous updates</summary>
+</details>
+
+## State-of-the-Art Models
+TODO
 
 ## Supported Models
 - [Transformer-based CRF](./examples/bert_crf)
@@ -20,9 +28,6 @@
 - [Global-Pointer](./examples/global_pointer)
 - [Multi-label Entity Typing](./examples/entity_typing)
 - ...
-
-## State-of-the-Art Models
-TODO
 
 ## Quick Start
 ### Requirements and Installation
