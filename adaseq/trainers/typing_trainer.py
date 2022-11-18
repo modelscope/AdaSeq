@@ -27,7 +27,6 @@ class TypingTrainer(DefaultTrainer):
         self,
         train_dataset: Optional[Dataset] = None,
         eval_dataset: Optional[Dataset] = None,
-        test_dataset: Optional[Dataset] = None,
         **kwargs
     ):
         """Collect labels from train/eval/test datasets and create label to id mapping"""
@@ -44,7 +43,7 @@ class TypingTrainer(DefaultTrainer):
             self.label2id = kwargs.pop('label2id')
         elif has_keys(self.cfg, 'preprocessor', 'type'):
             labels = set()
-            for dataset in (train_dataset, eval_dataset, test_dataset):
+            for dataset in (train_dataset, eval_dataset):
                 if dataset is not None:
                     for data in dataset:
                         for span in data['spans']:

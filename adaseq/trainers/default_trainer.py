@@ -111,7 +111,6 @@ class DefaultTrainer(EpochBasedTrainer):
         self.after_build_dataset(
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
-            test_dataset=test_dataset,
             **kwargs,
         )
 
