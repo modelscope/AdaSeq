@@ -32,10 +32,37 @@ envs:
   - 'export HF_DATASETS_CACHE=xxx'
 ```
 
+## Usage
+```
+usage: grid_search.py [-h] [-c CFG_FILE] [-c_env CONFIG_ENV] [-to TO]
+                      [-o OUTPUT_FILE] [-oa OUTPUT_AVG_FILE] [-g GPU] [-y]
+                      [-f]
+                      {tune,collect,kill}
+
+positional arguments:
+  {tune,collect,kill}   [tune, collect, kill]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CFG_FILE, --cfg_file CFG_FILE
+                        configuration YAML file
+  -c_env CONFIG_ENV, --config_env CONFIG_ENV
+                        configuration YAML file for environment
+  -to TO, --to TO       stdout and stderr to
+  -o OUTPUT_FILE, --output_file OUTPUT_FILE
+                        output file for collect
+  -oa OUTPUT_AVG_FILE, --output_avg_file OUTPUT_AVG_FILE
+                        output avg file for collect
+  -g GPU, --gpu GPU     gpu_ids (e.g. 0 or 0,1 or 0,1,3,4)
+  -y, --yes             automatically answer yes for all questions
+  -f, --foreground      run in foreground and wait for exits for dlc
+```
+
 ## tune
 ```shell
-python scripts/grid_search.py tune -c ${cfg_file} [-c_env ${env_file} -to ${log_file}]
+python scripts/grid_search.py tune -c ${cfg_file} [-c_env ${env_file} -g ${gpu_ids} -y -f -to ${log_file}]
 ```
+
 
 ## collect
 ```shell

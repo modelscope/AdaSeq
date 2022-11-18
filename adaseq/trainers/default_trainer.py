@@ -227,8 +227,8 @@ class DefaultTrainer(EpochBasedTrainer):
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
         """ Build preprocessor from config """
         cfg = self.cfg.preprocessor
-        if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder', 'model_dir'):
-            cfg['model_dir'] = self.cfg.model.encoder.model_dir
+        if 'model_dir' not in cfg and has_keys(self.cfg, 'model', 'encoder', 'model_name_or_path'):
+            cfg['model_dir'] = self.cfg.model.encoder.model_name_or_path
         for k, v in kwargs.items():
             cfg[k] = v
         preprocessor = build_preprocessor(cfg)

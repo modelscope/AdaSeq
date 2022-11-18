@@ -38,12 +38,15 @@ def tune(args):
     assert 'experiment' in config
     assert 'exp_name' in config.experiment
 
-    env_config = Config.from_file(args.config_env)
+    if args.config_env is None:
+        env_config = Config()
+    else:
+        env_config = Config.from_file(args.config_env)
     if 'python_interpreter' not in env_config:
         env_config['python_interpreter'] = 'python'
     if 'python_file' not in env_config:
         env_config['python_file'] = 'scripts.train'
-    assert 'trainer' in env_config
+    assert 'trainer' in config or 'trainer' in env_config
 
     print('===== experiment meta config =====')
     print(config.to_dict())
@@ -51,7 +54,7 @@ def tune(args):
     # expand configs
     all_configs = _expand_config(config.to_dict())
 
-    op_gen = 'y' if args.y else input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
+    op_gen = 'y' if args.yes else input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
     if op_gen in ['y', 'yes']:
         print('generating configs...')
     else:
@@ -102,15 +105,17 @@ def tune(args):
             output += env_settings
             for config_file in split:
                 output += 'CUDA_VISIBLE_DEVICES={gpu_id} {python_interpreter} ' \
-                    '-m {python_file} -t {trainer} -c {config_file} \n'.format(
+                    '-m {python_file} -c {config_file} '.format(
                         gpu_id=gpus[i],
                         python_interpreter=env_config.python_interpreter,
                         python_file=env_config.python_file,
-                        trainer=env_config.trainer,
                         config_file=config_file)
+                if 'trainer' in env_config:
+                    output += '-t {trainer} '.format(trainer=env_config.trainer)
+                output += '\n'
             f.write(output)
 
-    op_run = 'y' if args.y else input('run scripts ? (y/n): ').lower()
+    op_run = 'y' if args.yes else input('run scripts ? (y/n): ').lower()
     if op_run in ['y', 'yes']:
         print('start running scripts...')
     else:
@@ -127,33 +132,44 @@ def tune(args):
 
 
 def _expand_config(config):
-    flattened_config = _flatten_config(config)
-    keys = [item[0] for item in flattened_config]
-    values = [item[1] if isinstance(item[1], list) else [item[1]] for item in flattened_config]
-    configs = []
-    for single_values in product(*values):
-        assert len(keys) == len(single_values)
-        data = list(zip(keys, single_values))
-        configs.append(_create_config(data))
-    return configs
+    """ recursively expand the config files """
+    all_prev_config = [config]
+    while True:
+        prev_total_config = len(all_prev_config)
+        all_new_config = []
+        for c in all_prev_config:
+            flattened_config = _flatten_config(c)
+            keys = [item[0] for item in flattened_config]
+            values = [
+                item[1] if (isinstance(item[1], list) and item[0][-1] not in ['hooks', 'metrics']) else [item[1]]
+                for item in flattened_config
+            ]
+            for single_values in product(*values):
+                assert len(keys) == len(single_values)
+                data = list(zip(keys, single_values))
+                all_new_config.append(_create_config(data))
+
+        new_total_config = len(all_new_config)
+        all_prev_config = all_new_config
+        if new_total_config == prev_total_config:
+            break
+
+    return all_new_config
 
 
 def _flatten_config(obj, path=[]):
-    if isinstance(obj, (str, int, float)):
+    if isinstance(obj, (str, int, float, bool)):
         return [(path, obj)]
     elif isinstance(obj, dict):
         ret = []
         for k, v in obj.items():
-            ret.extend(_flatten_config(v, path + [k]))
+            if k not in ['hooks', 'metrics']:  # hooks and metrics are naturally list, should not be flattened
+                ret.extend(_flatten_config(v, path + [k]))
+            else:
+                ret.extend([(path + [k], v)])
         return ret
     elif isinstance(obj, list):
-        if all(isinstance(x, (str, int, float)) for x in obj):
-            return [(path, obj)]
-        else:
-            ret = []
-            for i, x in enumerate(obj):
-                ret.extend(_flatten_config(x, path + [i]))
-            return ret
+        return [(path, obj)]
     else:
         raise ValueError('Unsupported value type: {}'.format(type(obj)),
                          'Only the following value types are supported: str, int, float')
@@ -164,13 +180,8 @@ def _create_config(data):
     for path, v in data:
         temp_dict = config
         for i, k in enumerate(path):
-            if isinstance(temp_dict, list):
-                temp_dict += [{} for _ in range(k + 1 - len(temp_dict))]
-            elif k not in temp_dict:
-                if i < len(path) - 1 and isinstance(path[i + 1], int):
-                    temp_dict[k] = []
-                else:
-                    temp_dict[k] = {}
+            if k not in temp_dict:
+                temp_dict[k] = {}
             if i < len(path) - 1:
                 temp_dict = temp_dict[k]
             else:
@@ -254,16 +265,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('grid_search.py')
     parser.add_argument('mode', choices=['tune', 'collect', 'kill'], help='[tune, collect, kill]')
     parser.add_argument('-c', '--cfg_file', help='configuration YAML file')
-    parser.add_argument(
-        '-c_env',
-        '--config_env',
-        help='configuration YAML file for environment',
-        default='examples/grid_search/env.yaml')
+    parser.add_argument('-c_env', '--config_env', default=None, help='configuration YAML file for environment')
     parser.add_argument('-to', '--to', help='stdout and stderr to', default='/dev/null')
     parser.add_argument('-o', '--output_file', help='output file for collect', default='res.csv')
     parser.add_argument('-oa', '--output_avg_file', help='output avg file for collect', default='res_seed_avg.csv')
-    parser.add_argument('-g', '--gpu', help='gpu', default='')
-    parser.add_argument('-y', '--y', help='default yes', action='store_true')
+    parser.add_argument('-g', '--gpu', help='gpu_ids (e.g. 0 or 0,1 or 0,1,3,4)', default='')
+    parser.add_argument('-y', '--yes', help='automatically answer yes for all questions', action='store_true')
     parser.add_argument('-f', '--foreground', help='run in foreground and wait for exits for dlc', action='store_true')
 
     args = parser.parse_args()
