@@ -128,9 +128,9 @@ class DataCollatorWithPadding:
         padding_side: str,
     ) -> Dict[str, Any]:
         """pad other fields."""
-        raise NotImplementedError
+        return batch
 
-    def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def __call__(self, features: List[Dict[str, Any]]) -> DataBatch:
         """pad list of instances to batch"""
         batch_size = len(features)
         fields = features[0].keys()

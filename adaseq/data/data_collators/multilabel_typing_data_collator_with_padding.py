@@ -50,13 +50,3 @@ class MultiLabelConcatTypingDataCollatorWithPadding(DataCollatorWithPadding):
     def __init__(self, tokenizer, **kwargs):
         super().__init__(tokenizer)
         self.keep_fields.append('spans')
-
-    def padding(  # noqa: D102
-        self,
-        batch: Dict[str, Any],
-        fields: List[str],
-        batch_size: int,
-        max_length: int,
-        padding_side: str,
-    ) -> Dict[str, Any]:
-        return batch
