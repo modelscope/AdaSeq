@@ -15,6 +15,7 @@ from torch.utils.data import Dataset
 
 from adaseq.metainfo import Trainers
 from adaseq.utils.common_utils import has_keys
+
 from .default_trainer import DefaultTrainer
 
 
@@ -22,12 +23,14 @@ from .default_trainer import DefaultTrainer
 class TypingTrainer(DefaultTrainer):
     """Trainer for span typing task."""
 
-    def after_build_dataset(self,
-                            train_dataset: Optional[Dataset] = None,
-                            eval_dataset: Optional[Dataset] = None,
-                            test_dataset: Optional[Dataset] = None,
-                            **kwargs):
-        """ Collect labels from train/eval/test datasets and create label to id mapping """
+    def after_build_dataset(
+        self,
+        train_dataset: Optional[Dataset] = None,
+        eval_dataset: Optional[Dataset] = None,
+        test_dataset: Optional[Dataset] = None,
+        **kwargs
+    ):
+        """Collect labels from train/eval/test datasets and create label to id mapping"""
         # get label info from dataset
         self.labels = None
         self.label2id = None
@@ -51,7 +54,7 @@ class TypingTrainer(DefaultTrainer):
             raise ValueError('label2id must be set!')
 
     def after_build_preprocessor(self, **kwargs):
-        """ Update label2id, since label set was extended. e.g., B-X->S-X """
+        """Update label2id, since label set was extended. e.g., B-X->S-X"""
         if self.train_preprocessor is not None:
             self.label2id = self.train_preprocessor.label2id
         elif self.eval_preprocessor is not None:
@@ -63,33 +66,35 @@ class TypingTrainer(DefaultTrainer):
         cfg['labels'] = self.labels
 
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
-        """ Build preprocessor with labels and label2id """
+        """Build preprocessor with labels and label2id"""
         return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)
 
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
-        """ Builde layer-wise lr optimizer """
+        """Builde layer-wise lr optimizer"""
 
         if hasattr(model, 'module'):
             model = model.module
         if default_args is None:
             default_args = {}
         if 'decoder_lr' in cfg:
-            finetune_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'decoder' not in k]
-            decoder_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'decoder' in k]
-            default_args['params'] = [{
-                'params': finetune_parameters
-            }, {
-                'params': decoder_parameters,
-                'lr': cfg.pop('decoder_lr')
-            }]
+            finetune_parameters = [
+                v for k, v in model.named_parameters() if v.requires_grad and 'decoder' not in k
+            ]
+            decoder_parameters = [
+                v for k, v in model.named_parameters() if v.requires_grad and 'decoder' in k
+            ]
+            default_args['params'] = [
+                {'params': finetune_parameters},
+                {'params': decoder_parameters, 'lr': cfg.pop('decoder_lr')},
+            ]
         else:
             default_args['params'] = model.parameters()
         return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
 
     def create_optimizer_and_scheduler(self):
-        """ Create optimizer and lr-scheduler from config,
-        support huggingface CosineLR for typing """
+        """Create optimizer and lr-scheduler from config,
+        support huggingface CosineLR for typing"""
         optimizer, lr_scheduler = self.optimizers
         if optimizer is None:
             optimizer_cfg = self.cfg.train.get('optimizer', None)
@@ -99,7 +104,9 @@ class TypingTrainer(DefaultTrainer):
         optim_options = {}
         if optimizer_cfg is not None:
             optim_options = optimizer_cfg.pop('options', {})
-            optimizer = self.build_optimizer(self.model, cfg=optimizer_cfg)  # support customize optimizer
+            optimizer = self.build_optimizer(
+                self.model, cfg=optimizer_cfg
+            )  # support customize optimizer
 
         if lr_scheduler is None:
             lr_scheduler_cfg = self.cfg.train.get('lr_scheduler', None)
@@ -120,9 +127,14 @@ class TypingTrainer(DefaultTrainer):
                 iters = len(self.train_dataset) // bz * epoch
                 warmup_rate = lr_scheduler_cfg.get('warmup_rate', 0.0)
                 lr_scheduler = transformers.optimization.get_cosine_schedule_with_warmup(
-                    optimizer, num_warmup_steps=int(iters * warmup_rate), num_training_steps=int(iters))
+                    optimizer,
+                    num_warmup_steps=int(iters * warmup_rate),
+                    num_training_steps=int(iters),
+                )
             else:
-                lr_scheduler = build_lr_scheduler(cfg=lr_scheduler_cfg, default_args={'optimizer': optimizer})
+                lr_scheduler = build_lr_scheduler(
+                    cfg=lr_scheduler_cfg, default_args={'optimizer': optimizer}
+                )
 
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler

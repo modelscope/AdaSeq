@@ -1,0 +1,18 @@
+[flake8]
+max-line-length = 120
+
+ignore =
+    # these rules don't play well with black
+    E203  # whitespace before :
+    W503  # line break before binary operator
+    # docstrings are not checked currently
+    D107,D2,D4,D100,D104,D105
+
+per-file-ignores =
+    # __init__.py files are allowed to have unused imports
+    */__init__.py:F401
+    */**/**/__init__.py:F401
+
+extend-exclude = docs/,experiments/,tools/,*.pyc
+
+docstring-convention = google

@@ -1,7 +1,7 @@
 # Neural Pairwise Conditional Random Field for Ultra-Fine Entity Typing
 
 The NPCRF module proposed in the EMNLP 2022 paper: Modeling Label Correlations for Ultra-Fine Entity Typing with
-Neural Pairwise Conditional Random Field. NPCRF performs mean-field variational inference on a probabilistic model 
+Neural Pairwise Conditional Random Field. NPCRF performs mean-field variational inference on a probabilistic model
 designed for better modeling label correlations in ultra-fine entity typing task.
 ![](resource/img.png)
 

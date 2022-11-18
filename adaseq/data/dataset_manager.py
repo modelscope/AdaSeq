@@ -54,13 +54,15 @@ class DatasetManager:
 
     """
 
-    def __init__(self,
-                 name_or_path: Optional[str] = None,
-                 task: Optional[str] = None,
-                 data_dir: Optional[str] = None,
-                 data_files: Optional[Dict[str, str]] = None,
-                 access_token: Optional[str] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        name_or_path: Optional[str] = None,
+        task: Optional[str] = None,
+        data_dir: Optional[str] = None,
+        data_files: Optional[Dict[str, str]] = None,
+        access_token: Optional[str] = None,
+        **kwargs
+    ):
         if data_dir or data_files:
             if isinstance(data_dir, str):
                 if not is_remote_url(data_dir) and not osp.exists(data_dir):
@@ -82,9 +84,13 @@ class DatasetManager:
             assert task in SUPPORTED_LOCAL_TASK, 'Need a specific task!'
             # where we have some pre-defined dataset builders
             code_path = osp.join(
-                osp.dirname(osp.abspath(__file__)), 'dataset_builders',
-                task.replace('-', '_') + '_dataset_builder.py')
-            self.datasets = hf_load_dataset(code_path, data_dir=data_dir, data_files=data_files, **kwargs)
+                osp.dirname(osp.abspath(__file__)),
+                'dataset_builders',
+                task.replace('-', '_') + '_dataset_builder.py',
+            )
+            self.datasets = hf_load_dataset(
+                code_path, data_dir=data_dir, data_files=data_files, **kwargs
+            )
 
         elif isinstance(name_or_path, str):
             if name_or_path.endswith('.py') or osp.isdir(name_or_path):
@@ -95,6 +101,7 @@ class DatasetManager:
                 # to access private datasets from modelscope
                 if access_token is not None:
                     from modelscope.hub.api import HubApi
+
                     HubApi().login(access_token)
 
                 # only support some datasets with "adaseq" subset.

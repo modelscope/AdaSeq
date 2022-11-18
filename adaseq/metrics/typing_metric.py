@@ -8,7 +8,7 @@ from adaseq.metainfo import Metrics
 
 
 class SetScore:
-    """ evaluate macro and micro set p/r/f1 scores """
+    """evaluate macro and micro set p/r/f1 scores"""
 
     def __init__(self):
         self.n_sample = 0
@@ -26,7 +26,7 @@ class SetScore:
         self.true.extend(batch_gold_entities)
 
     def f1(self, precision, recall):  # noqa: D102
-        f1 = 0. if recall + precision == 0 else (2 * precision * recall) / (precision + recall)
+        f1 = 0.0 if recall + precision == 0 else (2 * precision * recall) / (precision + recall)
         return f1
 
     def result(self):  # noqa: D102
@@ -97,7 +97,7 @@ class SetScore:
 
 @METRICS.register_module(module_name=Metrics.typing_metric)
 class TypingMetric(Metric):
-    """ Evaluate metrics for typing tasks """
+    """Evaluate metrics for typing tasks"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

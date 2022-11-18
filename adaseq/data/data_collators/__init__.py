@@ -1,10 +1,14 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-# yapf: disable
-from .multilabel_typing_data_collator_with_padding import (  # noqa
+from .multilabel_typing_data_collator_with_padding import (
     MultiLabelConcatTypingDataCollatorWithPadding,
-    MultiLabelSpanTypingDataCollatorWithPadding
+    MultiLabelSpanTypingDataCollatorWithPadding,
 )
-# yapf: enable
-from .relation_extraction_data_collator_with_padding import RelationExtractionDataCollatorWithPadding  # noqa
-from .sequence_labeling_data_collator_with_padding import SequenceLabelingDataCollatorWithPadding  # noqa
-from .span_extraction_data_collator_with_padding import SpanExtractionDataCollatorWithPadding  # noqa
+from .relation_extraction_data_collator_with_padding import (
+    RelationExtractionDataCollatorWithPadding,
+)
+from .sequence_labeling_data_collator_with_padding import (
+    SequenceLabelingDataCollatorWithPadding,
+)
+from .span_extraction_data_collator_with_padding import (
+    SpanExtractionDataCollatorWithPadding,
+)

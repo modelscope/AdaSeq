@@ -9,11 +9,12 @@ from torch import nn
 from tqdm import tqdm
 
 from adaseq.metainfo import Decoders
+
 from .base import DECODERS, Decoder
 
 
 def make_glove_embed(tokens, glove_path, embed_dim=100):
-    """ Utils function to obtain glove embedding """
+    """Utils function to obtain glove embedding"""
 
     glove = {}
     vecs = []  # use to produce unk
@@ -59,7 +60,7 @@ def make_glove_embed(tokens, glove_path, embed_dim=100):
 
 
 def make_tencent_embed(tokens, tencent_path, embed_dim=200):
-    """ Utils function to obtain tencent zh embedding """
+    """Utils function to obtain tencent zh embedding"""
     glove = {}
     import jieba
 
@@ -112,13 +113,15 @@ def make_tencent_embed(tokens, tencent_path, embed_dim=200):
     return final_embed
 
 
-def get_label_emb(labels,
-                  label_emb_type='glove',
-                  label_emb_dim=300,
-                  source_emb_file_path=None,
-                  target_emb_dir=None,
-                  target_emb_name='label.emb'):
-    """ produce label embeddings """
+def get_label_emb(
+    labels,
+    label_emb_type='glove',
+    label_emb_dim=300,
+    source_emb_file_path=None,
+    target_emb_dir=None,
+    target_emb_name='label.emb',
+):
+    """produce label embeddings"""
     if target_emb_dir is None:
         print('target emb is not given, returning random embedding')
         torch.randn(len(labels), label_emb_dim)
@@ -129,9 +132,13 @@ def get_label_emb(labels,
         if os.path.exists(emb_save_path):
             label_emb = torch.from_numpy(pickle.load(open(emb_save_path, 'rb'))).float()
         else:
-            print('no pre-processed emb file found, using source emb file to produce label embeddings')
+            print(
+                'no pre-processed emb file found, using source emb file to produce label embeddings'
+            )
             assert source_emb_file_path is not None, 'require source emb file (tencent)'
-            label_emb = make_tencent_embed(labels, tencent_path=source_emb_file_path, embed_dim=label_emb_dim)
+            label_emb = make_tencent_embed(
+                labels, tencent_path=source_emb_file_path, embed_dim=label_emb_dim
+            )
             pickle.dump(label_emb, open(os.path.join(emb_save_path), 'wb'))
             label_emb = torch.from_numpy(label_emb).float()
 
@@ -139,9 +146,13 @@ def get_label_emb(labels,
         if os.path.exists(emb_save_path):
             label_emb = torch.from_numpy(pickle.load(open(emb_save_path, 'rb'))).float()
         else:
-            print('no pre-processed emb file found, using source emb file to produce label embeddings')
+            print(
+                'no pre-processed emb file found, using source emb file to produce label embeddings'
+            )
             assert source_emb_file_path is not None, 'require source emb file (glove)'
-            label_emb = make_glove_embed(labels, glove_path=source_emb_file_path, embed_dim=label_emb_dim)
+            label_emb = make_glove_embed(
+                labels, glove_path=source_emb_file_path, embed_dim=label_emb_dim
+            )
             pickle.dump(label_emb, open(os.path.join(emb_save_path), 'wb'))
             label_emb = torch.from_numpy(label_emb).float()
 
@@ -154,17 +165,23 @@ def get_label_emb(labels,
 class SimpleFeedForwardLayer(nn.Module):
     """2-layer feed forward"""
 
-    def __init__(self,
-                 input_dim: int,
-                 output_dim: int,
-                 bias: bool = True,
-                 activation: Optional[nn.Module] = None,
-                 dropout_rate: float = 0):
+    def __init__(
+        self,
+        input_dim: int,
+        output_dim: int,
+        bias: bool = True,
+        activation: Optional[nn.Module] = None,
+        dropout_rate: float = 0,
+    ):
 
         super(SimpleFeedForwardLayer, self).__init__()
         self.linear_projection1 = nn.Linear(input_dim, (input_dim + output_dim) // 2, bias=bias)
-        self.linear_projection_mid1 = nn.Linear((input_dim + output_dim) // 2, (input_dim + output_dim) // 2, bias=bias)
-        self.linear_projection_mid2 = nn.Linear((input_dim + output_dim) // 2, (input_dim + output_dim) // 2, bias=bias)
+        self.linear_projection_mid1 = nn.Linear(
+            (input_dim + output_dim) // 2, (input_dim + output_dim) // 2, bias=bias
+        )
+        self.linear_projection_mid2 = nn.Linear(
+            (input_dim + output_dim) // 2, (input_dim + output_dim) // 2, bias=bias
+        )
 
         self.linear_projection2 = nn.Linear((input_dim + output_dim) // 2, output_dim, bias=bias)
         self.activation = activation if activation else nn.Tanh()
@@ -178,7 +195,7 @@ class SimpleFeedForwardLayer(nn.Module):
 
 
 class LabelTransformLayerMLP(nn.Module):
-    """ MLP on label embeddings to parameterize potentials """
+    """MLP on label embeddings to parameterize potentials"""
 
     def __init__(self, emb_dim, dropout_rate):
         super(LabelTransformLayerMLP, self).__init__()
@@ -187,19 +204,27 @@ class LabelTransformLayerMLP(nn.Module):
 
         act = nn.Tanh()
 
-        self.label_emb_view = nn.ModuleList([
-            SimpleFeedForwardLayer(
-                input_dim=self.emb_dim,
-                output_dim=self.emb_dim,
-                bias=False,
-                activation=act,
-                dropout_rate=self.dropout_rate) for i in range(4)
-        ])
+        self.label_emb_view = nn.ModuleList(
+            [
+                SimpleFeedForwardLayer(
+                    input_dim=self.emb_dim,
+                    output_dim=self.emb_dim,
+                    bias=False,
+                    activation=act,
+                    dropout_rate=self.dropout_rate,
+                )
+                for i in range(4)
+            ]
+        )
 
     def forward(self, label_emb):  # noqa: D102
 
-        return (self.label_emb_view[0](label_emb).unsqueeze(2), self.label_emb_view[1](label_emb).unsqueeze(2),
-                self.label_emb_view[2](label_emb).unsqueeze(2), self.label_emb_view[3](label_emb).unsqueeze(2))
+        return (
+            self.label_emb_view[0](label_emb).unsqueeze(2),
+            self.label_emb_view[1](label_emb).unsqueeze(2),
+            self.label_emb_view[2](label_emb).unsqueeze(2),
+            self.label_emb_view[3](label_emb).unsqueeze(2),
+        )
 
 
 @DECODERS.register_module(module_name=Decoders.pairwise_crf)
@@ -227,22 +252,24 @@ class PairwiseCRF(Decoder):
         **kwargs:
     """
 
-    def __init__(self,
-                 labels,
-                 label_emb_dim: int = 300,
-                 label_emb_type: str = 'glove',
-                 source_emb_file_path: Optional[str] = None,
-                 target_emb_dir: Optional[str] = None,
-                 target_emb_name: str = 'label.emb',
-                 pairwise_factor: int = 20,
-                 two_potential: bool = True,
-                 sign_trick: bool = True,
-                 mfvi_step_size: float = 1.0,
-                 mfvi_scaler: float = 1.0,
-                 mfvi_iteration: int = 3,
-                 return_logits: bool = True,
-                 label_dropout: float = 0.0,
-                 **kwargs):
+    def __init__(
+        self,
+        labels,
+        label_emb_dim: int = 300,
+        label_emb_type: str = 'glove',
+        source_emb_file_path: Optional[str] = None,
+        target_emb_dir: Optional[str] = None,
+        target_emb_name: str = 'label.emb',
+        pairwise_factor: int = 20,
+        two_potential: bool = True,
+        sign_trick: bool = True,
+        mfvi_step_size: float = 1.0,
+        mfvi_scaler: float = 1.0,
+        mfvi_iteration: int = 3,
+        return_logits: bool = True,
+        label_dropout: float = 0.0,
+        **kwargs
+    ):
         super(PairwiseCRF, self).__init__()
 
         label_emb = get_label_emb(
@@ -251,7 +278,8 @@ class PairwiseCRF(Decoder):
             label_emb_dim=label_emb_dim,
             source_emb_file_path=source_emb_file_path,
             target_emb_dir=target_emb_dir,
-            target_emb_name=target_emb_name)
+            target_emb_name=target_emb_name,
+        )
 
         self.n_label, self.emb_dim = label_emb.size()
         assert self.emb_dim == label_emb_dim
@@ -274,13 +302,15 @@ class PairwiseCRF(Decoder):
         self.label_view = None
 
     def forward(self, logits):
-        """ Mean-field variational Inference """
+        """Mean-field variational Inference"""
 
         # B = 3
 
         B, L = logits.size()
 
-        logits_zero = torch.zeros(B, self.n_label).cuda() if self.is_cuda else torch.zeros(B, self.n_label)  # B x L
+        logits_zero = (
+            torch.zeros(B, self.n_label).cuda() if self.is_cuda else torch.zeros(B, self.n_label)
+        )  # B x L
         q_logits = torch.cat([logits_zero.unsqueeze(0), logits.unsqueeze(0)], 0)  # 2 x B x L
         q_logits = q_logits / self.mfvi_scaler
         l_1 = q_logits[1]
@@ -309,10 +339,14 @@ class PairwiseCRF(Decoder):
             q_logits_i_1 = q_logits[1]
 
             dists_mat = torch.cat(
-                [q_dist_j_0.unsqueeze(0),
-                 q_dist_j_1.unsqueeze(0),
-                 q_dist_j_0.unsqueeze(0),
-                 q_dist_j_1.unsqueeze(0)], 0)  # 4 x B x l
+                [
+                    q_dist_j_0.unsqueeze(0),
+                    q_dist_j_1.unsqueeze(0),
+                    q_dist_j_0.unsqueeze(0),
+                    q_dist_j_1.unsqueeze(0),
+                ],
+                0,
+            )  # 4 x B x l
             tmp = torch.einsum('vbl,ldv->vbd', dists_mat, label_view1)
             update_logits = torch.einsum('vbd,ldv->vbl', tmp, label_view2)
 
@@ -323,7 +357,9 @@ class PairwiseCRF(Decoder):
                 l_0 = q_logits_i_0 + update_logits[0] + update_logits[1]
                 l_1 = q_logits_i_1 + update_logits[2] + update_logits[3]
 
-            new_q_dist = (torch.cat([l_0.unsqueeze(0), l_1.unsqueeze(0)], dim=0) / self.mfvi_scaler).softmax(0)
+            new_q_dist = (
+                torch.cat([l_0.unsqueeze(0), l_1.unsqueeze(0)], dim=0) / self.mfvi_scaler
+            ).softmax(0)
             q_dist = (1 - self.mfvi_step_size) * q_dist + self.mfvi_step_size * new_q_dist
 
         if self.return_logits:

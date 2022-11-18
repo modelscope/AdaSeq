@@ -7,7 +7,7 @@ from .common_utils import import_dataset_builder_class
 
 
 def get_labels(dataset: Union[Dataset, Dict[str, Dataset]]) -> List[str]:
-    """ [deprecated] Collect label set from datasets
+    """[deprecated] Collect label set from datasets
 
     Args:
         dataset (Union[Dataset, Dict[str, Dataset]): dataset or a dict of datasets
@@ -29,7 +29,7 @@ def get_labels(dataset: Union[Dataset, Dict[str, Dataset]]) -> List[str]:
 
 
 def gen_label2id(labels: List[str]) -> Dict[str, int]:
-    """ Generate label2id from labels
+    """Generate label2id from labels
 
     Args:
         labels (List[str]): list of all labels

@@ -1,13 +1,13 @@
-# Unsupervised Boundary-Aware Language Model Pretraining for Chinese Sequence Labeling 
+# Unsupervised Boundary-Aware Language Model Pretraining for Chinese Sequence Labeling
 
-In order to enhance the language model's ability to recognize Chinese boundaries in various sequence labeling tasks, we seek to leverage unsupervised statistical boundary information and propose an architecture to encode the information directly into pre-trained language models, resulting in Boundary-Aware BERT (BABERT). [BABERT(EMNLP2022)](https://arxiv.org/abs/2210.15231). 
+In order to enhance the language model's ability to recognize Chinese boundaries in various sequence labeling tasks, we seek to leverage unsupervised statistical boundary information and propose an architecture to encode the information directly into pre-trained language models, resulting in Boundary-Aware BERT (BABERT). [BABERT(EMNLP2022)](https://arxiv.org/abs/2210.15231).
 
 The overall architecture of the boundary-aware pre-trained language model:
 
 ![](./resource/babert.png)
 
 ## Dataset
-We adopt the conll dataset format for all datasets. We use **BIES** label type for cws/pos tasks and **BIOES** for the ner task. 
+We adopt the conll dataset format for all datasets. We use **BIES** label type for cws/pos tasks and **BIOES** for the ner task.
 ```
 无      O
 法      O
@@ -22,7 +22,7 @@ We adopt the conll dataset format for all datasets. We use **BIES** label type f
 选      O
 功      O
 法      O
-``` 
+```
 
 If you are using dataset that already exists in ``msdataset``, you can directly specify the name of the dataset in the yaml file as:
 ```
@@ -43,7 +43,7 @@ dataset:
 ## Model Checkpoint
 The pretrained BABERT-base checkpoint is available:
 
-| Model         |  Download Link         | 
+| Model         |  Download Link         |
 |------------   |:-----:        |
 | BABERT-base   |  [chinese-babert-base.tar](https://alice-open.oss-cn-zhangjiakou.aliyuncs.com/babert/chinese_babert-base.tar)             |
 

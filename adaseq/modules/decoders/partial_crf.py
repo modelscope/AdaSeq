@@ -5,25 +5,27 @@ import torch
 
 from adaseq.data.constant import PARTIAL_LABEL_ID
 from adaseq.metainfo import Decoders
+
 from .base import DECODERS
 from .crf import CRF
 
 
 @DECODERS.register_module(module_name=Decoders.partial_crf)
 class PartialCRF(CRF):
-    """Partial/Fuzzy Conditional random field.
-    """
+    """Partial/Fuzzy Conditional random field."""
 
     def __init__(self, num_tags: int, batch_first: bool = False) -> None:
         super().__init__(num_tags, batch_first)
         self.UNLABELED_INDEX = PARTIAL_LABEL_ID
         self.IMPOSSIBLE_SCORE = -100
 
-    def forward(self,
-                emissions: torch.Tensor,
-                tags: torch.LongTensor,
-                mask: Optional[torch.ByteTensor] = None,
-                reduction: str = 'mean') -> torch.Tensor:
+    def forward(
+        self,
+        emissions: torch.Tensor,
+        tags: torch.LongTensor,
+        mask: Optional[torch.ByteTensor] = None,
+        reduction: str = 'mean',
+    ) -> torch.Tensor:
         """Compute the conditional log likelihood of a sequence of tags given emission scores.
         Args:
             emissions (`~torch.Tensor`): Emission score tensor of size
@@ -77,18 +79,25 @@ class PartialCRF(CRF):
     def _create_possible_tag_masks(self, num_tags: int, tags: torch.Tensor) -> torch.Tensor:
         # process no annotation idx
         tags = tags.clone()
-        no_annotation_idx = (tags == self.UNLABELED_INDEX)
+        no_annotation_idx = tags == self.UNLABELED_INDEX
         tags[no_annotation_idx] = 0
 
         # create tag masks
-        masks = torch.zeros(tags.size(0), tags.size(1), num_tags, dtype=torch.uint8, device=tags.device)
+        masks = torch.zeros(
+            tags.size(0), tags.size(1), num_tags, dtype=torch.uint8, device=tags.device
+        )
         masks.scatter_(2, tags.unsqueeze(2), 1)
         masks[no_annotation_idx] = 1  # enumerate all tags if no annotation
 
         return masks
 
-    def _compute_score(self, emissions: torch.Tensor, tags: torch.LongTensor, mask: torch.ByteTensor,
-                       possible_tags: torch.ByteTensor) -> torch.Tensor:
+    def _compute_score(
+        self,
+        emissions: torch.Tensor,
+        tags: torch.LongTensor,
+        mask: torch.ByteTensor,
+        possible_tags: torch.ByteTensor,
+    ) -> torch.Tensor:
         """
         Parameters:
             emissions: (seq_length, batch_size, num_tags)
@@ -120,8 +129,11 @@ class PartialCRF(CRF):
             emissions_score = emissions_score.view(batch_size, 1, num_tags)
 
             # Transition scores
-            transition_scores = self.transitions.view(1, num_tags, num_tags).expand(batch_size, num_tags,
-                                                                                    num_tags).clone()
+            transition_scores = (
+                self.transitions.view(1, num_tags, num_tags)
+                .expand(batch_size, num_tags, num_tags)
+                .clone()
+            )
             transition_scores[(current_possible_tags == 0)] = self.IMPOSSIBLE_SCORE
             transition_scores.transpose(1, 2)[(next_possible_tags == 0)] = self.IMPOSSIBLE_SCORE
 
@@ -129,15 +141,23 @@ class PartialCRF(CRF):
             broadcast_alpha = alpha.view(batch_size, num_tags, 1)
 
             # Add all scores
-            inner = broadcast_alpha + emissions_score + transition_scores  # (batch_size, num_tags, num_tags)
-            alpha = (
-                torch.logsumexp(inner, 1) * mask[i].view(batch_size, 1) + alpha * (1 - mask[i]).view(batch_size, 1))
+            inner = (
+                broadcast_alpha + emissions_score + transition_scores
+            )  # (batch_size, num_tags, num_tags)
+            alpha = torch.logsumexp(inner, 1) * mask[i].view(batch_size, 1) + alpha * (
+                1 - mask[i]
+            ).view(batch_size, 1)
 
         # Add end transition score
         last_tag_indexes = mask.sum(0).long() - 1
-        unnamed = last_tag_indexes + torch.arange(batch_size, device=possible_tags.device) * sequence_length
-        end_transitions = self.end_transitions.expand(batch_size, num_tags) *\
-            possible_tags.transpose(0, 1).view(sequence_length * batch_size, num_tags)[unnamed]
+        unnamed = (
+            last_tag_indexes
+            + torch.arange(batch_size, device=possible_tags.device) * sequence_length
+        )
+        end_transitions = (
+            self.end_transitions.expand(batch_size, num_tags)
+            * possible_tags.transpose(0, 1).view(sequence_length * batch_size, num_tags)[unnamed]
+        )
         end_transitions[(end_transitions == 0)] = self.IMPOSSIBLE_SCORE
         stops = alpha + end_transitions
 

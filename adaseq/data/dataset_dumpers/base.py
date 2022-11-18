@@ -6,7 +6,7 @@ from modelscope.metrics.base import Metric
 
 
 class DatasetDumper(Metric):
-    """ class to dump model predictions """
+    """class to dump model predictions"""
 
     def __init__(self, save_path: Optional[str] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -14,11 +14,11 @@ class DatasetDumper(Metric):
         self.data = []
 
     def add(self, outputs: Dict, inputs: Dict):
-        """ add predictions to cache """
+        """add predictions to cache"""
         raise NotImplementedError
 
     def evaluate(self):
-        """ creat dump file and dump predicitons. """
+        """creat dump file and dump predicitons."""
         if self.save_path is None:
             self.save_path = os.path.join(self.trainer.work_dir, 'test.txt')
         save_path = self.save_path
@@ -29,5 +29,5 @@ class DatasetDumper(Metric):
         return {}
 
     def dump(self):
-        """ dump predictions """
+        """dump predictions"""
         raise NotImplementedError

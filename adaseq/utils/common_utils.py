@@ -10,7 +10,7 @@ from modelscope.utils.config import Config
 
 # copy from  hunggingface datasets load.py load_dataset_builder
 def import_dataset_builder_class(builder_name: str) -> Optional[Type[DatasetBuilder]]:
-    """ [deprecated] Get dataset builder class from name
+    """[deprecated] Get dataset builder class from name
 
     Args:
         builder_name (str): dataset builder name
@@ -19,8 +19,11 @@ def import_dataset_builder_class(builder_name: str) -> Optional[Type[DatasetBuil
         builder_cls (Type[DatasetBuilder]): dataset builder class
     """
     builder_path = osp.join(
-        osp.dirname(osp.dirname(osp.realpath(__file__))), 'data', 'dataset_builders',
-        f'{builder_name}.py')  # maybe failed where working dir does not has uer dir.
+        osp.dirname(osp.dirname(osp.realpath(__file__))),
+        'data',
+        'dataset_builders',
+        f'{builder_name}.py',
+    )  # maybe failed where working dir does not has uer dir.
     dataset_module = dataset_module_factory(builder_path)
     # Get dataset builder class from the processing script
     builder_cls = import_main_class(dataset_module.module_path)
@@ -28,7 +31,7 @@ def import_dataset_builder_class(builder_name: str) -> Optional[Type[DatasetBuil
 
 
 def create_datetime_str() -> str:
-    """ Create a string indicating current time
+    """Create a string indicating current time
 
     Create a string indicating current time in microsecond precision,
     for example, 221109144626.861616
@@ -42,7 +45,7 @@ def create_datetime_str() -> str:
 
 
 def has_keys(_dict: Dict, *keys: str):
-    """ Check whether a nested dict has a key
+    """Check whether a nested dict has a key
 
     Args:
         _dict (Dict): a nested dict like object

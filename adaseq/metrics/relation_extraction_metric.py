@@ -10,7 +10,7 @@ from adaseq.metainfo import Metrics
 
 
 def compute_f1(preds: List[str], labels: List[str]) -> Dict[str, float]:
-    """ Compute f1 from predictions and ground truth
+    """Compute f1 from predictions and ground truth
 
     Args:
         preds (List[str]): prediction list
@@ -26,8 +26,7 @@ def compute_f1(preds: List[str], labels: List[str]) -> Dict[str, float]:
             n_pred += 1
         if label != NONE_REL_LABEL:
             n_gold += 1
-        if (pred != NONE_REL_LABEL) \
-                and (label != NONE_REL_LABEL) and (pred == label):
+        if (pred != NONE_REL_LABEL) and (label != NONE_REL_LABEL) and (pred == label):
             n_correct += 1
     if n_correct == 0:
         return {'precision': 0.0, 'recall': 0.0, 'f1': 0.0}
@@ -44,7 +43,7 @@ def compute_f1(preds: List[str], labels: List[str]) -> Dict[str, float]:
 
 @METRICS.register_module(module_name=Metrics.relation_extraction_metric)
 class RelationExtractionMetric(Metric):
-    """ The metric computation class for relation extraction tasks. """
+    """The metric computation class for relation extraction tasks."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -52,14 +51,14 @@ class RelationExtractionMetric(Metric):
         self.golds = []
 
     def add(self, outputs: Dict, inputs: Dict):
-        """ Collect batch outputs """
+        """Collect batch outputs"""
         pred_results = outputs['predicts']
         ground_truths = inputs['label_id'].view(-1)
         self.preds.extend(torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
         self.golds.extend(torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
 
     def evaluate(self):
-        """ Calculate metrics, returning precision, recall, f1-score in a dictionary
+        """Calculate metrics, returning precision, recall, f1-score in a dictionary
 
         Returns:
             scores (Dict):

@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Union
 from modelscope.preprocessors.builder import PREPROCESSORS
 
 from adaseq.metainfo import Preprocessors
+
 from .nlp_preprocessor import NLPPreprocessor
 
 
@@ -23,7 +24,7 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
         self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
-        """ prepare inputs for Entity Typing model """
+        """prepare inputs for Entity Typing model"""
         output = super().__call__(data)
 
         token_span_mapping = []
@@ -63,7 +64,7 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.multilabel_concat_typing_preprocessor)
 class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
-    """ Preprocessor for multilabel (aka multi-type) span concat typing task. """
+    """Preprocessor for multilabel (aka multi-type) span concat typing task."""
 
     def __init__(self, model_dir: str, labels: List[str], **kwargs):
         super().__init__(model_dir, return_offsets_mapping=True, **kwargs)
@@ -88,8 +89,14 @@ class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
             if t != -1:
                 padded_type_ids[t] = 1
 
-        mention = tokens[span['start']:span['end']]  # TODO +1?
-        sent = [self.tokenizer.cls_token] + tokens + [self.tokenizer.sep_token] + mention + [self.tokenizer.sep_token]
+        mention = tokens[span['start'] : span['end']]  # TODO +1?
+        sent = (
+            [self.tokenizer.cls_token]
+            + tokens
+            + [self.tokenizer.sep_token]
+            + mention
+            + [self.tokenizer.sep_token]
+        )
         input_ids = []
         for tok in sent:
             subtoken_ids = self.tokenizer.encode(tok, add_special_tokens=False)
@@ -98,7 +105,7 @@ class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
             input_ids.extend(subtoken_ids)
 
         if len(input_ids) > self.max_length:
-            input_ids = [input_ids[0]] + input_ids[-(self.max_length - 1):]
+            input_ids = [input_ids[0]] + input_ids[-(self.max_length - 1) :]
             # clip from the left except cls token
 
         attention_mask = [1] * len(input_ids)
@@ -107,7 +114,7 @@ class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
             'attention_mask': attention_mask,
             'type_ids': padded_type_ids,
             'spans': spans,
-            'tokens': tokens
+            'tokens': tokens,
         }
 
         return output

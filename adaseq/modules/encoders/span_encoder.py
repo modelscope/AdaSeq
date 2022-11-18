@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 
 from adaseq.metainfo import Encoders
+
 from .base import ENCODERS, Encoder
 
 
@@ -12,13 +13,15 @@ from .base import ENCODERS, Encoder
 class SpanEncoder(Encoder):
     """Turn token embedding sequenece to a single vector."""
 
-    def __init__(self,
-                 input_dim: int,
-                 encode_span_method: str = 'concat',
-                 add_span_linear: bool = True,
-                 span_hidden_size: Optional[int] = None,
-                 use_biaffine: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        input_dim: int,
+        encode_span_method: str = 'concat',
+        add_span_linear: bool = True,
+        span_hidden_size: Optional[int] = None,
+        use_biaffine: bool = False,
+        **kwargs
+    ):
         super(SpanEncoder, self).__init__()
         self.add_span_linear = add_span_linear
         self.encode_span_method = encode_span_method
@@ -58,8 +61,9 @@ class SpanEncoder(Encoder):
             span_start_reprs = span_start_embed
             span_end_reprs = span_end_embed
         if self.use_biaffine:
-            return span_start_reprs.reshape(-1,
-                                            self.span_hidden_size), span_end_reprs.reshape(-1, self.span_hidden_size)
+            return span_start_reprs.reshape(-1, self.span_hidden_size), span_end_reprs.reshape(
+                -1, self.span_hidden_size
+            )
         if self.encode_span_method == 'concat':
             span_reprs = torch.cat((span_start_reprs, span_end_reprs), -1)
         else:

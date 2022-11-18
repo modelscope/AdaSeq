@@ -7,7 +7,9 @@ from adaseq.commands.test import Test
 from adaseq.commands.train import Train
 
 
-def parse_args(prog: Optional[str] = None) -> Tuple[argparse.ArgumentParser, argparse.Namespace]:  # noqa
+def parse_args(  # noqa: D103
+    prog: Optional[str] = None,
+) -> Tuple[argparse.ArgumentParser, argparse.Namespace]:
     parser = argparse.ArgumentParser(prog=prog)
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
@@ -20,7 +22,7 @@ def parse_args(prog: Optional[str] = None) -> Tuple[argparse.ArgumentParser, arg
     return parser, args
 
 
-def main(prog: Optional[str] = None) -> None:  # noqa
+def main(prog: Optional[str] = None) -> None:  # noqa: D103
     parser, args = parse_args(prog)
 
     if 'func' in dir(args):

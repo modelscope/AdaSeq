@@ -30,14 +30,14 @@ class SequenceLabelingMetric(Metric):
         self.golds = []
 
     def add(self, outputs: Dict, inputs: Dict):
-        """ Collect batch outputs """
+        """Collect batch outputs"""
         pred_results = outputs['predicts']
         ground_truths = inputs['label_ids']
         self.preds.extend(torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
         self.golds.extend(torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
 
     def evaluate(self):
-        """ Calculate metrics, returning precision, recall, f1-score, accuracy in a dictionary
+        """Calculate metrics, returning precision, recall, f1-score, accuracy in a dictionary
 
         Returns:
             scores (Dict):
@@ -53,8 +53,10 @@ class SequenceLabelingMetric(Metric):
         """
         id2label = self.trainer.id2label
 
-        pred_labels = [[id2label[p] for p, g in zip(pred, gold) if g != PAD_LABEL_ID]
-                       for pred, gold in zip(self.preds, self.golds)]
+        pred_labels = [
+            [id2label[p] for p, g in zip(pred, gold) if g != PAD_LABEL_ID]
+            for pred, gold in zip(self.preds, self.golds)
+        ]
         gold_labels = [[id2label[g] for g in gold if g != PAD_LABEL_ID] for gold in self.golds]
 
         report = classification_report(gold_labels, pred_labels, output_dict=True, mode=self.mode)

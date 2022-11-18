@@ -13,8 +13,10 @@ from adaseq.metainfo import DataCollators
 DATA_COLLATORS = Registry('data_collators')
 
 
-def build_data_collator(tokenizer: PreTrainedTokenizerBase, cfg: ConfigDict, default_args: Optional[dict] = None):
-    """ build data collator from config. """
+def build_data_collator(
+    tokenizer: PreTrainedTokenizerBase, cfg: ConfigDict, default_args: Optional[dict] = None
+):
+    """build data collator from config."""
     if default_args is None:
         default_args = {}
     default_args['tokenizer'] = tokenizer
@@ -22,7 +24,7 @@ def build_data_collator(tokenizer: PreTrainedTokenizerBase, cfg: ConfigDict, def
 
 
 class DataBatch(Mapping):
-    """ represent a data batch, support `tensorize` function. """
+    """represent a data batch, support `tensorize` function."""
 
     def __init__(self, batch, keep_fields=[]):
         self.keep_fields = keep_fields
@@ -50,26 +52,31 @@ class DataBatch(Mapping):
         return len(self.batch)
 
     def tensorize(self, batch):
-        """ convert all possible fields to tensor. """
+        """convert all possible fields to tensor."""
 
         if isinstance(batch, tuple):
             return dict(batch)
         return {
             k: torch.tensor(v, dtype=torch.int64 if not k.endswith('mask') else torch.bool)
-            if k not in self.keep_fields else v
+            if k not in self.keep_fields
+            else v
             for k, v in batch.items()
         }
 
     def to(self, device):
-        """ move to device """
-        self.batch = {k: v.to(device) if k not in [self.token_field] else v for k, v in self.batch.items()}
+        """move to device"""
+        self.batch = {
+            k: v.to(device) if k not in [self.token_field] else v for k, v in self.batch.items()
+        }
 
 
-# only padding encoder related fields: input_ids, token_type_ids, mask
 @DATA_COLLATORS.register_module(module_name=DataCollators.data_collator_with_padding)
 @dataclass
 class DataCollatorWithPadding:
-    """ a `DataCollator` support padding some fields to same length. """
+    """
+    A `DataCollator` support padding some fields to same length.
+    Only padding encoder related fields: input_ids, token_type_ids, mask
+    """
 
     tokenizer: PreTrainedTokenizerBase
 
@@ -82,9 +89,15 @@ class DataCollatorWithPadding:
         ]
         self.keep_fields.extend([f'origin_{f}' for f in self.keep_fields])
 
-    def padding_token(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,
-                      padding_side: str) -> Dict[str, Any]:
-        """ pad token related fields (hf.transformers style) """
+    def padding_token(
+        self,
+        batch: Dict[str, Any],
+        fields: List[str],
+        batch_size: int,
+        max_length: int,
+        padding_side: str,
+    ) -> Dict[str, Any]:
+        """pad token related fields (hf.transformers style)"""
         for i in range(batch_size):
             for field in fields:
                 difference = max_length - len(batch[field][i])
@@ -106,13 +119,19 @@ class DataCollatorWithPadding:
                         raise ValueError('Invalid padding strategy:' + str(self.padding_side))
         return batch
 
-    def padding(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,
-                padding_side: str) -> Dict[str, Any]:
-        """ pad other fields. """
+    def padding(
+        self,
+        batch: Dict[str, Any],
+        fields: List[str],
+        batch_size: int,
+        max_length: int,
+        padding_side: str,
+    ) -> Dict[str, Any]:
+        """pad other fields."""
         raise NotImplementedError
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """ pad list of instances to batch """
+        """pad list of instances to batch"""
         batch_size = len(features)
         fields = features[0].keys()
         batch = {key: [example[key] for example in features] for key in fields}

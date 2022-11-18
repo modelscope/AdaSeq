@@ -12,19 +12,22 @@ from torch.utils.data import Dataset
 from adaseq.metainfo import Trainers
 from adaseq.models.base import Model
 from adaseq.utils.common_utils import has_keys
+
 from .default_trainer import DefaultTrainer
 
 
 @TRAINERS.register_module(module_name=Trainers.ner_trainer)
 class NERTrainer(DefaultTrainer):
-    """ Trainer for NER task."""
+    """Trainer for NER task."""
 
-    def after_build_dataset(self,
-                            train_dataset: Optional[Dataset] = None,
-                            eval_dataset: Optional[Dataset] = None,
-                            test_dataset: Optional[Dataset] = None,
-                            **kwargs):
-        """ Collect labels from train/eval/test datasets and create label to id mapping """
+    def after_build_dataset(
+        self,
+        train_dataset: Optional[Dataset] = None,
+        eval_dataset: Optional[Dataset] = None,
+        test_dataset: Optional[Dataset] = None,
+        **kwargs
+    ):
+        """Collect labels from train/eval/test datasets and create label to id mapping"""
         # get label info from dataset
         self.labels = None
         self.label2id = None
@@ -42,7 +45,7 @@ class NERTrainer(DefaultTrainer):
             raise ValueError('label2id must be set!')
 
     def after_build_preprocessor(self, **kwargs):
-        """ Update label2id, since label set was extended. e.g., B-X->S-X """
+        """Update label2id, since label set was extended. e.g., B-X->S-X"""
         if self.train_preprocessor is not None:
             self.label2id = self.train_preprocessor.label2id
         elif self.eval_preprocessor is not None:
@@ -52,11 +55,11 @@ class NERTrainer(DefaultTrainer):
         self.logger.info('label2id:', self.label2id)
 
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
-        """ Build preprocessor with labels and label2id """
+        """Build preprocessor with labels and label2id"""
         return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)
 
     def build_model(self) -> nn.Module:
-        """ Build model with labels """
+        """Build model with labels"""
         cfg = self.cfg.model
         # num_labels is one of the models super params.
         cfg['num_labels'] = len(self.label2id)
@@ -64,20 +67,22 @@ class NERTrainer(DefaultTrainer):
 
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
-        """ Build optimizer with layer-wise learning rate """
+        """Build optimizer with layer-wise learning rate"""
         if hasattr(model, 'module'):
             model = model.module
         if default_args is None:
             default_args = {}
         if 'crf_lr' in cfg:
-            finetune_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' not in k]
-            transition_parameters = [v for k, v in model.named_parameters() if v.requires_grad and 'crf' in k]
-            default_args['params'] = [{
-                'params': finetune_parameters
-            }, {
-                'params': transition_parameters,
-                'lr': cfg.pop('crf_lr')
-            }]
+            finetune_parameters = [
+                v for k, v in model.named_parameters() if v.requires_grad and 'crf' not in k
+            ]
+            transition_parameters = [
+                v for k, v in model.named_parameters() if v.requires_grad and 'crf' in k
+            ]
+            default_args['params'] = [
+                {'params': finetune_parameters},
+                {'params': transition_parameters, 'lr': cfg.pop('crf_lr')},
+            ]
         else:
             default_args['params'] = model.parameters()
         return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)

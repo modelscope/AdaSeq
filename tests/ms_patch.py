@@ -39,6 +39,7 @@ def train_step(self, model, inputs):
 
 def numpify_tensor_nested(tensors, reduction=None, clip_value=10000):
     import torch
+
     # if isinstance(tensors, torch.Tensor) and len(tensors.shape) > 0 and tensors.shape[0] == 16:
     #     print()
     "Numpify `tensors` (even if it's a nested list/tuple of tensors)."

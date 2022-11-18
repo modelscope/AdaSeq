@@ -1,6 +1,7 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 class Tasks:
-    """ Names for different tasks """
+    """Names for different tasks"""
+
     chinese_word_segmentation = 'chinese-word-segmentation'
     part_of_speech = 'part-of-speech'
     named_entity_recognition = 'named-entity-recognition'
@@ -9,7 +10,8 @@ class Tasks:
 
 
 class Metrics:
-    """ Names for different metrics """
+    """Names for different metrics"""
+
     ner_metric = 'ner-metric'  # alias of sequence-labeling-metric
     sequence_labeling_metric = 'sequence-labeling-metric'
     span_extraction_metric = 'span-extraction-metric'
@@ -18,7 +20,8 @@ class Metrics:
 
 
 class Models:
-    """ Names for different models """
+    """Names for different models"""
+
     sequence_labeling_model = 'sequence-labeling-model'
     global_pointer_model = 'global-pointer-model'
     relation_extraction_model = 'relation-extraction-model'
@@ -27,12 +30,14 @@ class Models:
 
 
 class Encoders:
-    """ Names for different encoders """
+    """Names for different encoders"""
+
     span_encoder = 'span-encoder'
 
 
 class Decoders:
-    """ Names for different decoders """
+    """Names for different decoders"""
+
     crf = 'crf'
     partial_crf = 'partial-crf'
     pairwise_crf = 'pairwise-crf'
@@ -40,7 +45,8 @@ class Decoders:
 
 
 class Preprocessors:
-    """ Names for different preprocessors """
+    """Names for different preprocessors"""
+
     nlp_preprocessor = 'nlp-preprocessor'
     sequence_labeling_preprocessor = 'sequence-labeling-preprocessor'
     relation_extraction_preprocessor = 'relation-extraction-preprocessor'
@@ -50,7 +56,8 @@ class Preprocessors:
 
 
 class DataCollators:
-    """ Names for different data_collators """
+    """Names for different data_collators"""
+
     data_collator_with_padding = 'DataCollatorWithPadding'
     sequence_labeling_data_collator = 'SequenceLabelingDataCollatorWithPadding'
     span_extraction_data_collator = 'SpanExtractionDataCollatorWithPadding'
@@ -60,7 +67,8 @@ class DataCollators:
 
 
 class Trainers:
-    """ Names for different trainers """
+    """Names for different trainers"""
+
     default_trainer = 'default-trainer'
     ner_trainer = 'ner-trainer'
     typing_trainer = 'typing-trainer'
@@ -69,20 +77,24 @@ class Trainers:
 
 
 class Optimizers:
-    """ Names for different optimizers """
+    """Names for different optimizers"""
+
     pass
 
 
 class LR_Schedulers:
-    """ Names for different lr_schedulers """
+    """Names for different lr_schedulers"""
+
     pass
 
 
 class Hooks:
-    """ Names for different hooks """
+    """Names for different hooks"""
+
     pass
 
 
 class DatasetDumpers:
-    """ Names for different dataset dumpers """
+    """Names for different dataset dumpers"""
+
     ner_dumper = 'ner-dumper'

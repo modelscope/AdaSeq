@@ -11,7 +11,7 @@ ENCODERS = Registry('encoders')
 
 
 def build_encoder(cfg: ConfigDict, default_args: dict = None):
-    """ Build encoder from config dict
+    """Build encoder from config dict
 
     Args:
         cfg (:obj:`ConfigDict`): config dict for encoder object
@@ -34,7 +34,7 @@ class Encoder(nn.Module):
 
     @classmethod
     def from_config(cls, cfg_dict_or_path: Union[str, Dict, Config] = None, **kwargs):
-        """ Build encoder instance from config """
+        """Build encoder instance from config"""
         if isinstance(cfg_dict_or_path, str) and osp.isfile(cfg_dict_or_path):
             cfg = Config.from_file(cfg_dict_or_path).model.encoder
         elif isinstance(cfg_dict_or_path, (dict, Config)):
@@ -55,8 +55,9 @@ class Encoder(nn.Module):
         if cfg['type'] is not None and cfg['type'] in ENCODERS.modules['default']:
             return build_encoder(cfg, default_args=kwargs)
         else:
-            assert cfg['model_name_or_path'] is not None, \
-                'Model is not found in registry, ' \
-                'so it is considered a huggingface backbone ' \
+            assert cfg['model_name_or_path'] is not None, (
+                'Model is not found in registry, '
+                'so it is considered a huggingface backbone '
                 'and the model_name_or_path param should not be None'
+            )
             return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)

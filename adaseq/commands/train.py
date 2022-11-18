@@ -10,24 +10,24 @@ from adaseq.commands.subcommand import Subcommand
 
 class Train(Subcommand):
     """
-        usage: adaseq train [-h] -c CFG_FILE [-t TRAINER] [-cp CHECKPOINT_PATH]
-                    [--seed SEED] [--local_rank LOCAL_RANK]
+    usage: adaseq train [-h] -c CFG_FILE [-t TRAINER] [-cp CHECKPOINT_PATH]
+                [--seed SEED] [--local_rank LOCAL_RANK]
 
-        optional arguments:
-          -h, --help            show this help message and exit
-          -c CFG_FILE, --cfg_file CFG_FILE
-                                configuration YAML file
-          -t TRAINER, --trainer TRAINER
-                                trainer name
-          -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
-                                model checkpoint
-          --seed SEED           random seed for everything
-          --local_rank LOCAL_RANK
+    optional arguments:
+      -h, --help            show this help message and exit
+      -c CFG_FILE, --cfg_file CFG_FILE
+                            configuration YAML file
+      -t TRAINER, --trainer TRAINER
+                            trainer name
+      -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
+                            model checkpoint
+      --seed SEED           random seed for everything
+      --local_rank LOCAL_RANK
     """
 
     @classmethod
     def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
-        """ Add training arguments parser """
+        """Add training arguments parser"""
         subparser = parser.add_parser('train', help='train a model')
         subparser.add_argument('-c', '--cfg_file', required=True, help='configuration YAML file')
         subparser.add_argument('-t', '--trainer', default=None, help='trainer name')
@@ -39,13 +39,13 @@ class Train(Subcommand):
         return subparser
 
 
-def train_model_from_args(args: argparse.Namespace):  # noqa
+def train_model_from_args(args: argparse.Namespace):  # noqa: D103
     trainer = build_trainer_from_args(args)
     trainer.train(args.checkpoint_path)
     trainer.test()
 
 
-def build_trainer_from_args(args):  # noqa
+def build_trainer_from_args(args):  # noqa: D103
     if args.trainer is not None:
         trainer_name = args.trainer
     else:

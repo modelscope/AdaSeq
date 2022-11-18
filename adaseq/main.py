@@ -7,8 +7,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
 def run():
-    """ Command line main interface """
+    """Command line main interface"""
     from adaseq.commands import main
+
     main(prog='adaseq')
 
 

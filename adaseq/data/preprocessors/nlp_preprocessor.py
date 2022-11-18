@@ -11,7 +11,7 @@ from adaseq.utils.data_utils import gen_label2id
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.nlp_preprocessor)
 class NLPPreprocessor(Preprocessor):
-    """ common pre-process operations for NLP tasks """
+    """common pre-process operations for NLP tasks"""
 
     def __init__(self, model_dir: str, **kwargs):
         super().__init__(**kwargs)
@@ -26,7 +26,7 @@ class NLPPreprocessor(Preprocessor):
         self.tokenizer = self.build_tokenizer(model_dir)
 
     def build_tokenizer(self, model_dir):
-        """ build tokenizer from `transformers`. """
+        """build tokenizer from `transformers`."""
         if 'word2vec' in model_dir:
             return BertTokenizer.from_pretrained(model_dir)
         elif 'nezha' in model_dir:
@@ -35,7 +35,7 @@ class NLPPreprocessor(Preprocessor):
             return AutoTokenizer.from_pretrained(model_dir)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
-        """ encode one instance, it could be a text str, a list of tokens for a dict """
+        """encode one instance, it could be a text str, a list of tokens for a dict"""
         if isinstance(data, str):
             data = {'text': data}
         if isinstance(data, List):
@@ -51,7 +51,7 @@ class NLPPreprocessor(Preprocessor):
         return output
 
     def encode_tokens(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """ conver token to ids, add some mask. """
+        """conver token to ids, add some mask."""
         tokens = data['tokens']
         mask = data.get('mask', [True] * len(tokens))
         input_ids = []
@@ -63,11 +63,13 @@ class NLPPreprocessor(Preprocessor):
                 subtoken_ids = [self.tokenizer.unk_token_id]
             input_ids.extend(subtoken_ids)
             emission_mask.extend([token_mask] + [False] * (len(subtoken_ids) - 1))
-            offset_mapping.extend([(offset, offset + 1)] + [(offset + 1, offset + 1)] * (len(subtoken_ids) - 1))
+            offset_mapping.extend(
+                [(offset, offset + 1)] + [(offset + 1, offset + 1)] * (len(subtoken_ids) - 1)
+            )
         if len(input_ids) > self.max_length - 2:
-            input_ids = input_ids[:self.max_length - 2]
-            emission_mask = emission_mask[:self.max_length - 2]
-            offset_mapping = offset_mapping[:self.max_length - 2]
+            input_ids = input_ids[: self.max_length - 2]
+            emission_mask = emission_mask[: self.max_length - 2]
+            offset_mapping = offset_mapping[: self.max_length - 2]
         if self.add_cls_sep:
             input_ids = [self.tokenizer.cls_token_id] + input_ids + [self.tokenizer.sep_token_id]
             emission_mask = [False] + emission_mask + [False]
@@ -88,7 +90,7 @@ class NLPPreprocessor(Preprocessor):
         return output
 
     def encode_tokens_origin_view(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """ encode tokens when using multi-view model. """
+        """encode tokens when using multi-view model."""
         tokens = data['tokens']
         mask = data.get('mask', [True] * len(tokens))
 
@@ -105,12 +107,14 @@ class NLPPreprocessor(Preprocessor):
             if len(subtoken_ids) == 0:
                 subtoken_ids = [self.tokenizer.unk_token_id]
             input_ids.extend(subtoken_ids)
-            offset_mapping.extend([(offset, offset + 1)] + [(offset + 1, offset + 1)] * (len(subtoken_ids) - 1))
+            offset_mapping.extend(
+                [(offset, offset + 1)] + [(offset + 1, offset + 1)] * (len(subtoken_ids) - 1)
+            )
             emission_mask.extend([token_mask] + [False] * (len(subtoken_ids) - 1))
         if len(input_ids) > self.max_length - 2:
-            input_ids = input_ids[:self.max_length - 2]
-            offset_mapping = offset_mapping[:self.max_length - 2]
-            emission_mask = emission_mask[:self.max_length - 2]
+            input_ids = input_ids[: self.max_length - 2]
+            offset_mapping = offset_mapping[: self.max_length - 2]
+            emission_mask = emission_mask[: self.max_length - 2]
         if self.add_cls_sep:
             input_ids = [self.tokenizer.cls_token_id] + input_ids + [self.tokenizer.sep_token_id]
             offset_mapping = [(0, 0)] + offset_mapping + [(0, 0)]
@@ -131,11 +135,13 @@ class NLPPreprocessor(Preprocessor):
         return output
 
     def encode_text(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """ encode 'text' to ids """
+        """encode 'text' to ids"""
         raise NotImplementedError
 
-    def map_label_to_id(self, labels: List[str] = None, label2id: Dict[str, int] = None) -> Dict[str, int]:
-        """ conver labels to ids """
+    def map_label_to_id(
+        self, labels: List[str] = None, label2id: Dict[str, int] = None
+    ) -> Dict[str, int]:
+        """conver labels to ids"""
         if label2id is not None:
             return label2id
         elif labels is not None:

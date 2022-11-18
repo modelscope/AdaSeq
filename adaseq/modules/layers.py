@@ -7,7 +7,7 @@ import torch.nn as nn
 
 
 def load_vocab(vocab_file: str) -> Tuple[Dict[str, int], Dict[int, str]]:
-    """ Load from vocab file
+    """Load from vocab file
 
     Args:
         vocab_file (str): vocab file to be loaded
@@ -28,7 +28,7 @@ def load_vocab(vocab_file: str) -> Tuple[Dict[str, int], Dict[int, str]]:
 
 
 class Embedding(nn.Module):
-    """ A simple lookup table for word embedding.
+    """A simple lookup table for word embedding.
 
     This module implements a simple lookup table that stores embeddings of a fixed dictionary and size.
     It is often used to store word embeddings and retrieve them using indices.
@@ -60,12 +60,14 @@ class Embedding(nn.Module):
                     word_embed = [float(x) for x in fields[1:]]
                     embedding[idx] = word_embed
 
-            self.embedding = nn.Embedding.from_pretrained(torch.tensor(embedding, dtype=torch.float32), freeze=False)
+            self.embedding = nn.Embedding.from_pretrained(
+                torch.tensor(embedding, dtype=torch.float32), freeze=False
+            )
         else:
             self.embedding = nn.Embedding(self.vocab_size, self.width)
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
-        """ Retrieve word embeddings using indices
+        """Retrieve word embeddings using indices
 
         Args:
             input_ids (torch.Tensor): a list of indices

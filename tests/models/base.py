@@ -7,15 +7,18 @@ from tests.regress_test_utils import MsRegressTool, compare_arguments_nested
 
 
 class TestModel(unittest.TestCase):
-
     def setUp(self):
         os.environ['REGRESSION_BASELINE'] = '1'
-        self.is_baseline = True if os.environ.get('IS_BASELINE', '').lower() in ['1', 'y', 'true'] else False
+        self.is_baseline = (
+            True if os.environ.get('IS_BASELINE', '').lower() in ['1', 'y', 'true'] else False
+        )
 
         # fix modelscope bug
         from modelscope.trainers import EpochBasedTrainer
         from modelscope.utils import regress_test_utils
-        from tests.ms_patch import train_step, numpify_tensor_nested
+
+        from tests.ms_patch import numpify_tensor_nested, train_step
+
         EpochBasedTrainer.train_step = train_step
         regress_test_utils.numpify_tensor_nested = numpify_tensor_nested
 
@@ -30,12 +33,16 @@ class TestModel(unittest.TestCase):
             baseline = os.path.join(regression_resource_path, remote)
             if not os.path.exists(baseline):
                 raise ValueError(f'base line file {baseline} not exist')
-            print(f'local file found:{baseline}, md5:{hashlib.md5(open(baseline,"rb").read()).hexdigest()}')
+            print(
+                f'local file found:{baseline}, md5:{hashlib.md5(open(baseline,"rb").read()).hexdigest()}'
+            )
             if os.path.exists(local):
                 os.remove(local)
             os.symlink(baseline, local, target_is_directory=False)
 
-        self.regress_tool = MsRegressTool(baseline=self.is_baseline, store_func=store_func, load_func=load_func)
+        self.regress_tool = MsRegressTool(
+            baseline=self.is_baseline, store_func=store_func, load_func=load_func
+        )
 
 
 def compare_fn(value1, value2, key, type):
@@ -45,17 +52,37 @@ def compare_fn(value1, value2, key, type):
     if type != 'optimizer':
         return None
 
-    match = (value1['type'] == value2['type'])
+    match = value1['type'] == value2['type']
     shared_defaults = set(value1['defaults'].keys()).intersection(set(value2['defaults'].keys()))
-    match = all([
-        compare_arguments_nested(f'Optimizer defaults {key} not match', value1['defaults'][key],
-                                 value2['defaults'][key]) for key in shared_defaults
-    ]) and match
-    match = (len(value1['state_dict']['param_groups']) == len(value2['state_dict']['param_groups'])) and match
-    for group1, group2 in zip(value1['state_dict']['param_groups'], value2['state_dict']['param_groups']):
+    match = (
+        all(
+            [
+                compare_arguments_nested(
+                    f'Optimizer defaults {key} not match',
+                    value1['defaults'][key],
+                    value2['defaults'][key],
+                )
+                for key in shared_defaults
+            ]
+        )
+        and match
+    )
+    match = (
+        len(value1['state_dict']['param_groups']) == len(value2['state_dict']['param_groups'])
+    ) and match
+    for group1, group2 in zip(
+        value1['state_dict']['param_groups'], value2['state_dict']['param_groups']
+    ):
         shared_keys = set(group1.keys()).intersection(set(group2.keys()))
-        match = all([
-            compare_arguments_nested(f'Optimizer param_groups {key} not match', group1[key], group2[key])
-            for key in shared_keys
-        ]) and match
+        match = (
+            all(
+                [
+                    compare_arguments_nested(
+                        f'Optimizer param_groups {key} not match', group1[key], group2[key]
+                    )
+                    for key in shared_keys
+                ]
+            )
+            and match
+        )
     return match

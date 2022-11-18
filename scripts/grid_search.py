@@ -1,20 +1,20 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 import argparse
 import glob
+import json
 import os
 import re
 import subprocess
 from collections import OrderedDict
 from itertools import product
 
-import json
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 
 def tune(args):
-    """ hyperparameter tuning via grid search
+    """hyperparameter tuning via grid search
 
     This function will launch experiments with multiple hyperparameter settings in parallel.
     To use this function, modify the configuration file by changing the hyperparameters you want to tune to LIST.
@@ -33,6 +33,7 @@ def tune(args):
     usage: python scripts/grid_search.py tune -c ${cfg_file} [-c_env ${env_file} -to ${log_file}]
     """
     from modelscope.utils.config import Config
+
     assert args.cfg_file is not None, 'cfg_file must be specified!'
     config = Config.from_file(args.cfg_file)
     assert 'experiment' in config
@@ -54,7 +55,11 @@ def tune(args):
     # expand configs
     all_configs = _expand_config(config.to_dict())
 
-    op_gen = 'y' if args.yes else input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
+    op_gen = (
+        'y'
+        if args.yes
+        else input(f'use it to generate {len(all_configs)} ' 'config files? (y/n): ').lower()
+    )
     if op_gen in ['y', 'yes']:
         print('generating configs...')
     else:
@@ -104,12 +109,15 @@ def tune(args):
             output = ''
             output += env_settings
             for config_file in split:
-                output += 'CUDA_VISIBLE_DEVICES={gpu_id} {python_interpreter} ' \
+                output += (
+                    'CUDA_VISIBLE_DEVICES={gpu_id} {python_interpreter} '
                     '-m {python_file} -c {config_file} '.format(
                         gpu_id=gpus[i],
                         python_interpreter=env_config.python_interpreter,
                         python_file=env_config.python_file,
-                        config_file=config_file)
+                        config_file=config_file,
+                    )
+                )
                 if 'trainer' in env_config:
                     output += '-t {trainer} '.format(trainer=env_config.trainer)
                 output += '\n'
@@ -126,13 +134,15 @@ def tune(args):
         for f in all_script_files:
             subprocess.run('nohup sh {} > {} &'.format(f, args.to), shell=True)
     else:
-        proc = [subprocess.Popen('sh {} > {}'.format(f, args.to), shell=True) for f in all_script_files]
+        proc = [
+            subprocess.Popen('sh {} > {}'.format(f, args.to), shell=True) for f in all_script_files
+        ]
         exit_codes = [p.wait() for p in proc]
         print('finished:', exit_codes)
 
 
 def _expand_config(config):
-    """ recursively expand the config files """
+    """recursively expand the config files"""
     all_prev_config = [config]
     while True:
         prev_total_config = len(all_prev_config)
@@ -141,7 +151,9 @@ def _expand_config(config):
             flattened_config = _flatten_config(c)
             keys = [item[0] for item in flattened_config]
             values = [
-                item[1] if (isinstance(item[1], list) and item[0][-1] not in ['hooks', 'metrics']) else [item[1]]
+                item[1]
+                if (isinstance(item[1], list) and item[0][-1] not in ['hooks', 'metrics'])
+                else [item[1]]
                 for item in flattened_config
             ]
             for single_values in product(*values):
@@ -163,7 +175,10 @@ def _flatten_config(obj, path=[]):
     elif isinstance(obj, dict):
         ret = []
         for k, v in obj.items():
-            if k not in ['hooks', 'metrics']:  # hooks and metrics are naturally list, should not be flattened
+            if k not in [
+                'hooks',
+                'metrics',
+            ]:  # hooks and metrics are naturally list, should not be flattened
                 ret.extend(_flatten_config(v, path + [k]))
             else:
                 ret.extend([(path + [k], v)])
@@ -171,8 +186,10 @@ def _flatten_config(obj, path=[]):
     elif isinstance(obj, list):
         return [(path, obj)]
     else:
-        raise ValueError('Unsupported value type: {}'.format(type(obj)),
-                         'Only the following value types are supported: str, int, float')
+        raise ValueError(
+            'Unsupported value type: {}'.format(type(obj)),
+            'Only the following value types are supported: str, int, float',
+        )
 
 
 def _create_config(data):
@@ -190,8 +207,9 @@ def _create_config(data):
 
 
 def collect(args):
-    """ Collect experiment results launched by tune and save into a csv file """
+    """Collect experiment results launched by tune and save into a csv file"""
     from modelscope.utils.config import Config
+
     assert args.cfg_file is not None, 'cfg_file must be specified!'
     config = Config.from_file(args.cfg_file)
     assert 'experiment' in config
@@ -215,8 +233,12 @@ def collect(args):
     df.to_csv(args.output_file)
 
     df_seed_avg = df.groupby(
-        by=[k for k in list(df.columns)
-            if k not in ['experiment_seed', 'p', 'r', 'f1', 'dev_f1', 'log_file']]).agg(['mean', 'std'])
+        by=[
+            k
+            for k in list(df.columns)
+            if k not in ['experiment_seed', 'p', 'r', 'f1', 'dev_f1', 'log_file']
+        ]
+    ).agg(['mean', 'std'])
     df_seed_avg.to_csv(args.output_avg_file)
 
 
@@ -249,7 +271,7 @@ def _parse_log(log_file):
 
 
 def kill():
-    """ Kill all running processes launched by tune """
+    """Kill all running processes launched by tune"""
     subprocess.run(
         'kill_cnt=$((`ps -ef | grep $USER | grep -v "grep" | grep "sh experiments" |'
         'wc -l` + `ps -ef | grep $USER | grep -v "grep" | grep "scripts.train" | wc -l`));'
@@ -258,20 +280,32 @@ def kill():
         'ps -ef | grep $USER | grep -v "grep" | grep "sh experiments" | tr -s " " | cut -d " " -f 2 | xargs kill;'
         'ps -ef | grep $USER | grep -v "grep" | grep "scripts.train" | tr -s " " | cut -d " " -f 2 | xargs kill;'
         'echo "$kill_cnt processes killed."',
-        shell=True)
+        shell=True,
+    )
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('grid_search.py')
     parser.add_argument('mode', choices=['tune', 'collect', 'kill'], help='[tune, collect, kill]')
     parser.add_argument('-c', '--cfg_file', help='configuration YAML file')
-    parser.add_argument('-c_env', '--config_env', default=None, help='configuration YAML file for environment')
+    parser.add_argument(
+        '-c_env', '--config_env', default=None, help='configuration YAML file for environment'
+    )
     parser.add_argument('-to', '--to', help='stdout and stderr to', default='/dev/null')
     parser.add_argument('-o', '--output_file', help='output file for collect', default='res.csv')
-    parser.add_argument('-oa', '--output_avg_file', help='output avg file for collect', default='res_seed_avg.csv')
+    parser.add_argument(
+        '-oa', '--output_avg_file', help='output avg file for collect', default='res_seed_avg.csv'
+    )
     parser.add_argument('-g', '--gpu', help='gpu_ids (e.g. 0 or 0,1 or 0,1,3,4)', default='')
-    parser.add_argument('-y', '--yes', help='automatically answer yes for all questions', action='store_true')
-    parser.add_argument('-f', '--foreground', help='run in foreground and wait for exits for dlc', action='store_true')
+    parser.add_argument(
+        '-y', '--yes', help='automatically answer yes for all questions', action='store_true'
+    )
+    parser.add_argument(
+        '-f',
+        '--foreground',
+        help='run in foreground and wait for exits for dlc',
+        action='store_true',
+    )
 
     args = parser.parse_args()
 

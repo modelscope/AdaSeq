@@ -8,11 +8,11 @@ from datasets.utils.file_utils import is_remote_url
 
 
 class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
-    """ Base class for custumized dataset builder."""
+    """Base class for custumized dataset builder."""
 
     @abstractmethod
     def stub():
-        """ Useless stub function.
+        """Useless stub function.
 
         The datasets.load_dataset import the builder class from path via import_main_class.
         According to the source code, import_main_class will return the first non-abstract class.
@@ -102,7 +102,9 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
             raise ValueError('Datasets cannot be resolved!')
 
         return [
-            datasets.SplitGenerator(name=split_name, gen_kwargs={'filepath': data_files[split_name]})
+            datasets.SplitGenerator(
+                name=split_name, gen_kwargs={'filepath': data_files[split_name]}
+            )
             for split_name in data_files.keys()
         ]
 

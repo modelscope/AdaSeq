@@ -17,7 +17,7 @@ class SinusoidalPositionEmbedding(nn.Module):
     ref: https://spaces.ac.cn/archives/8265
     """
 
-    def __init__(self, output_dim: int, merge_mode: str = 'add', custom_position_ids=False):
+    def __init__(self, output_dim: int, merge_mode: str = 'add', custom_position_ids: bool = False):
         super(SinusoidalPositionEmbedding, self).__init__()
         self.output_dim = output_dim
         self.merge_mode = merge_mode
@@ -53,13 +53,15 @@ class GlobalPointerModel(Model):
     ref: https://github.com/xhw205/Efficient-GlobalPointer-torch
     """
 
-    def __init__(self,
-                 num_labels: int,
-                 encoder: Union[Encoder, str] = None,
-                 token_ffn_out_width=-1,
-                 encoder_hidden_size=-1,
-                 word_dropout=0.0,
-                 **kwargs):
+    def __init__(
+        self,
+        num_labels: int,
+        encoder: Union[Encoder, str] = None,
+        token_ffn_out_width: int = -1,
+        encoder_hidden_size: int = -1,
+        word_dropout: float = 0.0,
+        **kwargs
+    ):
         super(GlobalPointerModel, self).__init__()
 
         if isinstance(encoder, Encoder):
@@ -97,10 +99,13 @@ class GlobalPointerModel(Model):
 
         start_token = add_position_embedding(start_token, cos_pos, sin_pos)
         end_token = add_position_embedding(end_token, cos_pos, sin_pos)
-        span_score = torch.einsum('bmd,bnd->bmn', start_token, end_token) / self.token_ffn_out_width**0.5
+        span_score = (
+            torch.einsum('bmd,bnd->bmn', start_token, end_token) / self.token_ffn_out_width**0.5
+        )
         typing_score = torch.einsum('bnh->bhn', self.type_score_ffn(embed)) / 2
-        entity_score = span_score[:, None] + typing_score[:, ::2, None] + typing_score[:, 1::2, :,
-                                                                                       None]  # [:, None] 增加一个维度
+        entity_score = (
+            span_score[:, None] + typing_score[:, ::2, None] + typing_score[:, 1::2, :, None]
+        )  # [:, None] 增加一个维度
         entity_score = self._add_mask_tril(entity_score, mask=inputs['attention_mask'])
         return {'entity_score': entity_score}
 
@@ -157,7 +162,9 @@ class GlobalPointerModel(Model):
         """
         entity_score = (1 - 2 * targets) * entity_score  # -1 -> pos classes, 1 -> neg classes
         entity_score_neg = entity_score - targets * 1e12  # mask the pred outputs of pos classes
-        entity_score_pos = (entity_score - (1 - targets) * 1e12)  # mask the pred outputs of neg classes
+        entity_score_pos = (
+            entity_score - (1 - targets) * 1e12
+        )  # mask the pred outputs of neg classes
         zeros = torch.zeros_like(entity_score[..., :1])
         entity_score_neg = torch.cat([entity_score_neg, zeros], dim=-1)
         entity_score_pos = torch.cat([entity_score_pos, zeros], dim=-1)

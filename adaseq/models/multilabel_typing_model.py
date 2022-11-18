@@ -13,8 +13,8 @@ from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.encoders import Encoder, SpanEncoder
 
 
-class WBCEWithLogitsLoss():
-    """ Weighed BCE loss, multiply the loss of positive examples with a scaler """
+class WBCEWithLogitsLoss:
+    """Weighed BCE loss, multiply the loss of positive examples with a scaler"""
 
     def __init__(self, pos_weight=1.0):
         self.pos_weight = pos_weight
@@ -33,9 +33,9 @@ class WBCEWithLogitsLoss():
         return loss
 
 
-class WBCEWithLogitsLossUFET():
-    """ Weighed BCE loss, multiply the loss of positive examples with a scaler,
-    Apply the trick in Ultra-Fine Entity Typing with Weak Supervision from a Masked Language Model """
+class WBCEWithLogitsLossUFET:
+    """Weighed BCE loss, multiply the loss of positive examples with a scaler,
+    Apply the trick in Ultra-Fine Entity Typing with Weak Supervision from a Masked Language Model"""
 
     def __init__(self, pos_weight=1.0):
         self.pos_weight = pos_weight
@@ -64,7 +64,7 @@ class WBCEWithLogitsLossUFET():
 
 @MODELS.register_module(module_name=Models.multilabel_span_typing_model)
 class MultiLabelSpanTypingModel(Model):
-    """ Span based MultiLabel Entity Typing model
+    """Span based MultiLabel Entity Typing model
 
     This model is used for multilabel entity typing tasks.
 
@@ -80,15 +80,17 @@ class MultiLabelSpanTypingModel(Model):
         **kwargs: other arguments
     """
 
-    def __init__(self,
-                 labels: List[str],
-                 encoder: Union[Encoder, str] = None,
-                 span_encoder_method: str = 'concat',
-                 word_dropout: Optional[float] = 0.0,
-                 loss_function: str = 'BCE',
-                 class_threshold: float = 0.5,
-                 use_biaffine: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        labels: List[str],
+        encoder: Union[Encoder, str] = None,
+        span_encoder_method: str = 'concat',
+        word_dropout: Optional[float] = 0.0,
+        loss_function: str = 'BCE',
+        class_threshold: float = 0.5,
+        use_biaffine: bool = False,
+        **kwargs
+    ):
         super(MultiLabelSpanTypingModel, self).__init__()
         self.num_labels = len(labels)
         if isinstance(encoder, Encoder):
@@ -96,7 +98,9 @@ class MultiLabelSpanTypingModel(Model):
         else:
             self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
 
-        self.span_encoder = SpanEncoder(self.encoder.config.hidden_size, span_encoder_method, **kwargs)
+        self.span_encoder = SpanEncoder(
+            self.encoder.config.hidden_size, span_encoder_method, **kwargs
+        )
         self.linear_input_dim = self.span_encoder.output_dim
 
         self.num_labels = self.num_labels
@@ -174,7 +178,12 @@ class MultiLabelSpanTypingModel(Model):
             for mention_idx, mention_pred in enumerate(sent_predict):
                 types = [i for i, p in enumerate(mention_pred) if p == 1]
                 sent_mentions.append(
-                    (sent_mention_boundary[0][mention_idx], sent_mention_boundary[1][mention_idx], types))
+                    (
+                        sent_mention_boundary[0][mention_idx],
+                        sent_mention_boundary[1][mention_idx],
+                        types,
+                    )
+                )
             batch_mentions.append(sent_mentions)
 
         return batch_mentions
@@ -182,7 +191,7 @@ class MultiLabelSpanTypingModel(Model):
 
 @MODELS.register_module(module_name=Models.multilabel_concat_typing_model)
 class MultiLabelConcatTypingModel(Model):
-    """ Concat based Single Mention MultiLabel Entity Typing model
+    """Concat based Single Mention MultiLabel Entity Typing model
 
     This model is used for single mention multilabel entity typing tasks.
     Input format [cls] sentence [sep] mention [sep]
@@ -199,15 +208,17 @@ class MultiLabelConcatTypingModel(Model):
         **kwargs: other arguments
     """
 
-    def __init__(self,
-                 labels: List[str],
-                 encoder: Union[Encoder, str] = None,
-                 word_dropout: Optional[float] = 0.0,
-                 loss_function: str = 'BCE',
-                 class_threshold: float = 0.5,
-                 pos_weight: float = 1.0,
-                 decoder: Union[Decoder, str] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        labels: List[str],
+        encoder: Union[Encoder, str] = None,
+        word_dropout: Optional[float] = 0.0,
+        loss_function: str = 'BCE',
+        class_threshold: float = 0.5,
+        pos_weight: float = 1.0,
+        decoder: Union[Decoder, str] = None,
+        **kwargs
+    ):
         super(MultiLabelConcatTypingModel, self).__init__()
         num_labels = len(labels)
         self.num_labels = num_labels
@@ -240,8 +251,10 @@ class MultiLabelConcatTypingModel(Model):
         self.linear = nn.Linear(self.linear_input_dim, num_labels)
 
         self.decoder_type = decoder.pop('type')
-        assert self.decoder_type in ['pairwise-crf', 'linear'], \
-            'decoder_type {} unimplemented'.format(self.decoder_type)
+        assert self.decoder_type in [
+            'pairwise-crf',
+            'linear',
+        ], 'decoder_type {} unimplemented'.format(self.decoder_type)
 
         if self.decoder_type == 'pairwise-crf':
             self.decoder = PairwiseCRF(labels=labels, **decoder)

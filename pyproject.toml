@@ -1,0 +1,20 @@
+[tool.black]
+line-length = 100
+include = '\.pyi?$'
+extend-exclude = '''
+(
+      \docs
+    | \tests
+)
+'''
+skip-string-normalization = true  # Avoid black replace all single quotes to the double
+
+[tool.isort]
+profile = "black"
+src_paths = ["adaseq", "scripts", "tests"]
+skip_gitignore = true
+known_first_party = ["adaseq"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

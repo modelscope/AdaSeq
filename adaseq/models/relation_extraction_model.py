@@ -15,18 +15,20 @@ from adaseq.modules.encoders import Encoder
 
 @MODELS.register_module(module_name=Models.relation_extraction_model)
 class RelationExtractionModel(Model):
-    """ Relation extraction model
+    """Relation extraction model
 
     This model is used for relation extraction tasks.
     """
 
-    def __init__(self,
-                 num_labels: int,
-                 encoder: Union[Encoder, str] = None,
-                 word_dropout: Optional[float] = 0.0,
-                 multiview: Optional[bool] = False,
-                 temperature: Optional[float] = 1.0,
-                 **kwargs):
+    def __init__(
+        self,
+        num_labels: int,
+        encoder: Union[Encoder, str] = None,
+        word_dropout: Optional[float] = 0.0,
+        multiview: Optional[bool] = False,
+        temperature: Optional[float] = 1.0,
+        **kwargs
+    ):
         super(RelationExtractionModel, self).__init__()
         self.num_labels = num_labels
         if isinstance(encoder, Encoder):
@@ -54,8 +56,9 @@ class RelationExtractionModel(Model):
             masked_lengths = mask.sum(-1).long()
             masked_reps = torch.zeros_like(embed)
             for i in range(len(mask)):
-                masked_reps[i, :masked_lengths[i], :] = embed[i].masked_select(mask[i].unsqueeze(-1)).view(
-                    masked_lengths[i], -1)
+                masked_reps[i, : masked_lengths[i], :] = (
+                    embed[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
+                )
             reps = masked_reps
         else:
             reps = embed
@@ -73,15 +76,18 @@ class RelationExtractionModel(Model):
         return {'logits': logits}
 
     def _forward_origin_view(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(inputs['origin_input_ids'], attention_mask=inputs['origin_attention_mask'])[0]
+        embed = self.encoder(
+            inputs['origin_input_ids'], attention_mask=inputs['origin_attention_mask']
+        )[0]
 
         if 'origin_emission_mask' in inputs:
             mask = inputs['origin_emission_mask']
             masked_lengths = mask.sum(-1).long()
             masked_reps = torch.zeros_like(embed)
             for i in range(len(mask)):
-                masked_reps[i, :masked_lengths[i], :] = embed[i].masked_select(mask[i].unsqueeze(-1)).view(
-                    masked_lengths[i], -1)
+                masked_reps[i, : masked_lengths[i], :] = (
+                    embed[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
+                )
             reps = masked_reps
         else:
             reps = embed
@@ -123,12 +129,18 @@ class RelationExtractionModel(Model):
         if self.multiview:
             batch_size, num_classes = ext_view_logits.shape
             ext_view_logits = ext_view_logits.detach()
-            _loss = F.kl_div(
-                F.log_softmax(origin_view_logits / T, dim=-1), F.softmax(ext_view_logits / T, dim=-1),
-                reduction='none') * T * T
+            _loss = (
+                F.kl_div(
+                    F.log_softmax(origin_view_logits / T, dim=-1),
+                    F.softmax(ext_view_logits / T, dim=-1),
+                    reduction='none',
+                )
+                * T
+                * T
+            )
             loss = _loss.sum() / batch_size
         else:
-            loss = 0.
+            loss = 0.0
         return loss
 
     def _calculate_loss(self, logits, targets):

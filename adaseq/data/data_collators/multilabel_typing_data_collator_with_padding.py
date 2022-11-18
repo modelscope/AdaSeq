@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 
 from adaseq.metainfo import DataCollators
+
 from .base import DATA_COLLATORS, DataCollatorWithPadding
 
 
@@ -15,10 +16,17 @@ class MultiLabelSpanTypingDataCollatorWithPadding(DataCollatorWithPadding):
         super().__init__(tokenizer)
         self.keep_fields.append('spans')
 
-    def padding(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,
-                padding_side: str) -> Dict[str, Any]:
-        """Padding a batch. In addition to the fields padded by base class DataCollatorWithPadding,
-           'mention_boundary'、'type_ids'、'mention_msk' are padded here.
+    def padding(
+        self,
+        batch: Dict[str, Any],
+        fields: List[str],
+        batch_size: int,
+        max_length: int,
+        padding_side: str,
+    ) -> Dict[str, Any]:
+        """
+        Padding a batch. In addition to the fields padded by base class DataCollatorWithPadding,
+        'mention_boundary'、'type_ids'、'mention_msk' are padded here.
         """
 
         max_span_count = max([len(x[0]) for x in batch['mention_boundary']])
@@ -27,7 +35,9 @@ class MultiLabelSpanTypingDataCollatorWithPadding(DataCollatorWithPadding):
             if difference > 0:
                 batch['mention_boundary'][i][0] = batch['mention_boundary'][i][0] + [0] * difference
                 batch['mention_boundary'][i][1] = batch['mention_boundary'][i][1] + [0] * difference
-                batch['type_ids'][i] = batch['type_ids'][i] + ([[0] * len(batch['type_ids'][i][0])]) * difference
+                batch['type_ids'][i] = (
+                    batch['type_ids'][i] + ([[0] * len(batch['type_ids'][i][0])]) * difference
+                )
                 batch['mention_msk'][i] = batch['mention_msk'][i] + [0] * difference
         return batch
 
@@ -41,6 +51,12 @@ class MultiLabelConcatTypingDataCollatorWithPadding(DataCollatorWithPadding):
         super().__init__(tokenizer)
         self.keep_fields.append('spans')
 
-    def padding(self, batch: Dict[str, Any], fields: List[str], batch_size: int, max_length: int,  # noqa
-                padding_side: str) -> Dict[str, Any]:  # yapf: disable
+    def padding(  # noqa: D102
+        self,
+        batch: Dict[str, Any],
+        fields: List[str],
+        batch_size: int,
+        max_length: int,
+        padding_side: str,
+    ) -> Dict[str, Any]:
         return batch

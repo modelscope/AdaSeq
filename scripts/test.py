@@ -16,13 +16,13 @@ warnings.filterwarnings('ignore')
 
 
 def main(args):
-    """ test a model from args """
+    """test a model from args"""
     trainer = build_trainer(args)
     trainer.test(args.checkpoint_path)
 
 
 def build_trainer(args):
-    """ build a trainer from args """
+    """build a trainer from args"""
     if args.trainer is not None:
         trainer_name = args.trainer
     else:

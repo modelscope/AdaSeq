@@ -4,7 +4,7 @@ import torch.nn as nn
 
 
 class WordDropout(nn.Module):
-    """ Word-level Dropout module
+    """Word-level Dropout module
 
     During training, randomly zeroes some of the elements of the input tensor at word level
     with probability `dropout_rate` using samples from a Bernoulli distribution.
@@ -19,7 +19,7 @@ class WordDropout(nn.Module):
         self.dropout_rate = dropout_rate
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        """ Dropout the input tensor at word level
+        """Dropout the input tensor at word level
 
         Args:
             inputs (torch.Tensor): input tensor

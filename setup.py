@@ -3,14 +3,14 @@ from setuptools import find_packages, setup
 
 
 def readme():
-    """ Fetch readme content from README.md """
+    """Fetch readme content from README.md"""
     with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
 
 
 def get_version():
-    """ Get version from version.py """
+    """Get version from version.py"""
     version_file = 'adaseq/version.py'
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
@@ -32,6 +32,7 @@ def parse_requirements(fname='requirements.txt', with_version=True):
     import re
     import sys
     from os.path import exists
+
     require_fpath = fname
 
     def parse_line(line):
@@ -117,16 +118,11 @@ setup(
     author='Alibaba Damo Academy NLP foundation team',
     platforms='any',
     python_requires='>=3.6.0',
-    dependency_links=[
-        'https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html'
-    ],
+    dependency_links=['https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html'],
     install_requires=parse_requirements('requirements.txt'),
     packages=find_packages(),
     package_dir={'adaseq': 'adaseq'},
     package_data={'adaseq': ['data/*.yaml']},
     license='Apache License 2.0',
-    entry_points={
-        'console_scripts':
-        ['adaseq=adaseq.main:run']
-    },
+    entry_points={'console_scripts': ['adaseq=adaseq.main:run']},
 )  # yapf: disable

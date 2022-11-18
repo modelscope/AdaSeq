@@ -9,21 +9,21 @@ from adaseq.commands.subcommand import Subcommand
 
 class Test(Subcommand):
     """
-        usage: adaseq test [-h] -c CFG_FILE [-t TRAINER] [-cp CHECKPOINT_PATH]
+    usage: adaseq test [-h] -c CFG_FILE [-t TRAINER] [-cp CHECKPOINT_PATH]
 
-        optional arguments:
-          -h, --help            show this help message and exit
-          -c CFG_FILE, --cfg_file CFG_FILE
-                                configuration YAML file
-          -t TRAINER, --trainer TRAINER
-                                trainer name
-          -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
-                                model checkpoint
+    optional arguments:
+      -h, --help            show this help message and exit
+      -c CFG_FILE, --cfg_file CFG_FILE
+                            configuration YAML file
+      -t TRAINER, --trainer TRAINER
+                            trainer name
+      -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
+                            model checkpoint
     """
 
     @classmethod
     def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
-        """ Add testing arguments parser """
+        """Add testing arguments parser"""
         subparser = parser.add_parser('test', help='test with a model checkpoint')
         subparser.add_argument('-c', '--cfg_file', required=True, help='configuration YAML file')
         subparser.add_argument('-t', '--trainer', default=None, help='trainer name')
@@ -33,12 +33,12 @@ class Test(Subcommand):
         return subparser
 
 
-def test_model_from_args(args: argparse.Namespace):  # noqa
+def test_model_from_args(args: argparse.Namespace):  # noqa: D103
     trainer = build_trainer_from_args(args)
     trainer.test(args.checkpoint_path)
 
 
-def build_trainer_from_args(args):  # noqa
+def build_trainer_from_args(args: argparse.Namespace):  # noqa: D103
     if args.trainer is not None:
         trainer_name = args.trainer
     else:
