@@ -3,6 +3,7 @@ from os import path as osp
 from typing import Dict, Union
 
 import torch.nn as nn
+from modelscope.models import Model
 from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.registry import Registry, build_from_cfg
 from transformers import AutoModel
@@ -57,7 +58,12 @@ class Encoder(nn.Module):
         else:
             assert cfg['model_name_or_path'] is not None, (
                 'Model is not found in registry, '
-                'so it is considered a huggingface backbone '
+                'so it is considered a modelscope or huggingface backbone '
                 'and the model_name_or_path param should not be None'
             )
-            return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)
+            try:
+                return Model.from_pretrained(
+                    cfg['model_name_or_path'], task=kwargs.pop('task', 'backbone'), **kwargs
+                )
+            except Exception:
+                return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)

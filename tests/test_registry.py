@@ -1,7 +1,7 @@
 import os
-import shutil
 import unittest
 
+from modelscope.models.nlp import SbertModel
 from transformers import BertModel
 
 from adaseq.metainfo import Models
@@ -14,10 +14,15 @@ class TestRegistry(unittest.TestCase):
     def setUp(self):
         self.bert_config_file = os.path.join('tests', 'resources', 'configs', 'bert.yaml')
 
-    def test_get_encoder(self):
-        """可以不指定配置文件并初始化一个Encoder"""
+    def test_get_encoder_from_huggingface(self):
+        """可以不使用名字从huggingface初始化一个Encoder"""
         model = Encoder.from_config(model_name_or_path='bert-base-cased')
         self.assertTrue(isinstance(model, BertModel))
+
+    def test_get_encoder_from_modelscope(self):
+        """可以使用名字从modelscope初始化一个Encoder"""
+        model = Encoder.from_config(model_name_or_path='damo/nlp_structbert_backbone_tiny_std')
+        self.assertTrue(isinstance(model, SbertModel))
 
     def test_get_encoder_from_cfg_bert(self):
         """可以指定配置文件初始化一个Encoder，本例中配置文件中存在model_name_or_path参数"""

@@ -250,7 +250,7 @@ class DefaultTrainer(EpochBasedTrainer):
 
     def build_model(self) -> nn.Module:
         """Build model from config"""
-        return Model.from_config(self.cfg.model)
+        return Model.from_config(self.cfg)
 
     def build_dataset(self) -> DatasetManager:
         """Build dataset from config"""

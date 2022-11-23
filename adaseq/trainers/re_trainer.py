@@ -52,9 +52,8 @@ class RETrainer(DefaultTrainer):
 
     def build_model(self) -> nn.Module:
         """Build model with labels"""
-        cfg = self.cfg.model
-        cfg['num_labels'] = len(self.label2id)
-        return Model.from_config(cfg)
+        self.cfg.model['num_labels'] = len(self.label2id)
+        return Model.from_config(self.cfg)
 
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
