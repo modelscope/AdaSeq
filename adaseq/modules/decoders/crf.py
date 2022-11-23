@@ -227,7 +227,7 @@ class CRF(Decoder):
             mode (`str`): Specifies the calculation mode: ``partition|forward|backward``.
         Returns:
             A PyTorch tensor of the shape
-            ``(batch_size, batch_size, num_tags)`` for `partition`,
+            ``(batch_size, num_tags)`` for `partition`,
             ``(seq_length, batch_size, num_tags)`` for `forward`,
             the difference between `partition` and `forward` is whether add the `end_transtions` or not.
             ``(seq_length, batch_size, num_tags)`` for `backward`.
@@ -240,6 +240,7 @@ class CRF(Decoder):
             start_transitions = self.start_transitions
             end_transitions = self.end_transitions
             current_emissions = emissions
+            transitions = self.transitions
         elif mode == 'backward':
             start_transitions = self.end_transitions
             end_transitions = self.start_transitions
@@ -250,6 +251,7 @@ class CRF(Decoder):
                 current_emissions[:length, batch_idx, :] = emissions[:length, batch_idx, :].flip(
                     [0]
                 )
+            transitions = self.transitions.transpose(0, 1)
         else:
             raise NotImplementedError
 
@@ -260,10 +262,7 @@ class CRF(Decoder):
         # (batch_size, num_tags) where for each batch, the j-th column stores
         # the score that the first timestep has tag j
         # shape: (batch_size, num_tags)
-        if mode in ('forward', 'partition'):
-            score = start_transitions + current_emissions[0]
-        elif mode == 'backward':
-            score = start_transitions + torch.zeros_like(current_emissions[0])
+        score = start_transitions + current_emissions[0]
 
         scores[0, :, :] = score
 
@@ -274,17 +273,14 @@ class CRF(Decoder):
 
             # Broadcast emission score for every possible current tag
             # shape: (batch_size, 1, num_tags)
-            if mode in ('forward', 'partition'):
-                broadcast_emissions = current_emissions[i].unsqueeze(1)
-            elif mode == 'backward':
-                broadcast_emissions = current_emissions[i - 1].unsqueeze(1)
+            broadcast_emissions = current_emissions[i].unsqueeze(1)
 
             # Compute the score tensor of size (batch_size, num_tags, num_tags) where
             # for each sample, entry at row i and column j stores the sum of scores of all
             # possible tag sequences so far that end with transitioning from tag i to tag j
             # and emitting
             # shape: (batch_size, num_tags, num_tags)
-            next_score = broadcast_score + self.transitions + broadcast_emissions
+            next_score = broadcast_score + transitions + broadcast_emissions
 
             # Sum over all possible current tags, but we're in score space, so a sum
             # becomes a log-sum-exp: for each sample, entry i stores the sum of scores of
@@ -307,7 +303,9 @@ class CRF(Decoder):
             batch_size = emissions.shape[1]
             for batch_idx in range(batch_size):
                 length = mask[:, batch_idx].sum()
-                scores[:length, batch_idx, :] = scores[:length, batch_idx, :].flip([0])
+                scores[:length, batch_idx, :] = (
+                    scores[:length, batch_idx, :] - current_emissions[:length, batch_idx, :]
+                ).flip([0])
 
         return scores
 
