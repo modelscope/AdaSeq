@@ -63,11 +63,11 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
                 if span['type'] == PARTIAL_LABEL:
                     labels[i] = span['type']
                     continue
-                if 'S' in tag_scheme and i == span['start'] == span['end'] + 1:
+                if 'S' in tag_scheme and i == span['start'] == span['end'] - 1:
                     labels[i] = 'S-' + span['type']
                 elif i == span['start']:
                     labels[i] = 'B-' + span['type']
-                elif 'E' in tag_scheme and i == span['end'] + 1:
+                elif 'E' in tag_scheme and i == span['end'] - 1:
                     labels[i] = 'E-' + span['type']
                 else:
                     labels[i] = 'I-' + span['type']
