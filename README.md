@@ -11,15 +11,12 @@
 - **Extensible**: easily register new tasks, models, modules, criterions, optimizers, lr_schedulers and training methods.
 
 ### What's New:
-- 2022-11: [Released NPCRF code](./examples/NPCRF)
-- 2022-11: [Released BABERT models](./examples/babert)
+- 2022-11: [[EMNLP 2022] Released NPCRF code](./examples/NPCRF)
+- 2022-11: [[EMNLP 2022] Released BABERT models](./examples/babert)
 
 <details>
 <summary>Previous updates</summary>
 </details>
-
-## State-of-the-Art Models
-TODO
 
 ## Supported Models
 - [Transformer-based CRF](./examples/bert_crf)
