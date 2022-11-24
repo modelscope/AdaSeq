@@ -27,13 +27,30 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
     @classmethod
     def load_data_file(cls, file_path, corpus_config):
         """
-        NER reader supports CoNLL format ('column'),
-        json format `{'text': 'duck duck duck duck', 'labels': ['B-PER', 'O', ...]}`
-        and span_based json ```
+        NER reader supports:
+        1. CoNLL format ('column'),
+        2. json format
+        ```
+        {
+            'text': 'duck duck duck duck',
+            'labels': ['B-PER', 'O', ...]
+        }
+        ```
+        3. json spans format
+        ```
+        {
+            'text': 'duck duck',
+            'spans': [
+                {'start': 0, 'end': 1, 'type': 'PER'},
+                ...
+            ]
+        ```
+        4. cluener format
+        ```
         {
             'text': 'duck duck',
             'label': {
-                'LOC': [[0, 1], ...]. TODO: what?
+                'LOC': [[0, 1], ...]
             }
         }
         ```.
@@ -45,8 +62,10 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 )
             elif corpus_config['data_format'] == 'json':
                 return cls._load_sequence_labeling_json_data_file(file_path, corpus_config)
-        elif corpus_config['data_type'] == 'span_based':
-            return cls._load_span_based_json_data_file(
+        elif corpus_config['data_type'] == 'json_spans':
+            return cls._load_json_spans_data_file(file_path, corpus_config)
+        elif corpus_config['data_type'] == 'cluener':
+            return cls._load_cluener_json_data_file(
                 file_path, corpus_config.get('is_end_included', False)
             )
         else:
@@ -105,7 +124,42 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                 guid += 1
 
     @classmethod
-    def _load_span_based_json_data_file(cls, filepath, corpus_config):
+    def _load_json_spans_data_file(cls, filepath, corpus_config):
+        # {'text': 'aaa', 'labels': [{'start': 0, 'end': 1, type: 'LOC'}, ...]}
+        spans_key = corpus_config.get('spans_key', 'spans')
+        text_key = corpus_config.get('text_key', 'text')
+        tokenizer = corpus_config.get('tokenizer', 'char')
+        is_end_included = corpus_config.get('is_end_included', False)
+
+        with open(filepath, encoding='utf-8') as f:
+            guid = 0
+            for line in f:
+                if line.strip() == '':
+                    continue
+                example = json.loads(line)
+                text = example[text_key]
+                if isinstance(text, list):
+                    tokens = text
+                elif isinstance(text, str):
+                    if tokenizer == 'char':
+                        tokens = list(text)
+                    elif tokenizer == 'blank':
+                        tokens = text.split(' ')
+                    else:
+                        raise RuntimeError
+                else:
+                    raise ValueError('Unsupported text input.')
+                spans = []
+                for span in example[spans_key]:
+                    if is_end_included:
+                        span['end'] += 1
+                    spans.append(span)
+                mask = [True] * len(tokens)
+                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans, 'mask': mask}
+                guid += 1
+
+    @classmethod
+    def _load_cluener_json_data_file(cls, filepath, corpus_config):
         with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
