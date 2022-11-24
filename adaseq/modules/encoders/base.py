@@ -62,8 +62,8 @@ class Encoder(nn.Module):
                 'and the model_name_or_path param should not be None'
             )
             try:
+                return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)
+            except Exception:
                 return Model.from_pretrained(
                     cfg['model_name_or_path'], task=kwargs.pop('task', 'backbone'), **kwargs
                 )
-            except Exception:
-                return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)
