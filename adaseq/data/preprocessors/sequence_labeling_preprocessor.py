@@ -22,7 +22,10 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
         if not self._is_valid_tag_scheme(self.tag_scheme):
             raise ValueError('Invalid tag scheme! Options: [BIO, BIOES]')
 
-        label2id = kwargs.get('label2id', None)
+        label2id = None
+        if 'label2id' in kwargs and kwargs['label2id']:
+            label2id = kwargs.pop('label2id')
+            self.tag_scheme = self._determine_tag_scheme_from_labels(label2id.keys())
         self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
@@ -43,6 +46,16 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
     @staticmethod
     def _is_valid_tag_scheme(tag_scheme: str):
         return tag_scheme in ['BIO', 'BIOES']
+
+    @staticmethod
+    def _determine_tag_scheme_from_labels(labels: List[str]) -> str:
+        tag_scheme = 'BIO'
+        for label in labels:
+            if label[0] not in 'BIOES':
+                raise ValueError(f'Unsupported label: {label}')
+            if label[0] in 'ES':
+                tag_scheme = 'BIOES'
+        return tag_scheme
 
     @staticmethod
     def _gen_label2id_with_bio(labels: List[str], tag_scheme: str = 'BIOES') -> Dict[str, int]:

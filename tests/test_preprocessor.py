@@ -20,32 +20,23 @@ class TestPreprocessor(unittest.TestCase):
                 {'start': 6, 'end': 7, 'type': 'MISC'},
             ],
         }
-        self.ner_labels1 = [
-            'O',
-            'B-LOC',
-            'B-MISC',
-            'B-ORG',
-            'B-PER',
-            'I-LOC',
-            'I-MISC',
-            'I-ORG',
-            'I-PER',
-        ]
+        self.ner_labels1 = ['O'] + [f'{a}-{b}' for a in 'BI' for b in ['LOC', 'MISC', 'ORG', 'PER']]
+        self.ner_label2id1 = dict((v, k) for k, v in enumerate(self.ner_labels1))
 
-        self.ner_label2id1 = dict(zip(self.ner_labels1, range(len(self.ner_labels1))))
+        self.ner_labels1_bioes = ['O'] + [
+            f'{a}-{b}' for a in 'BIES' for b in ['LOC', 'MISC', 'ORG', 'PER']
+        ]
+        self.ner_label2id1_bioes = dict((v, k) for k, v in enumerate(self.ner_labels1_bioes))
 
         self.ner_input2 = {
             'tokens': list('国正先生在我心中就是这样的一位学长。'),
             'spans': [{'start': 0, 'end': 2, 'type': 'PER'}],
         }
         self.ner_labels2 = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC']
-        self.ner_label2id2 = dict(zip(self.ner_labels2, range(len(self.ner_labels2))))
+        self.ner_label2id2 = dict((v, k) for k, v in enumerate(self.ner_labels2))
 
         self.ner_labels3 = ['PER', 'ORG', 'LOC']
-        self.ner_label2id3 = dict(zip(self.ner_labels3, range(len(self.ner_labels3))))
-
-        self.labels3 = ['PER', 'ORG', 'LOC']
-        self.label2id3 = dict(zip(self.labels3, range(len(self.labels3))))
+        self.ner_label2id3 = dict((v, k) for k, v in enumerate(self.ner_labels3))
 
     def test_bert_sequence_labeling_preprocessor(self):
         cfg = dict(
@@ -62,6 +53,22 @@ class TestPreprocessor(unittest.TestCase):
         self.assertEqual(output1['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
         self.assertEqual(output1['emission_mask'], [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0])
         self.assertEqual(output1['label_ids'], [3, 0, 2, 0, 0, 0, 2, 0, 0])
+
+    def test_bert_sequence_labeling_bioes_preprocessor(self):
+        cfg = dict(
+            type='sequence-labeling-preprocessor',
+            model_dir='bert-base-cased',
+            label2id=self.ner_label2id1_bioes,
+        )
+        preprocessor = build_preprocessor(cfg)
+        output1 = preprocessor(self.ner_input1)
+        self.assertEqual(
+            output1['input_ids'],
+            [101, 7270, 22961, 1528, 1840, 1106, 21423, 1418, 2495, 12913, 119, 102],
+        )
+        self.assertEqual(output1['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        self.assertEqual(output1['emission_mask'], [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0])
+        self.assertEqual(output1['label_ids'], [15, 0, 14, 0, 0, 0, 14, 0, 0])
 
     def test_lstm_sequence_labeling_preprocessor(self):
         cfg = dict(
