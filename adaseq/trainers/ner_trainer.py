@@ -51,7 +51,7 @@ class NERTrainer(DefaultTrainer):
             self.label2id = self.eval_preprocessor.label2id
 
         self.id2label = {v: k for k, v in self.label2id.items()}
-        self.logger.info('label2id:', self.label2id)
+        self.logger.info('label2id: ' + str(self.label2id))
 
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
         """Build preprocessor with labels and label2id"""
