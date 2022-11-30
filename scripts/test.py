@@ -31,6 +31,7 @@ def build_trainer(args):
         trainer_name = cfg.trainer
 
     kwargs = vars(args)
+    kwargs['work_dir'] = '.'
     trainer = ms_build_trainer(trainer_name, kwargs)
     return trainer
 

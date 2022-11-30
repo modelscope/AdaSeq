@@ -1,9 +1,10 @@
 import unittest
 
 import numpy as np
+from modelscope.models.nlp.structbert import SbertTokenizer
 from modelscope.preprocessors.builder import build_preprocessor
 
-import adaseq
+from adaseq.data.preprocessors import NLPPreprocessor
 
 
 class TestPreprocessor(unittest.TestCase):
@@ -232,6 +233,10 @@ class TestPreprocessor(unittest.TestCase):
         )
         self.assertEqual(output['mention_boundary'], [[1], [2]])
         self.assertEqual(output['type_ids'], [[1, 0, 1]])
+
+    def test_load_modelscope_tokenizer(self):
+        processor = NLPPreprocessor(model_dir='damo/nlp_structbert_backbone_tiny_std')
+        self.assertTrue(isinstance(processor.tokenizer, SbertTokenizer))
 
 
 if __name__ == '__main__':

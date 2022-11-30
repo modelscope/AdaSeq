@@ -20,7 +20,7 @@ class DatasetDumper(Metric):
     def evaluate(self):
         """creat dump file and dump predicitons."""
         if self.save_path is None:
-            self.save_path = os.path.join(self.trainer.work_dir, 'test.txt')
+            self.save_path = os.path.join(self.trainer.work_dir, 'pred.txt')
         save_path = self.save_path
         self.save_path = save_path + '.tmp'  # file lock
         self.dump()
