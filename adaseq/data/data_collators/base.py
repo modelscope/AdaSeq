@@ -32,6 +32,8 @@ class DataBatch(Mapping):
         # 传入参数只有dict类型的batch, 但是value其实都是tensorize好的，
         # 所以不需要再做一次。
         if len(keep_fields) == 0:
+            if isinstance(batch, tuple):
+                batch = dict(batch)
             self.batch = batch
         else:
             self.batch = self.tensorize(batch)
