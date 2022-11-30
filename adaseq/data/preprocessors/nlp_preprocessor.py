@@ -1,9 +1,13 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import os
 from typing import Any, Dict, List, Union
 
+from modelscope.hub.snapshot_download import snapshot_download
+from modelscope.metainfo import Models
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import PREPROCESSORS
-from transformers import AutoTokenizer, BertTokenizer
+from modelscope.utils.hub import get_model_type
+from transformers import AutoTokenizer, BertTokenizer, BertTokenizerFast
 
 from adaseq.metainfo import Preprocessors
 from adaseq.utils.data_utils import gen_label2id
@@ -23,16 +27,46 @@ class NLPPreprocessor(Preprocessor):
         self.return_emission_mask = kwargs.pop('return_emission_mask', False)
         self.return_offsets_mapping = kwargs.pop('return_offsets_mapping', False)
         self.return_original_view = kwargs.pop('return_original_view', False)
-        self.tokenizer = self.build_tokenizer(model_dir)
+        use_fast = kwargs.pop('use_fast', True)
+        revision = kwargs.pop('revision', None)
+        self.tokenizer = self.build_tokenizer(model_dir, use_fast, revision)
 
-    def build_tokenizer(self, model_dir):
+    def build_tokenizer(self, model_dir, use_fast: bool = False, revision=None):
         """build tokenizer from `transformers`."""
+        tokenizer = BertTokenizerFast if use_fast else BertTokenizer
         if 'word2vec' in model_dir:
-            return BertTokenizer.from_pretrained(model_dir)
+            return tokenizer.from_pretrained(model_dir)
         elif 'nezha' in model_dir:
-            return BertTokenizer.from_pretrained(model_dir)
-        else:
-            return AutoTokenizer.from_pretrained(model_dir)
+            return tokenizer.from_pretrained(model_dir)
+        try:
+            return AutoTokenizer.from_pretrained(model_dir, use_fast=use_fast)
+        except OSError:
+            if not os.path.exists(model_dir):
+                model_dir = snapshot_download(model_dir, revision)
+            # code borrowed from modelscope/preprocessors/nlp/nlp_base.py
+            model_type = get_model_type(model_dir)
+            if model_type in (Models.structbert, Models.gpt3, Models.palm, Models.plug):
+                if use_fast:
+                    # from modelscope.models.nlp.structbert import SbertTokenizerFast
+                    pass
+                from modelscope.models.nlp.structbert import SbertTokenizer
+
+                return SbertTokenizer.from_pretrained(model_dir)
+            elif model_type == Models.veco:
+                from modelscope.models.nlp.veco import VecoTokenizer, VecoTokenizerFast
+
+                tokenizer = VecoTokenizerFast if use_fast else VecoTokenizer
+                return tokenizer.from_pretrained(model_dir)
+            elif model_type == Models.deberta_v2:
+                from modelscope.models.nlp.deberta_v2 import (
+                    DebertaV2Tokenizer,
+                    DebertaV2TokenizerFast,
+                )
+
+                tokenizer = DebertaV2TokenizerFast if use_fast else DebertaV2Tokenizer
+                return tokenizer.from_pretrained(model_dir)
+            else:
+                raise ValueError('Unsupported tokenizer')
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """encode one instance, it could be a text str, a list of tokens for a dict"""
