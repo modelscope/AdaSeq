@@ -29,11 +29,15 @@ from transformers.data.data_collator import DataCollatorMixin
 
 from adaseq.data.data_collators.base import build_data_collator
 from adaseq.data.dataset_manager import DatasetManager
-from adaseq.metainfo import Trainers
+from adaseq.metainfo import Preprocessors, Trainers
 from adaseq.models.base import Model
 from adaseq.utils.common_utils import create_datetime_str, has_keys
 
 from .default_config import DEFAULT_CONFIG
+
+BUILTIN_PREPROCESSOR = set(
+    getattr(Preprocessors, _a) for _a in dir(Preprocessors) if not _a.startswith('__')
+)
 
 
 @TRAINERS.register_module(module_name=Trainers.default_trainer)
@@ -268,7 +272,14 @@ class DefaultTrainer(EpochBasedTrainer):
             cfg['model_dir'] = self.cfg.model.encoder.model_name_or_path
         for k, v in kwargs.items():
             cfg[k] = v
-        preprocessor = build_preprocessor(cfg)
+
+        field_name = cfg.pop('field_name', None)
+        if field_name is None and cfg['type'] in BUILTIN_PREPROCESSOR:
+            field_name = None
+        else:
+            field_name = field_name or 'nlp'
+
+        preprocessor = build_preprocessor(cfg, field_name)  # type: ignore
         train_preprocessor = preprocessor
         eval_preprocessor = preprocessor
         return train_preprocessor, eval_preprocessor
@@ -279,7 +290,7 @@ class DefaultTrainer(EpochBasedTrainer):
 
     def build_data_collator(self) -> Tuple[DataCollatorMixin, DataCollatorMixin]:
         """Build data collator from config"""
-        cfg = self.cfg.preprocessor.data_collator
+        cfg = self.cfg.data_collator
         if isinstance(cfg, str):
             cfg = dict(type=cfg)
         data_collator = build_data_collator(self.tokenizer, cfg)
