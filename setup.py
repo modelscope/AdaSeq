@@ -117,7 +117,7 @@ setup(
     url='TBD',
     author='Alibaba Damo Academy NLP foundation team',
     platforms='any',
-    python_requires='>=3.6.0',
+    python_requires='>=3.7.0',
     dependency_links=['https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html'],
     install_requires=parse_requirements('requirements.txt'),
     packages=find_packages(),
