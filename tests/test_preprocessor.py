@@ -82,7 +82,7 @@ class TestPreprocessor(unittest.TestCase):
         output2 = preprocessor(self.ner_input2)
         self.assertEqual(
             output2['input_ids'],
-            [215, 209, 284, 264, 6, 22, 389, 27, 39, 9, 40, 1389, 3, 14, 138, 350, 177, 4],
+            [217, 211, 286, 266, 8, 24, 391, 29, 41, 11, 42, 1391, 5, 16, 140, 352, 179, 6],
         )
         self.assertEqual(
             output2['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
