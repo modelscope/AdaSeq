@@ -9,7 +9,7 @@ We currently provide a preset script to train a model with a configuration file.
 python scripts/train.py -c ${cfg_file} [-t ${trainer} --seed ${seed}]
 ```
 - **cfg_file** (`str`): Path to the configuration file.
-- **trainer** (`str`, optional, default: `None`): A trainer name defined in [metainfo](./adaseq/metainfo.py). If this argument is not set, the trainer name should be found in `trainer: ${trainer}` in the configuration file.
+- **trainer** (`str`, optional, default: `None`): A trainer name defined in [metainfo](../../adaseq/metainfo.py). If this argument is not set, the trainer name should be found in `trainer: ${trainer}` in the configuration file.
 - **seed** (`int`, optional, default: `None`): The random seed used for everything. If this argument is not set, we will try to find it in `experiments.seed: ${seed}` in the configuration file. If neither is set, the seed will be set to `0`. If `seed = -1`， a random seed will be used.
 
 ## Resuming training
@@ -19,7 +19,7 @@ python scripts/train.py -c ${cfg_file} -cp ${checkpoint_path} [-t ${trainer} --s
 - **checkpoint_path** (`str`): Path to the checkpoint file.
 
 ## Configuration Explanation
-Let's take [resume.yaml](./examples/bert_crf/configs/resume.yaml) as an example.
+Let's take [resume.yaml](../../examples/bert_crf/configs/resume.yaml) as an example.
 
 #### Experiment
 ```yaml
