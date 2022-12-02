@@ -1,0 +1,54 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: resume
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_files:
+    train: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=train.txt'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=dev.txt'
+    test: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=test.txt'
+  data_type: sequence_labeling
+  data_format: column
+  delimiter: ' '
+
+preprocessor:
+  type: global-pointer-preprocessor
+  model_dir: sijunhe/nezha-cn-base
+  max_length: 150
+
+data_collator: SpanExtractionDataCollatorWithPadding
+
+model:
+  type: global-pointer-model
+  encoder:
+    model_name_or_path: sijunhe/nezha-cn-base
+  token_ffn_out_width: 64
+  encoder_hidden_size: 768
+  word_dropout: 0.1
+
+trainer: ner-trainer
+
+train:
+  max_epochs: 10
+  dataloader:
+    batch_size_per_gpu: 32
+    workers_per_gpu: 1
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    crf_lr: 5.0e-1
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 20
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 2
+    workers_per_gpu: 1
+    shuffle: false
+  metrics: span-extraction-metric

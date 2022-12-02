@@ -1,0 +1,49 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: cfet
+  seed: 42
+
+task: entity-typing
+
+dataset:
+  data_files:
+    train: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=train.json'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=dev.json'
+    test: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=test.json'
+  tokenizer: char
+
+preprocessor:
+  type: multilabel-span-typing-preprocessor
+  model_dir: sijunhe/nezha-cn-base
+  max_length: 500
+
+data_collator: MultiLabelSpanTypingDataCollatorWithPadding
+
+model:
+  type: multilabel-span-typing-model
+  encoder:
+    model_name_or_path: sijunhe/nezha-cn-base
+  word_dropout: 0.1
+
+trainer: typing-trainer
+
+train:
+  max_epochs: 50
+  dataloader:
+    batch_size_per_gpu: 16
+    workers_per_gpu: 1
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 50
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 32
+    workers_per_gpu: 1
+    shuffle: false
+  metrics: span-extraction-metric

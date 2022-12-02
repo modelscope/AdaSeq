@@ -1,0 +1,52 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: wnut17_ra
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_files:
+    train: 'https://www.modelscope.cn/api/v1/datasets/damo/wnut17_ner/repo/files?Revision=master&FilePath=train.txt.ret'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/damo/wnut17_ner/repo/files?Revision=master&FilePath=dev.txt.ret'
+    test: 'https://www.modelscope.cn/api/v1/datasets/damo/wnut17_ner/repo/files?Revision=master&FilePath=test.txt.ret'
+  data_type: sequence_labeling
+  data_format: column
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  model_dir: xlm-roberta-large
+  max_length: 512
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  encoder:
+    model_name_or_path: xlm-roberta-large
+  word_dropout: 0.1
+  use_crf: true
+
+trainer: ner-trainer
+
+train:
+  max_epochs: 20
+  dataloader:
+    batch_size_per_gpu: 4
+    workers_per_gpu: 1
+  optimizer:
+    type: AdamW
+    lr: 5.0e-6
+    crf_lr: 5.0e-2
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 20
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 32
+    workers_per_gpu: 1
+    shuffle: false
+  metrics: ner-metric

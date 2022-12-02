@@ -1,0 +1,56 @@
+experiment:
+  exp_dir: experiments
+  exp_name: kpe_nezha
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_type: sequence_labeling
+  data_format: column
+  data_files:
+    train: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_train.json.txt
+    dev: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_dev.json.txt
+    test: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_dev.json.txt
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  model_dir: bert-base-chinese
+  max_length: 192
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  encoder:
+    model_name_or_path: sijunhe/nezha-cn-base
+  word_dropout: 0.1
+  use_crf: true
+
+trainer: ner-trainer
+
+train:
+  max_epochs: 10
+  dataloader:
+    batch_size_per_gpu: 64
+    workers_per_gpu: 1
+  optimizer:
+    type: AdamW
+    lr: 2.0e-5
+    crf_lr: 5.0e-2
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 10
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 256
+    workers_per_gpu: 1
+    shuffle: false
+  metrics:
+    - type: ner-metric
+    - type: ner-dumper
+      model_type: sequence_labeling
+      dump_format: column

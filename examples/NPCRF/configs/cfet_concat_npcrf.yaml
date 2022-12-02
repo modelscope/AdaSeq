@@ -1,0 +1,65 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: cfet
+  seed: 42
+
+task: entity-typing
+
+dataset:
+  data_files:
+    train: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=train.json'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=dev.json'
+    test: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=test.json'
+  tokenizer: char
+
+preprocessor:
+  type: multilabel-concat-typing-preprocessor
+  model_dir: sijunhe/nezha-cn-base
+  max_length: 500
+
+data_collator: MultiLabelConcatTypingDataCollatorWithPadding
+
+model:
+  type: multilabel-concat-typing-model
+  encoder:
+    model_name_or_path: sijunhe/nezha-cn-base
+  word_dropout: 0.1
+  decoder:
+    type: pairwise-crf
+    label_emb_type: tencent
+    label_emb_dim: 200
+    source_emb_file_path: ${PATH_TO_DIR}/tencent-ailab-embedding-zh-d200-v0.2.0.txt
+    target_emb_dir: ${PATH_TO_DIR}  # TODO
+    target_emb_name: tencent.200.emb
+    pairwise_factor: 30
+    mfvi_iteration: 6
+  loss_function: WBCE
+  pos_weight: 2
+
+trainer: typing-trainer
+
+train:
+  max_epochs: 50
+  dataloader:
+    batch_size_per_gpu: 16
+    workers_per_gpu: 0
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+  lr_scheduler:
+    type: CosineLR  # only support in typing currently
+    warmup_rate: 0.1 # when choose concat typing model, default to use cosine_linear_with_warmup
+    options:
+      by_epoch: false
+  hooks:
+    - type: "CheckpointHook"
+      interval: 100
+    - type: "BestCkptSaverHook"
+      save_file_name: "best_model.pt"
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 32
+    workers_per_gpu: 0
+    shuffle: false
+  metrics: typing-metric

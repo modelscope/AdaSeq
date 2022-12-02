@@ -1,0 +1,53 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: pku
+
+task: chinese-word-segmentation
+
+dataset:
+  data_dir: 'https://www.modelscope.cn/api/v1/datasets/izhx404/pku_cws/repo/files?Revision=master&FilePath=pku.zip'
+  data_type: sequence_labeling
+  data_format: column
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  model_dir: bert-base-chinese
+  max_length: 256
+  bio2bioes: true
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  encoder:
+    model_name_or_path: bert-base-chinese
+  word_dropout: 0.1
+  use_crf: true
+
+trainer: ner-trainer
+
+train:
+  max_epochs: 30
+  dataloader:
+    batch_size_per_gpu: 32
+    workers_per_gpu: 1
+  optimizer:
+    type: AdamW
+    lr: 2.0e-5
+    crf_lr: 2.0e-5
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 30
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 128
+    workers_per_gpu: 1
+    shuffle: false
+  metrics:
+    - type: ner-metric
+    - type: ner-dumper
+      model_type: sequence_labeling
+      dump_format: column

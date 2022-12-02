@@ -1,0 +1,41 @@
+work_dir: tests/resources/regression
+
+task: named-entity-recognition
+
+dataset:
+  data_dir: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra.zip'
+  data_type: sequence_labeling
+  data_format: column
+
+preprocessor:
+  type: global-pointer-preprocessor
+  model_dir: bert-base-chinese
+  max_length: 150
+
+data_collator: SpanExtractionDataCollatorWithPadding
+
+model:
+  type: global-pointer-model
+  encoder:
+    model_name_or_path: sijunhe/nezha-cn-base
+  token_ffn_out_width: 64
+  encoder_hidden_size: 768
+  word_dropout: 0.0
+
+train:
+  max_epochs: 1
+  dataloader:
+    batch_size_per_gpu: 16
+    workers_per_gpu: 1
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    crf_lr: 5.0e-1
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 20
+
+evaluation:
+  metrics: span-extraction-metric
