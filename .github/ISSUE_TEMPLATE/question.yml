@@ -1,0 +1,44 @@
+name: ❓ Questions/Help
+description: If you have questions, please first search existing issues and docs
+title: "[Question] "
+labels: ['question']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before asking:
+        1. search the [issues](https://github.com/modelscope/adaseq/issues).
+        2. search the docs (if there have).
+
+        If you still can't find what you need:
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What is your question?
+
+  - type: textarea
+    id: try
+    attributes:
+      label: What have you tried?
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code (if necessary)
+      description: Please paste a code snippet if your question requires it!
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: What's your environment?
+      value: |
+        - AdaSeq Version (e.g., 1.0 or master):
+        - ModelScope Version (e.g., 1.0 or master):
+        - PyTorch Version (e.g., 1.12.1):
+        - OS (e.g., Ubuntu 20.04):
+        - Python version:
+        - CUDA/cuDNN version:
+        - GPU models and configuration:
+        - Any other relevant information:
