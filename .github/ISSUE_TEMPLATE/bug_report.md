@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: 🐛 Bug report
 about: Create a report to help us improve
 title: ''
 labels: 'bug'
@@ -80,7 +80,6 @@ Python version:
 
 <!-- Add a fully runnable example in between the next two lines below that will reproduce the bug -->
 ```
-
 ```
 
 </p>

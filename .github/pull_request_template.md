@@ -10,9 +10,9 @@ Changes proposed in this pull request:
 ## Before submitting
 
 <!-- Please complete this checklist BEFORE submitting your PR to speed along the review process. -->
-- [ ] I've read and followed all steps in the [Making a pull request](.github/CONTRIBUTING.md#2-making-a-pull-request)
+- [ ] I've read and followed all steps in the [Making a pull request](https://github.com/modelscope/adaseq/blob/master/.github/CONTRIBUTING.md#2-making-a-pull-request)
     section of the `CONTRIBUTING` docs.
-- [ ] I've updated or added any relevant docstrings following the syntax described in the [create a branch and work](.github/CONTRIBUTING.md#23-create-a-new-branch-to-work-on-your-fix-enhancement-or-model) section `CONTRIBUTING` docs.
+- [ ] I've updated or added any relevant docstrings following the syntax described in the [create a branch and work](https://github.com/modelscope/adaseq/blob/master/.github/CONTRIBUTING.md#23-create-a-new-branch-to-work-on-your-fix-enhancement-or-model) section `CONTRIBUTING` docs.
 - [ ] If this PR fixes a bug, I've added a test that will fail without my fix.
 - [ ] If this PR adds a new feature, I've added tests that sufficiently cover my new functionality.
 
