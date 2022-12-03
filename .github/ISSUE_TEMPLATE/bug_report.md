@@ -22,7 +22,7 @@ If you have a question rather than a bug, please ask on our DingTalk group rathe
 - [ ] I have read the relevant section in the [contribution guide](https://github.com/modelscope/adaseq/blob/main/CONTRIBUTING.md) on reporting bugs.
 - [ ] I have checked the [issues list](https://github.com/modelscope/adaseq/issues) for similar or identical bug reports.
 - [ ] I have checked the [pull requests list](https://github.com/modelscope/adaseq/pulls) for existing proposed fixes.
-- [ ] I have checked the [commit log](https://github.com/modelscope/adaseq/commits/main) to find out if the bug was already fixed in the main branch.
+- [ ] I have checked the [commit log](https://github.com/modelscope/adaseq/commits/master) to find out if the bug was already fixed in the main branch.
 - [ ] I have included in the "Description" section below a traceback from any exceptions related to this bug.
 - [ ] I have included in the "Related issues or possible duplicates" section beloew all related issues and possible duplicate issues (If there are none, check this box anyway).
 - [ ] I have included in the "Environment" section below the name of the operating system and Python version that I was using when I discovered this bug.
