@@ -26,11 +26,12 @@ train:
   max_epochs: 1
   dataloader:
     batch_size_per_gpu: 16
-    workers_per_gpu: 1
   optimizer:
     type: AdamW
     lr: 5.0e-5
-    crf_lr: 5.0e-1
+    param_groups:
+      - regex: crf
+        lr: 5.0e-1
   lr_scheduler:
     type: LinearLR
     start_factor: 1.0

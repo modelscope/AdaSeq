@@ -30,7 +30,6 @@ train:
   max_epochs: 30
   dataloader:
     batch_size_per_gpu: 32
-    workers_per_gpu: 1
   optimizer:
     type: AdamW
     lr: 2.0e-5
@@ -43,8 +42,6 @@ train:
 evaluation:
   dataloader:
     batch_size_per_gpu: 128
-    workers_per_gpu: 1
-    shuffle: false
   metrics:
     - type: ner-metric
     - type: ner-dumper

@@ -7,10 +7,6 @@ from datasets.utils.file_utils import is_remote_url
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.trainers.builder import TRAINERS
 from modelscope.trainers.lrscheduler.builder import build_lr_scheduler
-from modelscope.trainers.optimizer.builder import OPTIMIZERS
-from modelscope.utils.config import ConfigDict
-from modelscope.utils.registry import build_from_cfg, default_group
-from torch import nn
 from torch.utils.data import Dataset
 
 from adaseq.metainfo import Trainers
@@ -67,29 +63,6 @@ class TypingTrainer(DefaultTrainer):
     def build_preprocessor(self, **kwargs) -> Tuple[Preprocessor, Preprocessor]:
         """Build preprocessor with labels and label2id"""
         return super().build_preprocessor(labels=self.labels, label2id=self.label2id, **kwargs)
-
-    @staticmethod
-    def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
-        """Builde layer-wise lr optimizer"""
-
-        if hasattr(model, 'module'):
-            model = model.module
-        if default_args is None:
-            default_args = {}
-        if 'decoder_lr' in cfg:
-            finetune_parameters = [
-                v for k, v in model.named_parameters() if v.requires_grad and 'decoder' not in k
-            ]
-            decoder_parameters = [
-                v for k, v in model.named_parameters() if v.requires_grad and 'decoder' in k
-            ]
-            default_args['params'] = [
-                {'params': finetune_parameters},
-                {'params': decoder_parameters, 'lr': cfg.pop('decoder_lr')},
-            ]
-        else:
-            default_args['params'] = model.parameters()
-        return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
 
     def create_optimizer_and_scheduler(self):
         """Create optimizer and lr-scheduler from config,

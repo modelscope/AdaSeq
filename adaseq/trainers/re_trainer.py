@@ -3,9 +3,6 @@ from typing import Tuple
 
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.trainers.builder import TRAINERS
-from modelscope.trainers.optimizer.builder import OPTIMIZERS
-from modelscope.utils.config import ConfigDict
-from modelscope.utils.registry import build_from_cfg, default_group
 from torch import nn
 
 from adaseq.metainfo import Trainers
@@ -54,25 +51,3 @@ class RETrainer(DefaultTrainer):
         """Build model with labels"""
         self.cfg.model['num_labels'] = len(self.label2id)
         return Model.from_config(self.cfg)
-
-    @staticmethod
-    def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
-        """Build optimizer with layer-wise learning rate"""
-        if hasattr(model, 'module'):
-            model = model.module
-        if default_args is None:
-            default_args = {}
-        if 'classifier_lr' in cfg:
-            finetune_parameters = [
-                v for k, v in model.named_parameters() if v.requires_grad and 'encoder' in k
-            ]
-            classifier_parameters = [
-                v for k, v in model.named_parameters() if v.requires_grad and 'encoder' not in k
-            ]
-            default_args['params'] = [
-                {'params': finetune_parameters},
-                {'params': classifier_parameters, 'lr': cfg.pop('classifier_lr')},
-            ]
-        else:
-            default_args['params'] = model.parameters()
-        return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)

@@ -79,7 +79,7 @@ Please replace `USERNAME` with your username. Both uppercased `/AdaSeq.git` and 
 
 Finally, you'll need to create a Python 3 virtual environment suitable for working on `AdaSeq`. The [`conda`](https://docs.conda.io/en/latest/miniconda.html) and [`venv`](https://docs.python.org/3.7/library/venv.html) are the most common choices.
 
-Once your virtual environment is activated, 
+Once your virtual environment is activated, you can code now! But please remember keep your fork up-to-date, see following sections.
 
 
 ## 2.2 Ensure your fork is up-to-date

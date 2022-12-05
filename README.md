@@ -1,5 +1,5 @@
 # AdaSeq: An All-in-One Library for Developing State-of-the-Art Sequence Understanding Models
-***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence understanding toolkit) is an easy-to-use all-in-one library, built on [ModelScope](https://modelscope.cn/home), that allows researchers and developers to train custom models for sequence understanding tasks, including word segmentation, POS tagging, chunking, NER, entity typing, relation extraction, etc.
+***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence Understanding Toolkit) is an easy-to-use all-in-one library, built on [ModelScope](https://modelscope.cn/home), that allows researchers and developers to train custom models for sequence understanding tasks, including word segmentation, POS tagging, chunking, NER, entity typing, relation extraction, etc.
 
 ⚠️**Notice:** This project is under quick development. This means some interfaces could be changed in the future.
 

@@ -30,11 +30,12 @@ train:
   max_epochs: 20
   dataloader:
     batch_size_per_gpu: 32
-    workers_per_gpu: 1
   optimizer:
     type: AdamW
     lr: 5.0e-5
-    crf_lr: 5.0e-1
+    param_groups:
+      - regex: crf
+        lr: 5.0e-1
   lr_scheduler:
     type: LinearLR
     start_factor: 1.0
@@ -44,8 +45,6 @@ train:
 evaluation:
   dataloader:
     batch_size_per_gpu: 128
-    workers_per_gpu: 1
-    shuffle: false
   metrics:
     - type: ner-metric
     - type: ner-dumper

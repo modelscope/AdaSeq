@@ -46,7 +46,6 @@ train:
   max_epochs: 30
   dataloader:
     batch_size_per_gpu: 4
-    workers_per_gpu: 0
   optimizer:
     type: AdamW
     lr: 2.0e-5
@@ -61,11 +60,7 @@ train:
     - type: "BestCkptSaverHook"
       save_file_name: "best_model.pt"
 
-
-
 evaluation:
   dataloader:
     batch_size_per_gpu: 32
-    workers_per_gpu: 0
-    shuffle: false
   metrics: typing-metric

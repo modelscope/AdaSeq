@@ -8,13 +8,14 @@ from modelscope.preprocessors.builder import build_preprocessor
 from modelscope.trainers.builder import TRAINERS
 from modelscope.trainers.hooks import Hook
 from modelscope.trainers.lrscheduler.builder import build_lr_scheduler
-from modelscope.trainers.optimizer.builder import build_optimizer
+from modelscope.trainers.optimizer.builder import OPTIMIZERS
 from modelscope.trainers.parallel.utils import is_parallel
 from modelscope.trainers.trainer import EpochBasedTrainer
 from modelscope.utils.config import ConfigDict
 from modelscope.utils.constant import ConfigFields, ConfigKeys, ModeKeys
 from modelscope.utils.device import create_device
 from modelscope.utils.logger import get_logger
+from modelscope.utils.registry import build_from_cfg, default_group
 from modelscope.utils.torch_utils import (
     get_dist_info,
     get_local_rank,
@@ -34,6 +35,7 @@ from adaseq.models.base import Model
 from adaseq.utils.common_utils import create_datetime_str, has_keys
 
 from .default_config import DEFAULT_CONFIG
+from .util import make_parameter_groups
 
 BUILTIN_PREPROCESSOR = set(
     getattr(Preprocessors, _a) for _a in dir(Preprocessors) if not _a.startswith('__')
@@ -333,7 +335,18 @@ class DefaultTrainer(EpochBasedTrainer):
     @staticmethod
     def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
         """Build optimizer from config"""
-        return build_optimizer(model, cfg, default_args)
+        # build parameter groups with different kwargs
+        if hasattr(model, 'module'):
+            model = model.module
+
+        groups = cfg.pop('param_groups', None)
+        param_groups = make_parameter_groups(model.named_parameters(), groups)  # type: ignore
+
+        if default_args is None:
+            default_args = {}
+        default_args['params'] = param_groups
+
+        return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
 
     def _init_file_logger(self):
         from modelscope.trainers.hooks.logger.text_logger_hook import TextLoggerHook
