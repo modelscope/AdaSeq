@@ -19,7 +19,7 @@ body:
       options:
         - label: I have verified that the issue exists against the `master` branch of AdaSeq.
           required: true
-        - label: I have read the relevant section in the [contribution guide](https://github.com/modelscope/adaseq/blob/master/.github/CONTRIBUTING.md) on reporting bugs.
+        - label: I have read the relevant section in the [contribution guide](https://github.com/modelscope/adaseq/blob/master/CONTRIBUTING.md) on reporting bugs.
           required: true
         - label: I have checked the [issues list](https://github.com/modelscope/adaseq/issues) for similar or identical bug reports.
           required: true
