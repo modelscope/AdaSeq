@@ -2,7 +2,7 @@
 
 Thanks for considering contributing!
 
-(Some contents are borrowed from contributing guidelines of [AllenNLP](https://github.com/modelscope/adaseq) and [fairseq](https://github.com/facebookresearch/fairseq). Many thanks!)
+(Some contents are borrowed from contributing guidelines of [AllenNLP](https://github.com/allenai/allennlp) and [fairseq](https://github.com/facebookresearch/fairseq). Many thanks!)
 
 # 1 How Can I Contribute?
 
