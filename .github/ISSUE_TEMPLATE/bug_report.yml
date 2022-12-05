@@ -1,0 +1,117 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve
+title: "[Bug] "
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please fill this template entirely. We reserve the right to close without a response bug reports which are incomplete.
+        If you have a question rather than a bug, please ask on our DingTalk group rather than posting an issue here.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist before your report.
+      description: Please check below terms.
+      options:
+        - label: I have verified that the issue exists against the `master` branch of AdaSeq.
+          required: true
+        - label: I have read the relevant section in the [contribution guide](https://github.com/modelscope/adaseq/blob/master/CONTRIBUTING.md) on reporting bugs.
+          required: true
+        - label: I have checked the [issues list](https://github.com/modelscope/adaseq/issues) for similar or identical bug reports.
+          required: true
+        - label: I have checked the [pull requests list](https://github.com/modelscope/adaseq/pulls) for existing proposed fixes.
+          required: true
+        - label: I have checked the [commit log](https://github.com/modelscope/adaseq/commits/master) to find out if the bug was already fixed in the master branch.
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Python traceback
+      description: Paste the traceback from any exception (if there was one) in between the two triple backticks (```) below.
+      value: |
+        <details>
+        <summary><b>show/hide</b></summary>
+        <p>
+
+        ```
+
+        ```
+
+        </p>
+        </details>
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: Provide the name of operating system below.
+      placeholder: e.g. Windows 11, MacOS 12, Ubuntu 20.04
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: Provide the Python version you were using.
+      placeholder: e.g. 3.7.12
+    validations:
+      required: true
+
+  - type: textarea
+    id: pip
+    attributes:
+      label: Output of pip freeze
+      description: Paste the output of `pip freeze` in between the two triple backticks (```) below.
+      value: |
+        <details>
+        <summary><b>show/hide</b></summary>
+        <p>
+
+        ```
+
+        ```
+
+        </p>
+        </details>
+
+  - type: textarea
+    id: cmd
+    attributes:
+      label: How to reproduce
+      description: Add a code example below that will reproduce the bug in between the two triple backticks (```) below.
+      value: |
+        <details>
+        <summary><b>show/hide</b></summary>
+        <p>
+
+        ```
+
+        ```
+
+        </p>
+        </details>
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/modelscope/adaseq/blob/master/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
