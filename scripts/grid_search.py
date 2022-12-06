@@ -17,7 +17,7 @@ def tune(args):
     """hyperparameter tuning via grid search
 
     This function will launch experiments with multiple hyperparameter settings in parallel.
-    To use this function, modify the configuration file by changing the hyperparameters you want to tune to LIST.
+    To use this function, modify the configuration file by changing the hyperparameters you want to tune to `LIST`.
     for example:
     ```
       optimizer:
@@ -150,12 +150,32 @@ def _expand_config(config):
         for c in all_prev_config:
             flattened_config = _flatten_config(c)
             keys = [item[0] for item in flattened_config]
-            values = [
-                item[1]
-                if (isinstance(item[1], list) and item[0][-1] not in ['hooks', 'metrics'])
-                else [item[1]]
-                for item in flattened_config
-            ]
+            values = []
+            for item in flattened_config:
+                if item[0][-1] == 'param_groups':
+                    param_cands = []
+                    for param_group in item[1]:
+                        param_cands.append(
+                            [
+                                (param_group['regex'], lr)
+                                for lr in (
+                                    param_group['lr']
+                                    if isinstance(param_group['lr'], list)
+                                    else [param_group['lr']]
+                                )
+                            ]
+                        )
+                    values.append(
+                        [[{'regex': p[0], 'lr': p[1]} for p in x] for x in product(*param_cands)]
+                    )
+                elif isinstance(item[1], list) and item[0][-1] not in [
+                    'hooks',
+                    'metrics',
+                    'param_groups',
+                ]:
+                    values.append(item[1])
+                else:
+                    values.append([item[1]])
             for single_values in product(*values):
                 assert len(keys) == len(single_values)
                 data = list(zip(keys, single_values))
@@ -178,6 +198,7 @@ def _flatten_config(obj, path=[]):
             if k not in [
                 'hooks',
                 'metrics',
+                'param_groups',
             ]:  # hooks and metrics are naturally list, should not be flattened
                 ret.extend(_flatten_config(v, path + [k]))
             else:
