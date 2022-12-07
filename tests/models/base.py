@@ -3,7 +3,8 @@ import os
 import shutil
 import unittest
 
-from tests.regress_test_utils import MsRegressTool, compare_arguments_nested
+from modelscope.utils.regress_test_utils import MsRegressTool, compare_arguments_nested
+from torch import distributed as dist
 
 
 class TestModel(unittest.TestCase):
@@ -12,15 +13,6 @@ class TestModel(unittest.TestCase):
         self.is_baseline = (
             True if os.environ.get('IS_BASELINE', '').lower() in ['1', 'y', 'true'] else False
         )
-
-        # fix modelscope bug
-        from modelscope.trainers import EpochBasedTrainer
-        from modelscope.utils import regress_test_utils
-
-        from tests.ms_patch import numpify_tensor_nested, train_step
-
-        EpochBasedTrainer.train_step = train_step
-        regress_test_utils.numpify_tensor_nested = numpify_tensor_nested
 
         # RegressTool init
         regression_resource_path = os.path.abspath(os.path.join('tests', 'resources', 'regression'))

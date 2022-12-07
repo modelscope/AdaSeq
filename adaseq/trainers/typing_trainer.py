@@ -76,9 +76,7 @@ class TypingTrainer(DefaultTrainer):
         optim_options = {}
         if optimizer_cfg is not None:
             optim_options = optimizer_cfg.pop('options', {})
-            optimizer = self.build_optimizer(
-                self.model, cfg=optimizer_cfg
-            )  # support customize optimizer
+            optimizer = self.build_optimizer(cfg=optimizer_cfg)  # support customize optimizer
 
         if lr_scheduler is None:
             lr_scheduler_cfg = self.cfg.train.get('lr_scheduler', None)

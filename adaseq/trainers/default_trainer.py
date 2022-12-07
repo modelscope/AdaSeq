@@ -7,7 +7,6 @@ from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import build_preprocessor
 from modelscope.trainers.builder import TRAINERS
 from modelscope.trainers.hooks import Hook
-from modelscope.trainers.lrscheduler.builder import build_lr_scheduler
 from modelscope.trainers.optimizer.builder import OPTIMIZERS
 from modelscope.trainers.parallel.utils import is_parallel
 from modelscope.trainers.trainer import EpochBasedTrainer
@@ -300,42 +299,10 @@ class DefaultTrainer(EpochBasedTrainer):
         eval_data_collator = data_collator
         return train_data_collator, eval_data_collator
 
-    def create_optimizer_and_scheduler(self):
-        """Create optimizer and lr-scheduler from config"""
-        optimizer, lr_scheduler = self.optimizers
-        if optimizer is None:
-            optimizer_cfg = self.cfg.train.get('optimizer', None)
-        else:
-            optimizer_cfg = None
-
-        optim_options = {}
-        if optimizer_cfg is not None:
-            optim_options = optimizer_cfg.pop('options', {})
-            optimizer = self.build_optimizer(
-                self.model, cfg=optimizer_cfg
-            )  # support customize optimizer
-
-        if lr_scheduler is None:
-            lr_scheduler_cfg = self.cfg.train.get('lr_scheduler', None)
-        else:
-            lr_scheduler_cfg = None
-
-        lr_options = {}
-        if lr_scheduler_cfg is not None:
-            assert optimizer is not None
-            lr_options = lr_scheduler_cfg.pop('options', {})
-            lr_scheduler = build_lr_scheduler(
-                cfg=lr_scheduler_cfg, default_args={'optimizer': optimizer}
-            )
-
-        self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
-        return self.optimizer, self.lr_scheduler, optim_options, lr_options
-
-    @staticmethod
-    def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
+    def build_optimizer(self, cfg: ConfigDict, default_args: dict = None):
         """Build optimizer from config"""
         # build parameter groups with different kwargs
+        model = self.model
         if hasattr(model, 'module'):
             model = model.module
 

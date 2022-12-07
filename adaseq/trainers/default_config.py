@@ -7,7 +7,7 @@ DEFAULT_CONFIG = {
             {'type': 'CheckpointHook'},
             {
                 'type': 'BestCkptSaverHook',
-                # 'save_file_name': "best.th",
+                'save_file_name': 'best_model.pth',
                 'metric_key': 'f1',
                 'save_optimizer': False,
                 'restore_best': True,
