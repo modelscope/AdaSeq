@@ -3,10 +3,10 @@ from os import path as osp
 from typing import Dict, Union
 
 import torch.nn as nn
-from modelscope.models import Model
 from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.registry import Registry, build_from_cfg
-from transformers import AutoModel
+
+from adaseq.metainfo import Encoders
 
 ENCODERS = Registry('encoders')
 
@@ -44,7 +44,10 @@ class Encoder(nn.Module):
             cfg = {}
 
         if 'type' not in cfg:
-            cfg['type'] = None
+            if 'model_name_or_path' in cfg:
+                cfg['type'] = Encoders.transformer_encoder
+            else:
+                cfg['type'] = None
         if 'type' in kwargs:
             cfg['type'] = kwargs.pop('type')
 
@@ -52,18 +55,10 @@ class Encoder(nn.Module):
             cfg['model_name_or_path'] = None
         if 'model_name_or_path' in kwargs:
             cfg['model_name_or_path'] = kwargs.pop('model_name_or_path')
+            if cfg['type'] is None:
+                cfg['type'] = Encoders.transformer_encoder
 
         if cfg['type'] is not None and cfg['type'] in ENCODERS.modules['default']:
             return build_encoder(cfg, default_args=kwargs)
         else:
-            assert cfg['model_name_or_path'] is not None, (
-                'Model is not found in registry, '
-                'so it is considered a modelscope or huggingface backbone '
-                'and the model_name_or_path param should not be None'
-            )
-            try:
-                return AutoModel.from_pretrained(cfg['model_name_or_path'], **kwargs)
-            except Exception:
-                return Model.from_pretrained(
-                    cfg['model_name_or_path'], task=kwargs.pop('task', 'backbone'), **kwargs
-                )
+            raise ValueError('Unsupported encoder type: %s', cfg['type'])

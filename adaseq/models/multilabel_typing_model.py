@@ -96,7 +96,7 @@ class MultiLabelSpanTypingModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
 
         self.span_encoder = SpanEncoder(
             self.encoder.config.hidden_size, span_encoder_method, **kwargs
@@ -118,41 +118,49 @@ class MultiLabelSpanTypingModel(Model):
             self.sigmoid = nn.Sigmoid()
             self.loss_fn = BCELoss()
 
-    def _token2span_encode(self, inputs, **kwargs):
-        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
+    def _token2span_encode(
+        self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor
+    ) -> torch.Tensor:
+        embed = self.encoder(**tokens)
         # embed: B x W x K
         if self.use_dropout:
             embed = self.dropout(embed)
         # span_reprs: B x S x D: trans sentence sequence to mentions sequence
         # the shape of boundary_ids is batch_size x 2 x max_mention_num, providing the detected mentions
-        span_boundary = inputs['mention_boundary']
-        span_reprs = self.span_encoder(embed, span_boundary)
+        span_reprs = self.span_encoder(embed, mention_boundary)
         return span_reprs
 
-    def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def _forward(self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor) -> torch.Tensor:
         # B*M x K
         if self.use_biaffine:
-            span_start_reprs, span_end_reprs = self._token2span_encode(inputs)
+            span_start_reprs, span_end_reprs = self._token2span_encode(tokens, mention_boundary)
             span_reprs = span_start_reprs * span_end_reprs
         else:
-            span_reprs = self._token2span_encode(inputs)
+            span_reprs = self._token2span_encode(tokens, mention_boundary)
 
         # B*M x label_num
         logits = self.linear(span_reprs)
-        return {'logits': logits}
+        return logits
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa: D102
+    def forward(  # noqa: D102
+        self,
+        tokens: Dict[str, Any],
+        mention_boundary: torch.LongTensor,
+        mention_mask: torch.LongTensor,
+        type_ids: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # TODO docstring
         # B x M -> B*M x 1
-        outputs = self._forward(inputs)
-        mask = inputs['mention_msk'].reshape(-1).unsqueeze(-1)
+        logits = self._forward(tokens, mention_boundary)
+        mask = mention_mask.reshape(-1).unsqueeze(-1)
         if self.training:
-            loss = self._calculate_loss(outputs['logits'], inputs['type_ids'], mask)
-            outputs = {'logits': outputs['logits'], 'loss': loss}
+            loss = self._calculate_loss(logits, type_ids, mask)
+            outputs = {'logits': logits, 'loss': loss}
         else:
-            batch_size, max_mention_per_sent = inputs['type_ids'].shape[0:2]
-            logits = outputs['logits'].reshape(batch_size, max_mention_per_sent, -1)
-            predicts = self.classify(logits, inputs['mention_boundary'], mask)
-            outputs = {'logits': outputs['logits'], 'predicts': predicts}
+            batch_size, max_mention_per_sent = type_ids.shape[0:2]  # TODO: no supervision
+            logits = logits.reshape(batch_size, max_mention_per_sent, -1)
+            predicts = self.classify(logits, mention_boundary, mask)
+            outputs = {'logits': logits, 'predicts': predicts}
         return outputs
 
     def _calculate_loss(self, logits, targets, mask):
@@ -161,6 +169,8 @@ class MultiLabelSpanTypingModel(Model):
             logits = self.sigmoid(logits)  # B*M x L
             targets = targets.reshape(-1, self.num_labels).to(torch.float32)  # B*M x L
             loss = self.loss_fn(logits, targets) * mask
+        else:
+            raise ValueError('Unsupported loss %s', self.loss_function_type)
         loss = loss.sum() / (mask.sum())
         return loss
 
@@ -168,6 +178,8 @@ class MultiLabelSpanTypingModel(Model):
         if self.loss_function_type == 'BCE':
             logits = self.sigmoid(logits)  # B*M x L
             predicts = torch.where(logits > self.class_threshold, 1, 0)  # B*M x L
+        else:
+            raise ValueError('Unsupported loss %s', self.loss_function_type)
         predicts = predicts.detach().cpu().numpy()
         batch_mention_boundaries = mention_boundary.detach().cpu().numpy()
         batch_mentions = []
@@ -180,7 +192,7 @@ class MultiLabelSpanTypingModel(Model):
                 sent_mentions.append(
                     (
                         sent_mention_boundary[0][mention_idx],
-                        sent_mention_boundary[1][mention_idx],
+                        sent_mention_boundary[1][mention_idx] + 1,
                         types,
                     )
                 )
@@ -225,7 +237,9 @@ class MultiLabelConcatTypingModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
+            if isinstance(encoder, dict):
+                encoder['drop_special_tokens'] = False
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
 
         self.linear_input_dim = self.encoder.config.hidden_size
         self.num_labels = num_labels
@@ -259,33 +273,38 @@ class MultiLabelConcatTypingModel(Model):
         if self.decoder_type == 'pairwise-crf':
             self.decoder = PairwiseCRF(labels=labels, **decoder)
 
-    def _token2span_encode(self, inputs, **kwargs):
-        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
+    def _token2span_encode(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        embed = self.encoder(**tokens)
         # embed: B x W x K
         if self.use_dropout:
             embed = self.dropout(embed)
         # use the cls embedding
         return embed[:, 0, :]
 
-    def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        span_reprs = self._token2span_encode(inputs)  # B x K
+    def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        span_reprs = self._token2span_encode(tokens)  # B x K
         # B*M x label_num
         logits = self.linear(span_reprs)
         if self.decoder_type == 'pairwise-crf':
             logits = self.decoder(logits)
 
-        return {'logits': logits}
+        return logits
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa: D102
+    def forward(  # noqa: D102
+        self,
+        tokens: Dict[str, Any],
+        type_ids: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # TODO docstring
         # B x M -> B*M x 1
-        outputs = self._forward(inputs)
+        logits = self._forward(tokens)
         if self.training:
-            loss = self._calculate_loss(outputs['logits'], inputs['type_ids'])
-            outputs = {'logits': outputs['logits'], 'loss': loss}
+            loss = self._calculate_loss(logits, type_ids)
+            outputs = {'logits': logits, 'loss': loss}
         else:
-            logits = outputs['logits']
+            logits = logits
             predicts = self.classify(logits)
-            outputs = {'logits': outputs['logits'], 'predicts': predicts}
+            outputs = {'logits': logits, 'predicts': predicts}
         return outputs
 
     def _calculate_loss(self, logits, targets):

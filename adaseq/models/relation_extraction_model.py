@@ -34,7 +34,7 @@ class RelationExtractionModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
@@ -48,76 +48,37 @@ class RelationExtractionModel(Model):
         self.multiview = multiview
         self.temperature = temperature
 
-    def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
-
-        if 'emission_mask' in inputs:
-            mask = inputs['emission_mask']
-            masked_lengths = mask.sum(-1).long()
-            masked_reps = torch.zeros_like(embed)
-            for i in range(len(mask)):
-                masked_reps[i, : masked_lengths[i], :] = (
-                    embed[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
-                )
-            reps = masked_reps
-        else:
-            reps = embed
+    def _forward(self, tokens: Dict[str, Any], so_head_mask: torch.Tensor) -> torch.Tensor:
+        embed = self.encoder(**tokens)
 
         if self.use_dropout:
-            reps = self.dropout(reps)
+            embed = self.dropout(embed)
 
-        so_head_mask = inputs['so_head_mask']
         batch_size = so_head_mask.shape[0]
-        so_emb = reps.masked_select(so_head_mask.unsqueeze(-1)).view(batch_size, -1)
+        so_emb = embed.masked_select(so_head_mask.unsqueeze(-1)).view(batch_size, -1)
 
         so_emb = self.layer_norm(so_emb)
         logits = self.linear(so_emb)
 
-        return {'logits': logits}
+        return logits
 
-    def _forward_origin_view(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(
-            inputs['origin_input_ids'], attention_mask=inputs['origin_attention_mask']
-        )[0]
-
-        if 'origin_emission_mask' in inputs:
-            mask = inputs['origin_emission_mask']
-            masked_lengths = mask.sum(-1).long()
-            masked_reps = torch.zeros_like(embed)
-            for i in range(len(mask)):
-                masked_reps[i, : masked_lengths[i], :] = (
-                    embed[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
-                )
-            reps = masked_reps
-        else:
-            reps = embed
-
-        if self.use_dropout:
-            reps = self.dropout(embed)
-
-        so_head_mask = inputs['so_head_mask']
-        batch_size = so_head_mask.shape[0]
-        so_emb = reps.masked_select(so_head_mask.unsqueeze(-1)).view(batch_size, -1)
-
-        so_emb = self.layer_norm(so_emb)
-        logits = self.linear(so_emb)
-
-        return {'logits': logits}
-
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
-        outputs = self._forward(inputs)
-
-        logits = outputs['logits']
-        label_id = inputs['label_id']
+    def forward(  # noqa
+        self,
+        tokens: Dict[str, Any],
+        so_head_mask: torch.BoolTensor,
+        meta: Dict[str, Any],
+        label_id: Optional[torch.LongTensor] = None,
+        origin_tokens: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # TODO: add docstring
+        logits = self._forward(tokens, so_head_mask)
 
         if self.training:
-            loss = self._calculate_loss(logits, label_id.view(-1))
-            if self.multiview:  # for multiview training
-                origin_view_outputs = self._forward_origin_view(inputs)
-                origin_view_logits = origin_view_outputs['logits']
-                origin_view_loss = self._calculate_loss(origin_view_logits, label_id.view(-1))
-                cl_kl_loss = self._calculate_cl_loss(logits, origin_view_logits, T=self.temperature)
-                loss = loss + origin_view_loss + cl_kl_loss
+            loss = self._calculate_loss(logits, label_id)
+            if self.multiview and origin_tokens is not None:  # for multiview training
+                origin_logits = self._forward(origin_tokens, so_head_mask)
+                origin_loss = self._calculate_loss(origin_logits, label_id)
+                cl_kl_loss = self._calculate_cl_loss(logits, origin_logits, T=self.temperature)
+                loss = loss + origin_loss + cl_kl_loss
             outputs = {'logits': logits, 'loss': loss}
         else:
             predicts = self.decode(logits)

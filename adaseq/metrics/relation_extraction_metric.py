@@ -53,7 +53,7 @@ class RelationExtractionMetric(Metric):
     def add(self, outputs: Dict, inputs: Dict):
         """Collect batch outputs"""
         pred_results = outputs['predicts']
-        ground_truths = inputs['label_id'].view(-1)
+        ground_truths = inputs['label_id']
         self.preds.extend(torch_nested_numpify(torch_nested_detach(pred_results)).tolist())
         self.golds.extend(torch_nested_numpify(torch_nested_detach(ground_truths)).tolist())
 

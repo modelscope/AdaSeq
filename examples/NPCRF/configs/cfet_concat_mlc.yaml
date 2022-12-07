@@ -14,7 +14,7 @@ dataset:
 
 preprocessor:
   type: multilabel-concat-typing-preprocessor
-  model_dir:  sijunhe/nezha-cn-base
+  model_dir: sijunhe/nezha-cn-base
   max_length: 500
 
 data_collator: MultiLabelConcatTypingDataCollatorWithPadding
@@ -23,6 +23,7 @@ model:
   type: multilabel-concat-typing-model
   encoder:
     model_name_or_path: sijunhe/nezha-cn-base
+    drop_special_tokens: false
   word_dropout: 0.1
   decoder:
     type: linear

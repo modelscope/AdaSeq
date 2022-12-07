@@ -136,23 +136,20 @@ class SpanExtractionMetric(Metric):
     def add(self, outputs: Dict, inputs: Dict):
         """Add golden, pred pairs to inner data structure."""
 
-        token_mapping = inputs['offset_mapping']
-        id2label = self.trainer.id2label
+        id2label = self.trainer.id2label  # TODO remove this
         pred_results = outputs['predicts']
         pred_entities_batch = []
-        for i, pred_result in enumerate(pred_results):
+        for result in pred_results:
             pred_entities = []
-            for span in pred_result:
-                start = token_mapping[i][span[0]][0]
-                end = token_mapping[i][span[1]][1]
+            for span in result:
                 if isinstance(span[2], list):
                     typ = [id2label[x] for x in span[2]]
                 else:
                     typ = id2label[span[2]]
-                pred_entities.append({'start': start, 'end': end, 'type': typ})
+                pred_entities.append({'start': span[0], 'end': span[1], 'type': typ})
             pred_entities_batch.append(pred_entities)
 
-        ground_truths = inputs['spans']
+        ground_truths = [m['spans'] for m in inputs['meta']]
         self.scorer.update(ground_truths, pred_entities_batch)
 
     def evaluate(self):

@@ -25,17 +25,20 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
         super().__init__()
         MsModel.__init__(self, model_dir=None, **kwargs)
 
-    def __call__(self, *inputs, **kwargs) -> Dict[str, Any]:  # noqa: D102
+    def __call__(self, *args, **kwargs) -> Dict[str, Any]:  # noqa: D102
         # use `nn.Module.__call__` rather than `MsModel.__call__`
-        return self.postprocess(super()._call_impl(*inputs, **kwargs))
+        return self.postprocess(super()._call_impl(*args, **kwargs))
 
     @abstractmethod
-    def forward(self, inputs: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+    def forward(
+        self, tokens: Dict[str, Any], meta: Optional[Dict[str, Any]] = None, **kwargs
+    ) -> Dict[str, Any]:
         """
         Run the forward pass for a model.
 
         Args:
-            inputs (Dict[str, Any]): inputs to the model
+            tokens (Dict[str, Any]): inputs to the model
+            meta (Dict[str, Any]): raw inputs
             **kwargs: other arguments
 
         Returns:

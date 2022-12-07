@@ -16,7 +16,7 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
     def __init__(
         self, model_dir: str, labels: List[str] = None, tag_scheme: str = 'BIOES', **kwargs
     ):
-        super().__init__(model_dir, return_emission_mask=True, **kwargs)
+        super().__init__(model_dir, return_offsets=True, **kwargs)
 
         self.tag_scheme = tag_scheme.upper()
         if not self._is_valid_tag_scheme(self.tag_scheme):
@@ -32,11 +32,11 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
         """prepare inputs for Sequence Labeling models."""
         output = super().__call__(data)
         if self.label2id is not None and isinstance(data, Dict) and 'spans' in data:
-            input_length = sum(output['emission_mask'])
-            labels = self._spans_to_bio_labels(data['spans'], input_length, self.tag_scheme)
+            length = len(output['tokens']['offsets']) - 2 * int(self.add_special_tokens)
+            labels = self._spans_to_bio_labels(data['spans'], length, self.tag_scheme)
             output['label_ids'] = [
                 PARTIAL_LABEL_ID if labels[i] == PARTIAL_LABEL else self.label2id[labels[i]]
-                for i in range(input_length)
+                for i in range(length)
             ]
         return output
 

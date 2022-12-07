@@ -13,6 +13,7 @@ from adaseq.models.base import Model
 from adaseq.modules.decoders import CRF, PartialCRF
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.encoders import Encoder
+from adaseq.nn.util import get_tokens_mask
 
 
 @MODELS.register_module(module_name=Models.sequence_labeling_model)
@@ -49,7 +50,7 @@ class SequenceLabelingModel(Model):
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
         self.linear = nn.Linear(self.encoder.config.hidden_size, num_labels)
 
         self.use_dropout = word_dropout > 0.0
@@ -70,65 +71,36 @@ class SequenceLabelingModel(Model):
         self.temperature = temperature
         self.mv_interpolation = mv_interpolation
 
-    def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
+    def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        embed = self.encoder(**tokens)
 
         if self.use_dropout:
             embed = self.dropout(embed)
 
         logits = self.linear(embed)
 
-        if 'emission_mask' in inputs:
-            mask = inputs['emission_mask']
-            masked_lengths = mask.sum(-1).long()
-            masked_logits = torch.zeros_like(logits)
-            for i in range(len(mask)):
-                masked_logits[i, : masked_lengths[i], :] = (
-                    logits[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
-                )
-            logits = masked_logits
+        return logits
 
-        return {'logits': logits}
+    def forward(  # noqa
+        self,
+        tokens: Dict[str, Any],
+        label_ids: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+        origin_tokens: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # TODO docstring
+        logits = self._forward(tokens)
 
-    def _forward_origin_view(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(
-            inputs['origin_input_ids'], attention_mask=inputs['origin_attention_mask']
-        )[0]
-
-        if self.use_dropout:
-            embed = self.dropout(embed)
-
-        logits = self.linear(embed)
-
-        if 'origin_emission_mask' in inputs:
-            mask = inputs['origin_emission_mask']
-            masked_lengths = mask.sum(-1).long()
-            masked_logits = torch.zeros_like(logits)
-            for i in range(len(mask)):
-                masked_logits[i, : masked_lengths[i], :] = (
-                    logits[i].masked_select(mask[i].unsqueeze(-1)).view(masked_lengths[i], -1)
-                )
-            logits = masked_logits
-
-        return {'logits': logits}
-
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
-        outputs = self._forward(inputs)
-
-        logits = outputs['logits']
-        label_ids = inputs['label_ids']
-        seq_lens = inputs['emission_mask'].sum(-1).long()
-        mask = (
-            torch.arange(inputs['emission_mask'].shape[1], device=seq_lens.device)[None, :]
-            < seq_lens[:, None]
-        )
+        mask = get_tokens_mask(tokens, logits.size(1))
 
         if self.training:
             loss = self._calculate_loss(logits, label_ids, mask)
-            if self.multiview:  # for multiview training
-                origin_view_outputs = self._forward_origin_view(inputs)
-                origin_view_logits = origin_view_outputs['logits']
-                origin_view_loss = self._calculate_loss(origin_view_logits, label_ids, mask)
+
+            if self.multiview and origin_tokens is not None:  # for multiview training
+                origin_view_logits = self._forward(origin_tokens)
+
+                origin_mask = get_tokens_mask(origin_tokens, origin_view_logits.size(1))
+
+                origin_view_loss = self._calculate_loss(origin_view_logits, label_ids, origin_mask)
                 if self.mv_loss_type == 'kl':
                     cl_kl_loss = self._calculate_cl_loss(
                         logits, origin_view_logits, mask, T=self.temperature

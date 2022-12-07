@@ -1,5 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import torch
@@ -10,6 +10,7 @@ from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.encoders import Encoder
+from adaseq.nn.util import get_tokens_mask
 
 
 class SinusoidalPositionEmbedding(nn.Module):
@@ -56,18 +57,18 @@ class GlobalPointerModel(Model):
     def __init__(
         self,
         num_labels: int,
-        encoder: Union[Encoder, str] = None,
+        encoder: Union[Encoder, Dict[str, Any]],
         token_ffn_out_width: int = -1,
         encoder_hidden_size: int = -1,
         word_dropout: float = 0.0,
         **kwargs
-    ):
-        super(GlobalPointerModel, self).__init__()
+    ) -> None:
+        super().__init__()
 
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder, **kwargs)
+            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
 
         self.token_ffn_out_width = token_ffn_out_width
         self.token_inner_embed_ffn = nn.Linear(encoder_hidden_size, token_ffn_out_width * 2)
@@ -78,9 +79,8 @@ class GlobalPointerModel(Model):
         if self.use_dropout:
             self.dropout = WordDropout(word_dropout)
 
-    def _forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        embed = self.encoder(inputs['input_ids'], attention_mask=inputs['attention_mask'])[0]
-        embed = embed * 10
+    def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        embed = self.encoder(**tokens)
 
         if self.use_dropout:
             embed = self.dropout(embed)
@@ -106,20 +106,29 @@ class GlobalPointerModel(Model):
         entity_score = (
             span_score[:, None] + typing_score[:, ::2, None] + typing_score[:, 1::2, :, None]
         )  # [:, None] 增加一个维度
-        entity_score = self._add_mask_tril(entity_score, mask=inputs['attention_mask'])
-        return {'entity_score': entity_score}
 
-    def forward(self, inputs: Dict[str, Any]) -> Dict[str, Any]:  # noqa
-        outputs = self._forward(inputs)
+        entity_score = self._add_mask_tril(
+            entity_score, mask=get_tokens_mask(tokens, entity_score.size(2))
+        )
+        return entity_score
+
+    def forward(
+        self,
+        tokens: Dict[str, Any],
+        label_matrix: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # noqa
+        """TODO: docstring"""
+        entity_score = self._forward(tokens)
         if self.training:
-            loss = self._calculate_loss(outputs['entity_score'], inputs['label_matrix'])
-            outputs = {'entity_score': outputs['entity_score'], 'loss': loss}
+            loss = self._calculate_loss(entity_score, label_matrix)
+            outputs = {'entity_score': entity_score, 'loss': loss}
         else:
-            predicts = self.decode(outputs['entity_score'])
-            outputs = {'entity_score': outputs['entity_score'], 'predicts': predicts}
+            predicts = self.decode(entity_score)
+            outputs = {'entity_score': entity_score, 'predicts': predicts}
         return outputs
 
-    def _calculate_loss(self, entity_score, targets):
+    def _calculate_loss(self, entity_score, targets) -> torch.Tensor:
         """
         targets : (batch_size, num_classes, seq_len, seq_len)
         entity_score : (batch_size, num_classes, seq_len, seq_len)
@@ -130,7 +139,7 @@ class GlobalPointerModel(Model):
         loss = self.multilabel_categorical_crossentropy(targets, entity_score)
         return loss
 
-    def _sequence_masking(self, x, mask, value='-inf', axis=None):
+    def _sequence_masking(self, x, mask, value='-inf', axis=None) -> torch.Tensor:
         """Mask X according to the mask."""
 
         if mask is None:
@@ -179,6 +188,6 @@ class GlobalPointerModel(Model):
         for score_matrix in score_matrixes:
             pred_entities_sent = []
             for t, s, e in zip(*np.where(score_matrix > 0)):
-                pred_entities_sent.append((s, e, t))
+                pred_entities_sent.append((s, e + 1, t))
             pred_entities_batch.append(pred_entities_sent)
         return pred_entities_batch

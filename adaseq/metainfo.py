@@ -32,6 +32,7 @@ class Models:
 class Encoders:
     """Names for different encoders"""
 
+    transformer_encoder = 'transformer-encoder'
     span_encoder = 'span-encoder'
 
 

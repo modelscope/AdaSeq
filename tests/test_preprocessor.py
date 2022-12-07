@@ -46,14 +46,16 @@ class TestPreprocessor(unittest.TestCase):
             label2id=self.ner_label2id1,
         )
         preprocessor = build_preprocessor(cfg)
+        labels = [3, 0, 2, 0, 0, 0, 2, 0, 0]
         output1 = preprocessor(self.ner_input1)
-        self.assertEqual(
-            output1['input_ids'],
-            [101, 7270, 22961, 1528, 1840, 1106, 21423, 1418, 2495, 12913, 119, 102],
-        )
-        self.assertEqual(output1['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-        self.assertEqual(output1['emission_mask'], [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0])
-        self.assertEqual(output1['label_ids'], [3, 0, 2, 0, 0, 0, 2, 0, 0])
+        input_ids = [101, 7270, 22961, 1528, 1840, 1106, 21423, 1418, 2495, 12913, 119, 102]
+        self.assertEqual(output1['tokens']['input_ids'], input_ids)
+        self.assertEqual(output1['tokens']['attention_mask'], [True] * 12)
+        # add_special_tokens=True by default
+        self.assertEqual(output1['tokens']['mask'], [True] * (len(labels) + 2))
+        offsets = [(i, i) for i in range(8)] + [(8, 9), (10, 10), (11, 11)]
+        self.assertEqual(output1['tokens']['offsets'], offsets)
+        self.assertEqual(output1['label_ids'], labels)
 
     def test_bert_sequence_labeling_bioes_preprocessor(self):
         cfg = dict(
@@ -63,12 +65,6 @@ class TestPreprocessor(unittest.TestCase):
         )
         preprocessor = build_preprocessor(cfg)
         output1 = preprocessor(self.ner_input1)
-        self.assertEqual(
-            output1['input_ids'],
-            [101, 7270, 22961, 1528, 1840, 1106, 21423, 1418, 2495, 12913, 119, 102],
-        )
-        self.assertEqual(output1['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-        self.assertEqual(output1['emission_mask'], [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0])
         self.assertEqual(output1['label_ids'], [15, 0, 14, 0, 0, 0, 14, 0, 0])
 
     def test_lstm_sequence_labeling_preprocessor(self):
@@ -76,23 +72,18 @@ class TestPreprocessor(unittest.TestCase):
             type='sequence-labeling-preprocessor',
             model_dir='pangda/word2vec-skip-gram-mixed-large-chinese',
             label2id=self.ner_label2id2,
-            add_cls_sep=False,
+            add_special_tokens=False,
         )
         preprocessor = build_preprocessor(cfg)
         output2 = preprocessor(self.ner_input2)
-        self.assertEqual(
-            output2['input_ids'],
-            [217, 211, 286, 266, 8, 24, 391, 29, 41, 11, 42, 1391, 5, 16, 140, 352, 179, 6],
-        )
-        self.assertEqual(
-            output2['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        )
-        self.assertEqual(
-            output2['emission_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        )
-        self.assertEqual(
-            output2['label_ids'], [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        )
+        input_ids = [217, 211, 286, 266, 8, 24, 391, 29, 41, 11, 42, 1391, 5, 16, 140, 352, 179, 6]
+        labels = [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.assertEqual(output2['tokens']['input_ids'], input_ids)
+        self.assertEqual(output2['tokens']['attention_mask'], [True] * len(input_ids))
+        self.assertEqual(output2['tokens']['mask'], [True] * len(labels))
+        offsets = [(i, i) for i in range(len(labels))]
+        self.assertEqual(output2['tokens']['offsets'], offsets)
+        self.assertEqual(output2['label_ids'], labels)
 
     def test_bert_global_pointer_preprocessor(self):
         cfg = dict(
@@ -103,61 +94,8 @@ class TestPreprocessor(unittest.TestCase):
         )
         preprocessor = build_preprocessor(cfg)
         output2 = preprocessor(self.ner_input2)
-        self.assertEqual(
-            output2['input_ids'],
-            [
-                101,
-                1004,
-                1045,
-                100,
-                1056,
-                100,
-                100,
-                1027,
-                980,
-                100,
-                100,
-                100,
-                100,
-                100,
-                976,
-                100,
-                100,
-                100,
-                886,
-                102,
-            ],
-        )
-        self.assertEqual(
-            output2['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        )
-        self.assertEqual(
-            output2['offset_mapping'],
-            [
-                (0, 0),
-                (0, 1),
-                (1, 2),
-                (2, 3),
-                (3, 4),
-                (4, 5),
-                (5, 6),
-                (6, 7),
-                (7, 8),
-                (8, 9),
-                (9, 10),
-                (10, 11),
-                (11, 12),
-                (12, 13),
-                (13, 14),
-                (14, 15),
-                (15, 16),
-                (16, 17),
-                (17, 18),
-                (0, 0),
-            ],
-        )
-        expected_label_matrix = np.zeros((3, 20, 20))
-        expected_label_matrix[0][1][2] = 1
+        expected_label_matrix = np.zeros((3, 18, 18))
+        expected_label_matrix[0][0][1] = 1
         self.assertEqual((output2['label_matrix'] == expected_label_matrix).all(), True)
 
     def setUp_typing_examples(self):
@@ -178,60 +116,33 @@ class TestPreprocessor(unittest.TestCase):
         )
         preprocessor = build_preprocessor(cfg)
         output = preprocessor(self.typing_input)
-        self.assertEqual(
-            output['input_ids'],
-            [
-                101,
-                1004,
-                1045,
-                100,
-                1056,
-                100,
-                100,
-                1027,
-                980,
-                100,
-                100,
-                100,
-                100,
-                100,
-                976,
-                100,
-                100,
-                100,
-                886,
-                102,
-            ],
-        )
-        self.assertEqual(
-            output['attention_mask'], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        )
-        self.assertEqual(
-            output['offset_mapping'],
-            [
-                (0, 0),
-                (0, 1),
-                (1, 2),
-                (2, 3),
-                (3, 4),
-                (4, 5),
-                (5, 6),
-                (6, 7),
-                (7, 8),
-                (8, 9),
-                (9, 10),
-                (10, 11),
-                (11, 12),
-                (12, 13),
-                (13, 14),
-                (14, 15),
-                (15, 16),
-                (16, 17),
-                (17, 18),
-                (0, 0),
-            ],
-        )
-        self.assertEqual(output['mention_boundary'], [[1], [2]])
+        input_ids = [
+            101,
+            1004,
+            1045,
+            100,
+            1056,
+            100,
+            100,
+            1027,
+            980,
+            100,
+            100,
+            100,
+            100,
+            100,
+            976,
+            100,
+            100,
+            100,
+            886,
+            102,
+        ]
+        self.assertEqual(output['tokens']['input_ids'], input_ids)
+        self.assertEqual(output['tokens']['attention_mask'], [True] * len(input_ids))
+        self.assertEqual(output['tokens']['mask'], [True] * len(input_ids))
+        self.assertEqual(output['tokens']['offsets'], [(i, i) for i in range(len(input_ids))])
+        self.assertEqual(output['mention_boundary'], [[0], [1]])
         self.assertEqual(output['type_ids'], [[1, 0, 1]])
 
     def test_load_modelscope_tokenizer(self):

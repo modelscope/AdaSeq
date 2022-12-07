@@ -25,6 +25,7 @@ model:
   type: multilabel-concat-typing-model
   encoder:
     model_name_or_path: roberta-large
+    drop_special_tokens: false
   word_dropout: 0
   decoder:
     type: linear

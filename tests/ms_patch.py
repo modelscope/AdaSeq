@@ -10,7 +10,7 @@ def train_step(self, model, inputs):
     model.train()
     self._mode = 'train'
     # call model forward but not __call__ to skip postprocess
-    train_outputs = model.forward(inputs)
+    train_outputs = model.forward(**inputs)
 
     if not isinstance(train_outputs, dict):
         raise TypeError('"model.forward()" must return a dict')

@@ -14,7 +14,7 @@ class RelationExtractionPreprocessor(NLPPreprocessor):
     """Relation Extraction data preprocessor"""
 
     def __init__(self, model_dir: str, labels: List[str] = None, **kwargs):
-        super().__init__(model_dir, return_emission_mask=True, **kwargs)
+        super().__init__(model_dir, return_offsets=True, **kwargs)
 
         label2id = kwargs.get('label2id', None)
         self.label2id = self.map_label_to_id(labels, label2id)
@@ -24,8 +24,7 @@ class RelationExtractionPreprocessor(NLPPreprocessor):
         output = super().__call__(data)
 
         if self.label2id is not None and isinstance(data, Dict) and 'label' in data:
-            label = data['label']
-            output['label_id'] = [self.label2id[label]]
+            output['label_id'] = self.label2id[data['label']]
         output['so_head_mask'] = data['so_head_mask']
         return output
 

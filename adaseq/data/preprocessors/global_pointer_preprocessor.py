@@ -16,7 +16,7 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
     """
 
     def __init__(self, model_dir: str, labels: List[str], **kwargs):
-        super().__init__(model_dir, return_offsets_mapping=True, **kwargs)
+        super().__init__(model_dir, return_offsets=True, **kwargs)
 
         label2id = kwargs.get('label2id', None)
         self.label2id = self.map_label_to_id(labels, label2id)
@@ -25,28 +25,14 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
         """prepare inputs for Global Pointer model."""
 
         output = super().__call__(data)
+        # origin sequence length
+        length = len(output['tokens']['offsets']) - 2 * int(self.add_special_tokens)
 
-        token_span_mapping = []
-        for i, (token_start, token_end) in enumerate(output['offset_mapping']):
-            if token_start == token_end and token_start == 0:
-                token_span_mapping.append([0, 0])  # CLS, SEP
-            elif token_start == token_end:
-                token_span_mapping[-1][1] += 1
-            else:
-                token_span_mapping.append([i, i + 1])
-
-        # calculate span matrix，be careful to fix offset: 1, offset_mapping, 2, cls_token
-        label_matrix = np.zeros(
-            [len(self.label2id), len(output['input_ids']), len(output['input_ids'])]
-        )
+        # calculate span matrix
+        label_matrix = np.zeros([len(self.label2id), length, length])
         spans = data['spans']
         for span in spans:
-            if span['start'] > len(token_span_mapping) or span['end'] + 1 > len(token_span_mapping):
-                continue
-            start = token_span_mapping[span['start'] + 1][0]
-            end = token_span_mapping[span['end']][1] - 1
             type_id = self.label2id[span['type']]
-            label_matrix[type_id][start][end] = 1
+            label_matrix[type_id][span['start']][span['end'] - 1] = 1
         output['label_matrix'] = label_matrix
-        output['spans'] = data['spans']
         return output
