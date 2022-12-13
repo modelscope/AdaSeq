@@ -5,7 +5,7 @@ experiment:
 task: part-of-speech
 
 dataset:
-  name_or_path: ud1_pos
+  name: ud1_pos
   namespace: izhx404
 
 preprocessor:
@@ -22,8 +22,6 @@ model:
     model_name_or_path: babert-base
   word_dropout: 0.1
   use_crf: true
-
-trainer: ner-trainer
 
 train:
   max_epochs: 30

@@ -13,7 +13,7 @@ from adaseq.models.base import Model
 from adaseq.modules.decoders import CRF, PartialCRF
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.encoders import Encoder
-from adaseq.nn.util import get_tokens_mask
+from adaseq.modules.util import get_tokens_mask
 
 
 @MODELS.register_module(module_name=Models.sequence_labeling_model)
@@ -34,7 +34,7 @@ class SequenceLabelingModel(Model):
 
     def __init__(
         self,
-        num_labels: int,
+        id_to_label: Dict[int, str],
         encoder: Union[Encoder, str, ConfigDict] = None,
         word_dropout: Optional[float] = 0.0,
         use_crf: Optional[bool] = True,
@@ -44,14 +44,15 @@ class SequenceLabelingModel(Model):
         mv_interpolation: Optional[float] = 0.5,
         partial: Optional[bool] = False,
         **kwargs
-    ):
-        super(SequenceLabelingModel, self).__init__()
-        self.num_labels = num_labels
+    ) -> None:
+        super().__init__()
+        self.id_to_label = id_to_label
+        self.num_labels = len(id_to_label)
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
             self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
-        self.linear = nn.Linear(self.encoder.config.hidden_size, num_labels)
+        self.linear = nn.Linear(self.encoder.config.hidden_size, self.num_labels)
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
@@ -60,9 +61,9 @@ class SequenceLabelingModel(Model):
         self.use_crf = use_crf
         if use_crf:
             if partial:
-                self.crf = PartialCRF(num_labels, batch_first=True)
+                self.crf = PartialCRF(self.num_labels, batch_first=True)
             else:
-                self.crf = CRF(num_labels, batch_first=True)
+                self.crf = CRF(self.num_labels, batch_first=True)
         else:
             self.loss_fn = nn.CrossEntropyLoss(reduction='mean', ignore_index=PAD_LABEL_ID)
 
@@ -87,13 +88,15 @@ class SequenceLabelingModel(Model):
         label_ids: Optional[torch.LongTensor] = None,
         meta: Optional[Dict[str, Any]] = None,
         origin_tokens: Optional[Dict[str, Any]] = None,
+        origin_mask: Optional[torch.Tensor] = None,
     ) -> Dict[str, Any]:  # TODO docstring
         logits = self._forward(tokens)
 
         mask = get_tokens_mask(tokens, logits.size(1))
 
         if self.training:
-            loss = self._calculate_loss(logits, label_ids, mask)
+            crf_mask = origin_mask if origin_mask is not None else mask
+            loss = self._calculate_loss(logits, label_ids, crf_mask)
 
             if self.multiview and origin_tokens is not None:  # for multiview training
                 origin_view_logits = self._forward(origin_tokens)

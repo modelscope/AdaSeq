@@ -1,5 +1,7 @@
 model:
   type: sequence-labeling-model
-  num_labels: 2
+  id_to_label:
+    0: O
+    1: B
   encoder:
     model_name_or_path: bert-base-cased

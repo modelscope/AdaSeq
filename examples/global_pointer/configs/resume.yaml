@@ -6,13 +6,15 @@ experiment:
 task: named-entity-recognition
 
 dataset:
-  data_files:
+  data_file:
     train: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=train.txt'
     valid: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=dev.txt'
     test: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=test.txt'
   data_type: sequence_labeling
   data_format: column
   delimiter: ' '
+  labels:
+    type: count_span_labels
 
 preprocessor:
   type: global-pointer-preprocessor
@@ -28,8 +30,6 @@ model:
   token_ffn_out_width: 64
   encoder_hidden_size: 768
   word_dropout: 0.1
-
-trainer: ner-trainer
 
 train:
   max_epochs: 10

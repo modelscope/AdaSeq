@@ -15,11 +15,8 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
     span targets are processed into label_matrixes
     """
 
-    def __init__(self, model_dir: str, labels: List[str], **kwargs):
+    def __init__(self, model_dir: str, **kwargs):
         super().__init__(model_dir, return_offsets=True, **kwargs)
-
-        label2id = kwargs.get('label2id', None)
-        self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """prepare inputs for Global Pointer model."""
@@ -29,10 +26,10 @@ class GlobalPointerPreprocessor(NLPPreprocessor):
         length = len(output['tokens']['offsets']) - 2 * int(self.add_special_tokens)
 
         # calculate span matrix
-        label_matrix = np.zeros([len(self.label2id), length, length])
+        label_matrix = np.zeros([len(self.label_to_id), length, length])
         spans = data['spans']
         for span in spans:
-            type_id = self.label2id[span['type']]
+            type_id = self.label_to_id[span['type']]
             label_matrix[type_id][span['start']][span['end'] - 1] = 1
         output['label_matrix'] = label_matrix
         return output

@@ -13,23 +13,18 @@ from .nlp_preprocessor import NLPPreprocessor
 class RelationExtractionPreprocessor(NLPPreprocessor):
     """Relation Extraction data preprocessor"""
 
-    def __init__(self, model_dir: str, labels: List[str] = None, **kwargs):
-        super().__init__(model_dir, return_offsets=True, **kwargs)
-
-        label2id = kwargs.get('label2id', None)
-        self.label2id = self.map_label_to_id(labels, label2id)
+    def __init__(self, model_dir: str, labels: List[str], **kwargs):
+        label_to_id = self._gen_label2id(labels)
+        super().__init__(model_dir, label_to_id=label_to_id, return_offsets=True, **kwargs)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """prepare inputs for Relation Extraction model."""
         output = super().__call__(data)
 
-        if self.label2id is not None and isinstance(data, Dict) and 'label' in data:
-            output['label_id'] = self.label2id[data['label']]
+        if isinstance(data, Dict) and 'label' in data:
+            output['label_id'] = self.label_to_id[data['label']]
         output['so_head_mask'] = data['so_head_mask']
         return output
-
-    def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        return self._gen_label2id(labels)
 
     @staticmethod
     def _gen_label2id(labels: List[str]) -> Dict[str, int]:

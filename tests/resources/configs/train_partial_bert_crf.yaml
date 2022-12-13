@@ -3,9 +3,11 @@ work_dir: tests/resources/regression
 task: named-entity-recognition
 
 dataset:
-  data_dir: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
+  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
   data_type: sequence_labeling
   data_format: column
+  labels:
+    type: count_span_labels
 
 preprocessor:
   type: sequence-labeling-preprocessor

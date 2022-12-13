@@ -136,7 +136,7 @@ class SpanExtractionMetric(Metric):
     def add(self, outputs: Dict, inputs: Dict):
         """Add golden, pred pairs to inner data structure."""
 
-        id2label = self.trainer.id2label  # TODO remove this
+        id2label = self.trainer.train_preprocessor.id_to_label  # TODO remove this
         pred_results = outputs['predicts']
         pred_entities_batch = []
         for result in pred_results:

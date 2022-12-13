@@ -1,10 +1,8 @@
 addict
 datasets
-modelscope>=1.1.0
-numpy
+modelscope>=1.1.1
 pyyaml
 seqeval
 torch>=1.11.0,<1.13.0
 tqdm>=4.64.0
 transformers>=4.21.0
-yapf

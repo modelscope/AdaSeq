@@ -6,7 +6,7 @@ experiment:
 task: named-entity-recognition
 
 dataset:
-  data_dir: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
+  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
   data_type: sequence_labeling
   data_format: column
 
@@ -24,8 +24,6 @@ model:
   word_dropout: 0.1
   use_crf: true
   partial: true
-
-trainer: ner-trainer
 
 train:
   max_epochs: 20

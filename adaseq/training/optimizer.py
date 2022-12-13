@@ -4,9 +4,30 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from modelscope.trainers.optimizer.builder import OPTIMIZERS
+from modelscope.utils.config import ConfigDict
+from modelscope.utils.registry import build_from_cfg, default_group
 from torch import nn
 
 logger = logging.getLogger(__name__)
+
+
+def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):
+    """Build optimizer from config"""
+    cfg = cfg.copy()  # proctect the base config is not modified
+
+    if hasattr(model, 'module'):
+        model = model.module  # type ignore
+
+    # build parameter groups with different kwargs
+    groups = cfg.pop('param_groups', None)
+    param_groups = make_parameter_groups(model.named_parameters(), groups)  # type: ignore
+
+    if default_args is None:
+        default_args = {}
+    default_args['params'] = param_groups
+
+    return build_from_cfg(cfg, OPTIMIZERS, group_key=default_group, default_args=default_args)
 
 
 # The implementation is adopted from AllenNLP and modified.

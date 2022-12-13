@@ -6,7 +6,7 @@ experiment:
 task: named-entity-recognition
 
 dataset:
-  data_files:
+  data_file:
     train: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=train.txt'
     valid: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=dev.txt'
     test: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=test.txt'
@@ -26,8 +26,6 @@ model:
     model_name_or_path: sijunhe/nezha-cn-base
   word_dropout: 0.1
   use_crf: true
-
-trainer: ner-trainer
 
 train:
   max_epochs: 20

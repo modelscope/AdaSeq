@@ -1,5 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-# Some code borrowed from AllenNLP.
+# Some functions are borrowed from AllenNLP.
 # https://github.com/allenai/allennlp/blob/HEAD/allennlp/nn/util.py
 # Copyright (c) AI2 AllenNLP. Licensed under the Apache License, Version 2.0.
 from typing import Dict, Optional

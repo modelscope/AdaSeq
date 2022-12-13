@@ -10,7 +10,7 @@ from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.encoders import Encoder
-from adaseq.nn.util import get_tokens_mask
+from adaseq.modules.util import get_tokens_mask
 
 
 class SinusoidalPositionEmbedding(nn.Module):
@@ -56,7 +56,7 @@ class GlobalPointerModel(Model):
 
     def __init__(
         self,
-        num_labels: int,
+        id_to_label: Dict[int, str],
         encoder: Union[Encoder, Dict[str, Any]],
         token_ffn_out_width: int = -1,
         encoder_hidden_size: int = -1,
@@ -64,6 +64,8 @@ class GlobalPointerModel(Model):
         **kwargs
     ) -> None:
         super().__init__()
+        self.id_to_label = id_to_label
+        num_labels = len(id_to_label)
 
         if isinstance(encoder, Encoder):
             self.encoder = encoder

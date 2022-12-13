@@ -51,7 +51,7 @@ class SequenceLabelingMetric(Metric):
                     f1 (float): f1 of each label
                     support (int): the number of occurrences of each label in ground truth
         """
-        id2label = self.trainer.id2label
+        id2label = self.trainer.train_preprocessor.id_to_label
 
         pred_labels = [
             [id2label[p] for p, g in zip(pred, gold) if g != PAD_LABEL_ID]

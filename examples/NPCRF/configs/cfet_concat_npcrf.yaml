@@ -6,7 +6,7 @@ experiment:
 task: entity-typing
 
 dataset:
-  data_files:
+  data_file:
     train: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=train.json'
     valid: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=dev.json'
     test: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=test.json'
@@ -37,8 +37,6 @@ model:
   loss_function: WBCE
   pos_weight: 2
 
-trainer: typing-trainer
-
 train:
   max_epochs: 50
   dataloader:
@@ -47,7 +45,7 @@ train:
     type: AdamW
     lr: 5.0e-5
   lr_scheduler:
-    type: CosineLR  # only support in typing currently
+    type: cosine
     warmup_rate: 0.1 # when choose concat typing model, default to use cosine_linear_with_warmup
     options:
       by_epoch: false

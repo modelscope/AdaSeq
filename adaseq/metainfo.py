@@ -1,4 +1,11 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+
+
+def get_member_set(_class):
+    """Get member names set."""
+    return set(getattr(_class, _a) for _a in dir(_class) if not _a.startswith('_'))
+
+
 class Tasks:
     """Names for different tasks"""
 
@@ -64,17 +71,12 @@ class DataCollators:
     span_extraction_data_collator = 'SpanExtractionDataCollatorWithPadding'
     multi_label_span_typing_data_collator = 'MultiLabelSpanTypingDataCollatorWithPadding'
     multi_label_concat_typing_data_collator = 'MultiLabelConcatTypingDataCollatorWithPadding'
-    relation_extraction_data_collator = 'RelationExtractionDataCollatorWithPadding'
 
 
 class Trainers:
     """Names for different trainers"""
 
     default_trainer = 'default-trainer'
-    ner_trainer = 'ner-trainer'
-    typing_trainer = 'typing-trainer'
-    re_trainer = 're-trainer'
-    default_moe_trainer = 'default-moe-trainer'
 
 
 class Optimizers:

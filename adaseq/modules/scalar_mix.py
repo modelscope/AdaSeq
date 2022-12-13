@@ -7,7 +7,7 @@ from typing import List, Optional
 import torch
 from torch import nn
 
-from adaseq.nn import util
+from adaseq.modules import util
 
 
 class ScalarMix(nn.Module):

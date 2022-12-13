@@ -1,5 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -82,7 +82,7 @@ class MultiLabelSpanTypingModel(Model):
 
     def __init__(
         self,
-        labels: List[str],
+        id_to_label: Dict[int, str],
         encoder: Union[Encoder, str] = None,
         span_encoder_method: str = 'concat',
         word_dropout: Optional[float] = 0.0,
@@ -90,9 +90,8 @@ class MultiLabelSpanTypingModel(Model):
         class_threshold: float = 0.5,
         use_biaffine: bool = False,
         **kwargs
-    ):
-        super(MultiLabelSpanTypingModel, self).__init__()
-        self.num_labels = len(labels)
+    ) -> None:
+        super().__init__()
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
@@ -103,7 +102,8 @@ class MultiLabelSpanTypingModel(Model):
         )
         self.linear_input_dim = self.span_encoder.output_dim
 
-        self.num_labels = self.num_labels
+        self.id_to_label = id_to_label
+        self.num_labels = len(id_to_label)
         self.linear = nn.Linear(self.linear_input_dim, self.num_labels)
 
         self.use_dropout = word_dropout > 0.0
@@ -222,7 +222,7 @@ class MultiLabelConcatTypingModel(Model):
 
     def __init__(
         self,
-        labels: List[str],
+        id_to_label: Dict[int, str],
         encoder: Union[Encoder, str] = None,
         word_dropout: Optional[float] = 0.0,
         loss_function: str = 'BCE',
@@ -230,10 +230,10 @@ class MultiLabelConcatTypingModel(Model):
         pos_weight: float = 1.0,
         decoder: Union[Decoder, str] = None,
         **kwargs
-    ):
-        super(MultiLabelConcatTypingModel, self).__init__()
-        num_labels = len(labels)
-        self.num_labels = num_labels
+    ) -> None:
+        super().__init__()
+        self.id_to_label = id_to_label
+        self.num_labels = len(id_to_label)
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
@@ -242,7 +242,6 @@ class MultiLabelConcatTypingModel(Model):
             self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
 
         self.linear_input_dim = self.encoder.config.hidden_size
-        self.num_labels = num_labels
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
@@ -262,7 +261,7 @@ class MultiLabelConcatTypingModel(Model):
             self.sigmoid = nn.Sigmoid()
             self.loss_fn = WBCEWithLogitsLossUFET(pos_weight=self.pos_weight)
 
-        self.linear = nn.Linear(self.linear_input_dim, num_labels)
+        self.linear = nn.Linear(self.linear_input_dim, self.num_labels)
 
         self.decoder_type = decoder.pop('type')
         assert self.decoder_type in [
@@ -271,7 +270,9 @@ class MultiLabelConcatTypingModel(Model):
         ], 'decoder_type {} unimplemented'.format(self.decoder_type)
 
         if self.decoder_type == 'pairwise-crf':
-            self.decoder = PairwiseCRF(labels=labels, **decoder)
+            self.decoder = PairwiseCRF(
+                labels=[id_to_label[i] for i in range(self.num_labels)], **decoder
+            )
 
     def _token2span_encode(self, tokens: Dict[str, Any]) -> torch.Tensor:
         embed = self.encoder(**tokens)

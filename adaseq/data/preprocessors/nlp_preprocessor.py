@@ -3,10 +3,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import PREPROCESSORS
+from modelscope.preprocessors.builder import build_preprocessor as ms_build_preprocessor
+from modelscope.utils.config import ConfigDict
 
 from adaseq.data.tokenizer import build_tokenizer
 from adaseq.metainfo import Preprocessors
-from adaseq.utils.data_utils import gen_label2id
 
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.nlp_preprocessor)
@@ -24,9 +25,10 @@ class NLPPreprocessor(Preprocessor):
             original sequence reconstruction in the `TransformerEncoder`.
         add_special_tokens (bool): add special tokens of pre-trained models to the
             input, it is only effective when `return_offsets==False`.
+        labels (List[str]): a label list, which is used to setup a `label_to_id`
+            mappging if the following `label_to_id` was not provided.
         label_to_id (Dict[str, int]): a dict maps label to index,
             such as `{'O': 0, 'B-LOC': 1, 'I-LOC': 2}`.
-            It is presetted for future updates.
         return_original_view (bool): if `True`, return token_ids and other tensors
             that without padded context, only used in retrieval-augmented models.
     """
@@ -38,17 +40,28 @@ class NLPPreprocessor(Preprocessor):
         max_length: int = 512,
         return_offsets: bool = False,
         add_special_tokens: bool = True,
+        labels: Optional[List[str]] = None,
         label_to_id: Optional[Dict[str, int]] = None,
-        return_original_view: bool = False,
+        return_original_view: Optional[bool] = None,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.max_length = max_length
         self.add_special_tokens = add_special_tokens
         self.return_offsets = return_offsets
-        self.label_to_id = label_to_id
         self.return_original_view = return_original_view
         self.tokenizer = build_tokenizer(model_dir, **(tokenizer_kwargs or {}))
+
+        if label_to_id is not None:
+            self.label_to_id = label_to_id
+        elif labels is not None:
+            self.label_to_id = self.make_label_to_id(labels)
+        else:
+            raise ValueError('Must have one of `labels` or `label_to_id`')
+        self.id_to_label = {v: k for k, v in sorted(self.label_to_id.items(), key=lambda x: x[1])}
+        # make sure they are aligned.
+        assert len(self.id_to_label) not in self.id_to_label
+        assert len(self.id_to_label) - 1 in self.id_to_label
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """
@@ -71,10 +84,12 @@ class NLPPreprocessor(Preprocessor):
         else:
             raise ValueError('Data sample must have "text" or "tokens" field!')
 
-        if self.return_original_view:
-            # return token_ids and other tensors that without padded context,
-            # only used in retrieval-augmented models.
-            output_dict['origin_tokens'] = self.encode_tokens_origin_view(data)
+        if self.return_original_view is not None:
+            output_dict['origin_mask'] = data['mask']
+            if self.return_original_view:
+                # return token_ids and other tensors that without padded context,
+                # only used in retrieval-augmented models.
+                output_dict['origin_tokens'] = self.encode_tokens_origin_view(data)
 
         return output_dict
 
@@ -140,19 +155,13 @@ class NLPPreprocessor(Preprocessor):
             output['offsets'] = offsets
         return output
 
-    def map_label_to_id(
-        self, labels: List[str] = None, label2id: Dict[str, int] = None
-    ) -> Dict[str, int]:
-        """conver labels to ids"""
-        if label2id is not None:
-            return label2id
-        elif labels is not None:
-            return self._label2id(labels)
-        else:
-            raise ValueError('labels or label2id is needed.')
-
-    def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        return gen_label2id(labels)
+    def make_label_to_id(self, labels: List[str]) -> Dict[str, int]:
+        """
+        Generate `label_to_id` mapping.
+        You can override this method to customize the mapping.
+        NOTE: The `self.labels` could be modified in this method.
+        """
+        return {label: i for i, label in enumerate(labels)}
 
     def encode_tokens_origin_view(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """encode tokens when using retrieval-augmented multi-view model."""
@@ -162,3 +171,11 @@ class NLPPreprocessor(Preprocessor):
         origin_length = sum(mask)
         origin_tokens = tokens[:origin_length]
         return self.encode_tokens(origin_tokens)
+
+
+def build_preprocessor(config: ConfigDict, **kwargs) -> Preprocessor:
+    """Build preprocessor from config"""
+    # get `field_name` for loading modelscope preprocessors,
+    # Not sure who will need this.
+    field_name = config.get('field_name', None)
+    return ms_build_preprocessor(config, field_name, kwargs)  # type: ignore

@@ -33,7 +33,7 @@ class TestRegistry(unittest.TestCase):
         """可以不配置文件初始化一个模型"""
         model = Model.from_config(
             type=Models.sequence_labeling_model,
-            num_labels=2,
+            id_to_label={0: 'O', 1: 'B'},
             encoder={'model_name_or_path': 'bert-base-cased'},
         )
         self.assertTrue(isinstance(model, SequenceLabelingModel))

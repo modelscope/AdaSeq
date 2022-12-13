@@ -66,7 +66,7 @@ class RelationExtractionMetric(Metric):
                 recall (float): micro averaged recall
                 f1 (float): micro averaged f1-score
         """
-        id2label = self.trainer.id2label
+        id2label = self.trainer.train_preprocessor.id_to_label
 
         pred_labels = [id2label[p] for p in self.preds]
         gold_labels = [id2label[p] for p in self.golds]

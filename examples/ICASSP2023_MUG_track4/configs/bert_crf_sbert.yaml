@@ -8,7 +8,7 @@ task: named-entity-recognition
 dataset:
   data_type: sequence_labeling
   data_format: column
-  data_files:
+  data_file:
     train: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_train.json.txt
     dev: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_dev.json.txt
     test: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_dev.json.txt
@@ -26,8 +26,6 @@ model:
     model_name_or_path: damo/nlp_structbert_backbone_base_std
   word_dropout: 0.1
   use_crf: true
-
-trainer: ner-trainer
 
 train:
   max_epochs: 10

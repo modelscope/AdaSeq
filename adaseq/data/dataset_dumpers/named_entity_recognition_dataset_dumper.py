@@ -34,7 +34,7 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
             raise NotImplementedError
 
     def _add_sequence_labeling_data(self, outputs: Dict, inputs: Dict):
-        id2label = self.trainer.id2label
+        id2label = self.trainer.model.id_to_label
         batch_meta = inputs['meta']
         batch_labels = torch_nested_numpify(torch_nested_detach(inputs['label_ids'])).tolist()
         batch_predicts = torch_nested_numpify(torch_nested_detach(outputs['predicts'])).tolist()

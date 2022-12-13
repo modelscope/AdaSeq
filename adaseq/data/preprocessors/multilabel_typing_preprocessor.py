@@ -17,11 +17,8 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
         processed: {'mention_boundary': [[1], [2]], 'type_ids':[1]}
     """
 
-    def __init__(self, model_dir: str, labels: List[str], **kwargs):
+    def __init__(self, model_dir: str, **kwargs):
         super().__init__(model_dir, return_offsets=True, **kwargs)
-
-        label2id = kwargs.get('label2id', None)
-        self.label2id = self.map_label_to_id(labels, label2id)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """prepare inputs for Entity Typing model"""
@@ -35,8 +32,8 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
             boundary_starts.append(span['start'])
             boundary_ends.append(span['end'] - 1)
             mention_mask.append(1)
-            type_ids = [self.label2id.get(x, -1) for x in span['type']]
-            padded_type_ids = [0] * len(self.label2id)
+            type_ids = [self.label_to_id.get(x, -1) for x in span['type']]
+            padded_type_ids = [0] * len(self.label_to_id)
             for t in type_ids:
                 if t != -1:
                     padded_type_ids[t] = 1
@@ -52,11 +49,8 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
 class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
     """Preprocessor for multilabel (aka multi-type) span concat typing task."""
 
-    def __init__(self, model_dir: str, labels: List[str], **kwargs):
+    def __init__(self, model_dir: str, **kwargs):
         super().__init__(model_dir, return_offsets=True, **kwargs)
-
-        label2id = kwargs.get('label2id', None)
-        self.label2id = self.map_label_to_id(labels, label2id)
 
     # label_boundary:
     #    in: [{'start': s, 'end': e, 'types': l}]
@@ -69,8 +63,8 @@ class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
         assert len(spans) == 1, 'ConcatTyping only supports single mention per data'
         span = spans[0]
         tokens = data['tokens']
-        type_ids = [self.label2id.get(x, -1) for x in span['type']]
-        padded_type_ids = [0] * len(self.label2id)  # multilabel type id onehot vector
+        type_ids = [self.label_to_id.get(x, -1) for x in span['type']]
+        padded_type_ids = [0] * len(self.label_to_id)  # multilabel type id onehot vector
         for t in type_ids:
             if t != -1:
                 padded_type_ids[t] = 1

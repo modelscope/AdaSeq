@@ -29,17 +29,13 @@ def build_tokenizer(
         model_type = get_model_type(model_name_or_path)
 
         if model_type in (Models.structbert, Models.gpt3, Models.palm, Models.plug):
-            if use_fast:
-                # from modelscope.models.nlp.structbert import SbertTokenizerFast
-                pass
-            from modelscope.models.nlp.structbert import SbertTokenizer
-
-            return SbertTokenizer.from_pretrained(model_name_or_path, **kwargs)
+            return tokenizer.from_pretrained(model_name_or_path, **kwargs)
 
         elif model_type == Models.veco:
-            from modelscope.models.nlp.veco import VecoTokenizer, VecoTokenizerFast
+            from transformers import XLMRobertaTokenizer, XLMRobertaTokenizerFast
 
-            tokenizer = VecoTokenizerFast if use_fast else VecoTokenizer
+            tokenizer = XLMRobertaTokenizerFast if use_fast else XLMRobertaTokenizer
+
             return tokenizer.from_pretrained(model_name_or_path, **kwargs)
 
         elif model_type == Models.deberta_v2:

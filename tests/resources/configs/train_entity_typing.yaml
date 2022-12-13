@@ -3,8 +3,10 @@ work_dir: tests/resources/regression
 task: entity-typing
 
 dataset:
-  data_dir: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_wiki.zip'
+  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_wiki.zip'
   tokenizer: char
+  labels:
+    type: count_span_labels
 
 preprocessor:
   type: multilabel-span-typing-preprocessor

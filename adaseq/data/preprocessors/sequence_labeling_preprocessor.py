@@ -14,34 +14,26 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
     """Preprocessor for Sequence Labeling"""
 
     def __init__(
-        self, model_dir: str, labels: List[str] = None, tag_scheme: str = 'BIOES', **kwargs
-    ):
-        super().__init__(model_dir, return_offsets=True, **kwargs)
-
+        self, model_dir: str, labels: List[str], tag_scheme: str = 'BIOES', **kwargs
+    ) -> None:
         self.tag_scheme = tag_scheme.upper()
         if not self._is_valid_tag_scheme(self.tag_scheme):
             raise ValueError('Invalid tag scheme! Options: [BIO, BIOES]')
-
-        label2id = None
-        if 'label2id' in kwargs and kwargs['label2id']:
-            label2id = kwargs.pop('label2id')
-            self.tag_scheme = self._determine_tag_scheme_from_labels(label2id.keys())
-        self.label2id = self.map_label_to_id(labels, label2id)
+        # self.tag_scheme = self._determine_tag_scheme_from_labels(labels)
+        label_to_id = self._gen_label_to_id_with_bio(labels, self.tag_scheme)
+        super().__init__(model_dir, label_to_id=label_to_id, return_offsets=True, **kwargs)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """prepare inputs for Sequence Labeling models."""
         output = super().__call__(data)
-        if self.label2id is not None and isinstance(data, Dict) and 'spans' in data:
+        if isinstance(data, Dict) and 'spans' in data:
             length = len(output['tokens']['offsets']) - 2 * int(self.add_special_tokens)
             labels = self._spans_to_bio_labels(data['spans'], length, self.tag_scheme)
             output['label_ids'] = [
-                PARTIAL_LABEL_ID if labels[i] == PARTIAL_LABEL else self.label2id[labels[i]]
+                PARTIAL_LABEL_ID if labels[i] == PARTIAL_LABEL else self.label_to_id[labels[i]]
                 for i in range(length)
             ]
         return output
-
-    def _label2id(self, labels: List[str]) -> Dict[str, int]:
-        return self._gen_label2id_with_bio(labels, self.tag_scheme)
 
     @staticmethod
     def _is_valid_tag_scheme(tag_scheme: str):
@@ -58,15 +50,15 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
         return tag_scheme
 
     @staticmethod
-    def _gen_label2id_with_bio(labels: List[str], tag_scheme: str = 'BIOES') -> Dict[str, int]:
-        label2id = {}
+    def _gen_label_to_id_with_bio(labels: List[str], tag_scheme: str = 'BIOES') -> Dict[str, int]:
+        label_to_id = {}
         if 'O' in tag_scheme:
-            label2id['O'] = 0
+            label_to_id['O'] = 0
         for label in labels:
             for tag in 'BIES':
                 if tag in tag_scheme:
-                    label2id[f'{tag}-{label}'] = len(label2id)
-        return label2id
+                    label_to_id[f'{tag}-{label}'] = len(label_to_id)
+        return label_to_id
 
     @staticmethod
     def _spans_to_bio_labels(spans: List[Dict], length: int, tag_scheme: str = 'BIOES'):

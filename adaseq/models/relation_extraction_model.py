@@ -22,7 +22,7 @@ class RelationExtractionModel(Model):
 
     def __init__(
         self,
-        num_labels: int,
+        id_to_label: Dict[int, str],
         encoder: Union[Encoder, str] = None,
         word_dropout: Optional[float] = 0.0,
         multiview: Optional[bool] = False,
@@ -30,7 +30,8 @@ class RelationExtractionModel(Model):
         **kwargs
     ):
         super(RelationExtractionModel, self).__init__()
-        self.num_labels = num_labels
+        self.id_to_label = id_to_label
+        self.num_labels = len(id_to_label)
         if isinstance(encoder, Encoder):
             self.encoder = encoder
         else:
@@ -40,7 +41,7 @@ class RelationExtractionModel(Model):
         if self.use_dropout:
             self.dropout = WordDropout(word_dropout)
 
-        self.linear = nn.Linear(2 * self.encoder.config.hidden_size, num_labels)
+        self.linear = nn.Linear(2 * self.encoder.config.hidden_size, self.num_labels)
         self.layer_norm = LayerNorm(2 * self.encoder.config.hidden_size)
 
         self.loss_fn = nn.CrossEntropyLoss(reduction='mean')

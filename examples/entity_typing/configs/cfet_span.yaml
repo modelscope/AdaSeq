@@ -6,11 +6,13 @@ experiment:
 task: entity-typing
 
 dataset:
-  data_files:
+  data_file:
     train: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=train.json'
     valid: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=dev.json'
     test: 'https://www.modelscope.cn/api/v1/datasets/izhx404/cfet/repo/files?Revision=master&FilePath=test.json'
   tokenizer: char
+  labels:
+    type: count_span_labels
 
 preprocessor:
   type: multilabel-span-typing-preprocessor
@@ -24,8 +26,6 @@ model:
   encoder:
     model_name_or_path: sijunhe/nezha-cn-base
   word_dropout: 0.1
-
-trainer: typing-trainer
 
 train:
   max_epochs: 50

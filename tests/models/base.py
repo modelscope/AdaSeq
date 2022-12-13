@@ -4,7 +4,6 @@ import shutil
 import unittest
 
 from modelscope.utils.regress_test_utils import MsRegressTool, compare_arguments_nested
-from torch import distributed as dist
 
 
 class TestModel(unittest.TestCase):

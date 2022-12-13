@@ -8,8 +8,8 @@ from modelscope.models import Model as MsModel
 from transformers import AutoConfig, AutoModel, XLNetConfig
 
 from adaseq.metainfo import Encoders
+from adaseq.modules import util
 from adaseq.modules.scalar_mix import ScalarMix
-from adaseq.nn import util
 
 from .base import ENCODERS, Encoder
 
