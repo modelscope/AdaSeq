@@ -23,7 +23,7 @@ data_collator: MultiLabelConcatTypingDataCollatorWithPadding
 
 model:
   type: multilabel-concat-typing-model
-  encoder:
+  embedder:
     model_name_or_path: sijunhe/nezha-cn-base
     drop_special_tokens: false
   word_dropout: 0.1

@@ -10,7 +10,8 @@ from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.decoders import Decoder, PairwiseCRF
 from adaseq.modules.dropouts import WordDropout
-from adaseq.modules.encoders import Encoder, SpanEncoder
+from adaseq.modules.embedders import Embedder
+from adaseq.modules.encoders import SpanEncoder
 
 
 class WBCEWithLogitsLoss:
@@ -70,8 +71,8 @@ class MultiLabelSpanTypingModel(Model):
 
     Args:
         num_labels (int): number of labels
-        encoder (Union[Encoder, str], `optional`): encoder used in the model.
-            It can be an `Encoder` instance or an encoder config file or an encoder config dict.
+        embedder (Union[Embedder, str], `optional`): embedder used in the model.
+            It can be an `Embedder` instance or an embedder config file or an embedder config dict.
         span_encoder_method (str): concat
         word_dropout (float, `optional`): word dropout rate, default `0.0`.
         loss_function (str, `optional'): loss function, default 'BCE',
@@ -83,7 +84,7 @@ class MultiLabelSpanTypingModel(Model):
     def __init__(
         self,
         id_to_label: Dict[int, str],
-        encoder: Union[Encoder, str] = None,
+        embedder: Union[Embedder, str],
         span_encoder_method: str = 'concat',
         word_dropout: Optional[float] = 0.0,
         loss_function: str = 'BCE',
@@ -92,13 +93,13 @@ class MultiLabelSpanTypingModel(Model):
         **kwargs
     ) -> None:
         super().__init__()
-        if isinstance(encoder, Encoder):
-            self.encoder = encoder
+        if isinstance(embedder, Embedder):
+            self.embedder = embedder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
+            self.embedder = Embedder.from_config(embedder)
 
         self.span_encoder = SpanEncoder(
-            self.encoder.config.hidden_size, span_encoder_method, **kwargs
+            self.embedder.get_output_dim(), span_encoder_method, **kwargs
         )
         self.linear_input_dim = self.span_encoder.output_dim
 
@@ -121,7 +122,7 @@ class MultiLabelSpanTypingModel(Model):
     def _token2span_encode(
         self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor
     ) -> torch.Tensor:
-        embed = self.encoder(**tokens)
+        embed = self.embedder(**tokens)
         # embed: B x W x K
         if self.use_dropout:
             embed = self.dropout(embed)
@@ -210,8 +211,8 @@ class MultiLabelConcatTypingModel(Model):
 
     Args:
         labels (List): list of labels
-        encoder (Union[Encoder, str], `optional`): encoder used in the model.
-            It can be an `Encoder` instance or an encoder config file or an encoder config dict.
+        embedder (Union[Embedder, str], `optional`): embedder used in the model.
+            It can be an `Embedder` instance or an embedder config file or an embedder config dict.
         word_dropout (float, `optional`): word dropout rate, default `0.0`.
         loss_function (str, `optional'): loss function, default 'BCE', other options `WBCE`, `WBCE-UFET'
         class_threshold (float, `optional`): classification threshold default. '0.5'
@@ -223,7 +224,7 @@ class MultiLabelConcatTypingModel(Model):
     def __init__(
         self,
         id_to_label: Dict[int, str],
-        encoder: Union[Encoder, str] = None,
+        embedder: Union[Embedder, Dict] = None,
         word_dropout: Optional[float] = 0.0,
         loss_function: str = 'BCE',
         class_threshold: float = 0.5,
@@ -234,14 +235,14 @@ class MultiLabelConcatTypingModel(Model):
         super().__init__()
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label)
-        if isinstance(encoder, Encoder):
-            self.encoder = encoder
+        if isinstance(embedder, Embedder):
+            self.embedder = embedder
         else:
-            if isinstance(encoder, dict):
-                encoder['drop_special_tokens'] = False
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
+            if isinstance(embedder, dict):
+                embedder['drop_special_tokens'] = False
+            self.embedder = Embedder.from_config(embedder)
 
-        self.linear_input_dim = self.encoder.config.hidden_size
+        self.linear_input_dim = self.embedder.get_output_dim()
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
@@ -275,7 +276,7 @@ class MultiLabelConcatTypingModel(Model):
             )
 
     def _token2span_encode(self, tokens: Dict[str, Any]) -> torch.Tensor:
-        embed = self.encoder(**tokens)
+        embed = self.embedder(**tokens)
         # embed: B x W x K
         if self.use_dropout:
             embed = self.dropout(embed)

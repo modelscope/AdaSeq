@@ -7,19 +7,19 @@ import transformers
 from modelscope.models import Model as MsModel
 from transformers import AutoConfig, AutoModel, XLNetConfig
 
-from adaseq.metainfo import Encoders
+from adaseq.metainfo import Embedders
 from adaseq.modules import util
 from adaseq.modules.scalar_mix import ScalarMix
 
-from .base import ENCODERS, Encoder
+from .base import EMBEDDERS, Embedder
 
 
 # Code partially borrowed from https://github.com/allenai/allennlp/blob/HEAD/
 # allennlp/modules/token_embedders/pretrained_transformer_embedder.py
-@ENCODERS.register_module(module_name=Encoders.transformer_encoder)
-class TransformerEncoder(Encoder):
+@EMBEDDERS.register_module(module_name=Embedders.transformer_embedder)
+class TransformerEmbedder(Embedder):
     """
-    Uses a pretrained model from `transformers` as a `Encoder`.
+    Uses a pretrained model from `transformers` as a `Embedder`.
 
     # Parameters
 

@@ -25,10 +25,9 @@ data_collator: SpanExtractionDataCollatorWithPadding
 
 model:
   type: global-pointer-model
-  encoder:
+  embedder:
     model_name_or_path: sijunhe/nezha-cn-base
   token_ffn_out_width: 64
-  encoder_hidden_size: 768
   word_dropout: 0.1
 
 train:

@@ -22,10 +22,9 @@ class SpanEncoder(Encoder):
         use_biaffine: bool = False,
         **kwargs
     ):
-        super(SpanEncoder, self).__init__()
+        super().__init__(input_dim)
         self.add_span_linear = add_span_linear
         self.encode_span_method = encode_span_method
-        self.input_dim = input_dim
         if self.add_span_linear:
             self.span_hidden_size = input_dim
             if span_hidden_size is not None:
@@ -45,6 +44,9 @@ class SpanEncoder(Encoder):
             else:
                 self.span_reprs_dim = 2 * self.input_dim
                 self.output_dim = self.span_reprs_dim
+
+    def get_output_dim(self) -> int:  # noqa: D102
+        return self.output_dim
 
     def forward(self, token_embed, span_boundary):  # noqa
         # B x N x K -> select accroding to span_boundary -> B x M x K

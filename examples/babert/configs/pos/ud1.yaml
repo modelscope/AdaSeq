@@ -18,7 +18,7 @@ data_collator: SequenceLabelingDataCollatorWithPadding
 
 model:
   type: sequence-labeling-model
-  encoder:
+  embedder:
     model_name_or_path: babert-base
   word_dropout: 0.1
   use_crf: true

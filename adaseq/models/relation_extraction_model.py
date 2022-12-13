@@ -10,7 +10,7 @@ from torch.nn import LayerNorm
 from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
-from adaseq.modules.encoders import Encoder
+from adaseq.modules.embedders import Embedder
 
 
 @MODELS.register_module(module_name=Models.relation_extraction_model)
@@ -23,7 +23,7 @@ class RelationExtractionModel(Model):
     def __init__(
         self,
         id_to_label: Dict[int, str],
-        encoder: Union[Encoder, str] = None,
+        embedder: Union[Embedder, str],
         word_dropout: Optional[float] = 0.0,
         multiview: Optional[bool] = False,
         temperature: Optional[float] = 1.0,
@@ -32,17 +32,18 @@ class RelationExtractionModel(Model):
         super(RelationExtractionModel, self).__init__()
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label)
-        if isinstance(encoder, Encoder):
-            self.encoder = encoder
+        if isinstance(embedder, Embedder):
+            self.embedder = embedder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
+            self.embedder = Embedder.from_config(embedder)
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
             self.dropout = WordDropout(word_dropout)
 
-        self.linear = nn.Linear(2 * self.encoder.config.hidden_size, self.num_labels)
-        self.layer_norm = LayerNorm(2 * self.encoder.config.hidden_size)
+        hidden_size = self.embedder.get_output_dim()
+        self.linear = nn.Linear(2 * hidden_size, self.num_labels)
+        self.layer_norm = LayerNorm(2 * hidden_size)
 
         self.loss_fn = nn.CrossEntropyLoss(reduction='mean')
 
@@ -50,7 +51,7 @@ class RelationExtractionModel(Model):
         self.temperature = temperature
 
     def _forward(self, tokens: Dict[str, Any], so_head_mask: torch.Tensor) -> torch.Tensor:
-        embed = self.encoder(**tokens)
+        embed = self.embedder(**tokens)
 
         if self.use_dropout:
             embed = self.dropout(embed)

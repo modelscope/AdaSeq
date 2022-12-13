@@ -36,10 +36,15 @@ class Models:
     multilabel_span_typing_model = 'multilabel-span-typing-model'
 
 
+class Embedders:
+    """Names for different embedders"""
+
+    transformer_embedder = 'transformer-embedder'
+
+
 class Encoders:
     """Names for different encoders"""
 
-    transformer_encoder = 'transformer-encoder'
     span_encoder = 'span-encoder'
 
 

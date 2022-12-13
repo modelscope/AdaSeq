@@ -12,7 +12,7 @@ from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.decoders import CRF, PartialCRF
 from adaseq.modules.dropouts import WordDropout
-from adaseq.modules.encoders import Encoder
+from adaseq.modules.embedders import Embedder
 from adaseq.modules.util import get_tokens_mask
 
 
@@ -25,8 +25,8 @@ class SequenceLabelingModel(Model):
 
     Args:
         num_labels (int): number of labels
-        encoder (Union[Encoder, str], `optional`): encoder used in the model.
-            It can be an `Encoder` instance or an encoder config file or an encoder config dict.
+        embedder (Union[Embedder, str], `optional`): embedder used in the model.
+            It can be an `Embedder` instance or an embedder config file or an embedder config dict.
         word_dropout (float, `optional`): word dropout rate, default `0.0`.
         use_crf (bool, `optional`): whether to use crf, default `True`.
         **kwargs: other arguments
@@ -35,7 +35,7 @@ class SequenceLabelingModel(Model):
     def __init__(
         self,
         id_to_label: Dict[int, str],
-        encoder: Union[Encoder, str, ConfigDict] = None,
+        embedder: Union[Embedder, str, ConfigDict] = None,
         word_dropout: Optional[float] = 0.0,
         use_crf: Optional[bool] = True,
         multiview: Optional[bool] = False,
@@ -48,11 +48,11 @@ class SequenceLabelingModel(Model):
         super().__init__()
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label)
-        if isinstance(encoder, Encoder):
-            self.encoder = encoder
+        if isinstance(embedder, Embedder):
+            self.embedder = embedder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
-        self.linear = nn.Linear(self.encoder.config.hidden_size, self.num_labels)
+            self.embedder = Embedder.from_config(cfg_dict_or_path=embedder)
+        self.linear = nn.Linear(self.embedder.get_output_dim(), self.num_labels)
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
@@ -73,7 +73,7 @@ class SequenceLabelingModel(Model):
         self.mv_interpolation = mv_interpolation
 
     def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
-        embed = self.encoder(**tokens)
+        embed = self.embedder(**tokens)
 
         if self.use_dropout:
             embed = self.dropout(embed)
@@ -94,7 +94,7 @@ class SequenceLabelingModel(Model):
 
         mask = get_tokens_mask(tokens, logits.size(1))
 
-        if self.training:
+        if self.training and label_ids is not None:
             crf_mask = origin_mask if origin_mask is not None else mask
             loss = self._calculate_loss(logits, label_ids, crf_mask)
 

@@ -6,8 +6,6 @@ import torch.nn as nn
 from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.registry import Registry, build_from_cfg
 
-from adaseq.metainfo import Encoders
-
 ENCODERS = Registry('encoders')
 
 
@@ -26,12 +24,18 @@ def build_encoder(cfg: ConfigDict, default_args: dict = None):
 
 class Encoder(nn.Module):
     """
-    The encoder base class for encoding input_ids to hidden-states
+    The encoder base class for encoding embeddings to features.
     """
 
-    @classmethod
-    def _instantiate(cls, **kwargs):
-        return cls(**kwargs)
+    def __init__(self, input_dim: int) -> None:
+        super().__init__()
+        self.input_dim = input_dim
+
+    def get_output_dim(self) -> int:
+        """
+        Get the output feature dim.
+        """
+        raise NotImplementedError
 
     @classmethod
     def from_config(cls, cfg_dict_or_path: Union[str, Dict, Config] = None, **kwargs):
@@ -44,19 +48,10 @@ class Encoder(nn.Module):
             cfg = {}
 
         if 'type' not in cfg:
-            if 'model_name_or_path' in cfg:
-                cfg['type'] = Encoders.transformer_encoder
-            else:
-                cfg['type'] = None
+            cfg['type'] = None
+
         if 'type' in kwargs:
             cfg['type'] = kwargs.pop('type')
-
-        if 'model_name_or_path' not in cfg:
-            cfg['model_name_or_path'] = None
-        if 'model_name_or_path' in kwargs:
-            cfg['model_name_or_path'] = kwargs.pop('model_name_or_path')
-            if cfg['type'] is None:
-                cfg['type'] = Encoders.transformer_encoder
 
         if cfg['type'] is not None and cfg['type'] in ENCODERS.modules['default']:
             return build_encoder(cfg, default_args=kwargs)

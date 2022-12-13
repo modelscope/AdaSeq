@@ -7,26 +7,28 @@ from transformers import BertModel
 from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.models.sequence_labeling_model import SequenceLabelingModel
-from adaseq.modules.encoders import Encoder
+from adaseq.modules.embedders import Embedder
+
+# from adaseq.modules.encoders import Encoder
 
 
 class TestRegistry(unittest.TestCase):
     def setUp(self):
         self.bert_config_file = os.path.join('tests', 'resources', 'configs', 'bert.yaml')
 
-    def test_get_encoder_from_huggingface(self):
-        """可以不使用名字从huggingface初始化一个Encoder"""
-        model = Encoder.from_config(model_name_or_path='bert-base-cased')
+    def test_get_embedder_from_huggingface(self):
+        """可以不使用名字从huggingface初始化一个embedder"""
+        model = Embedder.from_config(model_name_or_path='bert-base-cased')
         self.assertTrue(isinstance(model.transformer_model, BertModel))
 
-    def test_get_encoder_from_modelscope(self):
-        """可以使用名字从modelscope初始化一个Encoder"""
-        model = Encoder.from_config(model_name_or_path='damo/nlp_structbert_backbone_tiny_std')
+    def test_get_embedder_from_modelscope(self):
+        """可以使用名字从modelscope初始化一个embedder"""
+        model = Embedder.from_config(model_name_or_path='damo/nlp_structbert_backbone_tiny_std')
         self.assertTrue(isinstance(model.transformer_model, SbertModel))
 
-    def test_get_encoder_from_cfg_bert(self):
-        """可以指定配置文件初始化一个Encoder，本例中配置文件中存在model_name_or_path参数"""
-        model = Encoder.from_config(cfg_dict_or_path=self.bert_config_file)
+    def test_get_embedder_from_cfg_bert(self):
+        """可以指定配置文件初始化一个embedder，本例中配置文件中存在model_name_or_path参数"""
+        model = Embedder.from_config(cfg_dict_or_path=self.bert_config_file)
         self.assertTrue(isinstance(model.transformer_model, BertModel))
 
     def test_get_model(self):
@@ -34,7 +36,7 @@ class TestRegistry(unittest.TestCase):
         model = Model.from_config(
             type=Models.sequence_labeling_model,
             id_to_label={0: 'O', 1: 'B'},
-            encoder={'model_name_or_path': 'bert-base-cased'},
+            embedder={'model_name_or_path': 'bert-base-cased'},
         )
         self.assertTrue(isinstance(model, SequenceLabelingModel))
 
@@ -42,7 +44,7 @@ class TestRegistry(unittest.TestCase):
         """可以指定配置文件初始化一个模型，本例中配置文件中存在model_name_or_path参数"""
         model = Model.from_config(cfg_dict_or_path=self.bert_config_file)
         self.assertTrue(isinstance(model, SequenceLabelingModel))
-        self.assertTrue(isinstance(model.encoder.transformer_model, BertModel))
+        self.assertTrue(isinstance(model.embedder.transformer_model, BertModel))
 
 
 if __name__ == '__main__':

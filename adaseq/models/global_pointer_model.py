@@ -9,7 +9,7 @@ from modelscope.models.builder import MODELS
 from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
-from adaseq.modules.encoders import Encoder
+from adaseq.modules.embedders import Embedder
 from adaseq.modules.util import get_tokens_mask
 
 
@@ -57,9 +57,8 @@ class GlobalPointerModel(Model):
     def __init__(
         self,
         id_to_label: Dict[int, str],
-        encoder: Union[Encoder, Dict[str, Any]],
+        embedder: Union[Embedder, Dict[str, Any]],
         token_ffn_out_width: int = -1,
-        encoder_hidden_size: int = -1,
         word_dropout: float = 0.0,
         **kwargs
     ) -> None:
@@ -67,14 +66,15 @@ class GlobalPointerModel(Model):
         self.id_to_label = id_to_label
         num_labels = len(id_to_label)
 
-        if isinstance(encoder, Encoder):
-            self.encoder = encoder
+        if isinstance(embedder, Embedder):
+            self.embedder = embedder
         else:
-            self.encoder = Encoder.from_config(cfg_dict_or_path=encoder)
+            self.embedder = Embedder.from_config(cfg_dict_or_path=embedder)
+        hidden_size = self.embedder.get_output_dim()
 
         self.token_ffn_out_width = token_ffn_out_width
-        self.token_inner_embed_ffn = nn.Linear(encoder_hidden_size, token_ffn_out_width * 2)
-        self.type_score_ffn = nn.Linear(encoder_hidden_size, num_labels * 2)
+        self.token_inner_embed_ffn = nn.Linear(hidden_size, token_ffn_out_width * 2)
+        self.type_score_ffn = nn.Linear(hidden_size, num_labels * 2)
 
         self.pos_embed = SinusoidalPositionEmbedding(token_ffn_out_width, 'zero')
         self.use_dropout = word_dropout > 0.0
@@ -82,7 +82,7 @@ class GlobalPointerModel(Model):
             self.dropout = WordDropout(word_dropout)
 
     def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
-        embed = self.encoder(**tokens)
+        embed = self.embedder(**tokens)
 
         if self.use_dropout:
             embed = self.dropout(embed)
