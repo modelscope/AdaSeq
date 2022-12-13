@@ -31,6 +31,7 @@ class Models:
 
     sequence_labeling_model = 'sequence-labeling-model'
     global_pointer_model = 'global-pointer-model'
+    biaffine_ner_model = 'biaffine-ner-model'
     relation_extraction_model = 'relation-extraction-model'
     multilabel_concat_typing_model = 'multilabel-concat-typing-model'
     multilabel_span_typing_model = 'multilabel-span-typing-model'
@@ -63,7 +64,7 @@ class Preprocessors:
     nlp_preprocessor = 'nlp-preprocessor'
     sequence_labeling_preprocessor = 'sequence-labeling-preprocessor'
     relation_extraction_preprocessor = 'relation-extraction-preprocessor'
-    global_pointer_preprocessor = 'global-pointer-preprocessor'
+    span_extraction_preprocessor = 'span-extraction-preprocessor'
     multilabel_span_typing_preprocessor = 'multilabel-span-typing-preprocessor'
     multilabel_concat_typing_preprocessor = 'multilabel-concat-typing-preprocessor'
 

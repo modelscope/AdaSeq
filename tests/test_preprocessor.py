@@ -89,17 +89,17 @@ class TestPreprocessor(unittest.TestCase):
         output_labels = [id_to_label[i] for i in output2['label_ids']]
         self.assertEqual(output_labels, labels)
 
-    def test_bert_global_pointer_preprocessor(self):
+    def test_bert_span_extraction_preprocessor(self):
         cfg = dict(
-            type='global-pointer-preprocessor',
+            type='span-extraction-preprocessor',
             model_dir='bert-base-cased',
             labels=self.ner_labels3,
         )
         preprocessor = build_preprocessor(cfg)
         output2 = preprocessor(self.ner_input2)
-        expected_label_matrix = np.zeros((3, 18, 18))
-        expected_label_matrix[preprocessor.label_to_id['PER']][0][1] = 1
-        self.assertEqual((output2['label_matrix'] == expected_label_matrix).all(), True)
+        expected_labels = np.zeros((18, 18))
+        expected_labels[0][1] = preprocessor.label_to_id['PER'] + 1
+        self.assertEqual((output2['span_labels'] == expected_labels).all(), True)
 
     def setUp_typing_examples(self):
         self.typing_input = {

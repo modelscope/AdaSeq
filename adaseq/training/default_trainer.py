@@ -23,14 +23,6 @@ from .lr_scheduler import build_lr_scheduler
 from .optimizer import build_optimizer
 
 
-def add_adaseq_default(config: Config) -> Config:
-    """
-    Add adaseq default config by `cfg_modify_fn`.
-    """
-    config.merge_from_dict(DEFAULT_CONFIG, force=False)
-    return config
-
-
 @TRAINERS.register_module(module_name=Trainers.default_trainer)
 class DefaultTrainer(EpochBasedTrainer):
     """Default trainer class for AdaSeq.
@@ -73,7 +65,7 @@ class DefaultTrainer(EpochBasedTrainer):
         super().__init__(
             model=None,
             cfg_file=cfg_file,
-            cfg_modify_fn=add_adaseq_default,
+            cfg_modify_fn=None,
             data_collator=data_collator,
             train_dataset=dataset_manager.train,
             eval_dataset=dataset_manager.valid,
@@ -136,6 +128,14 @@ class DefaultTrainer(EpochBasedTrainer):
             **kwargs,
         )
         return trainer
+
+    def rebuild_config(self, config: Config) -> Config:
+        """
+        Override this func to add adaseq default config.
+        """
+        config = Config.from_file(config.filename)
+        config.merge_from_dict(DEFAULT_CONFIG, force=False)
+        return config
 
     def build_model(self) -> nn.Module:
         """

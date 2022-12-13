@@ -24,19 +24,23 @@ preprocessor:
 data_collator: SpanExtractionDataCollatorWithPadding
 
 model:
-  type: global-pointer-model
+  type: biaffine-ner-model
   embedder:
     model_name_or_path: sijunhe/nezha-cn-base
-  token_ffn_out_width: 64
+  biaffine_ffnn_size: 150
+  flat_ner: true
   word_dropout: 0.1
 
 train:
-  max_epochs: 10
+  max_epochs: 20
   dataloader:
     batch_size_per_gpu: 32
   optimizer:
     type: AdamW
-    lr: 5.0e-5
+    lr: 1.0e-3
+    param_groups:
+      - regex: transformer_model
+        lr: 2.0e-5
   lr_scheduler:
     type: LinearLR
     start_factor: 1.0
@@ -45,5 +49,5 @@ train:
 
 evaluation:
   dataloader:
-    batch_size_per_gpu: 2
+    batch_size_per_gpu: 64
   metrics: span-extraction-metric

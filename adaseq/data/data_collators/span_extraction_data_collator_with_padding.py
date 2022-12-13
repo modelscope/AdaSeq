@@ -17,17 +17,17 @@ class SpanExtractionDataCollatorWithPadding(DataCollatorWithPadding):
         Padding a batch. In addition to the fields padded by base class
         `DataCollatorWithPadding`, label_matrix is padded here.
         """
-        field = 'label_matrix'
+        field = 'span_labels'
         max_length = max(len(i[0]) for i in batch[field])
         for i in range(len(batch[field])):
             difference = max_length - len(batch[field][i][0])
             if difference > 0:
-                # label_matrix
-                num_classes = len(batch[field][i])
-                padded_label_matrix = np.zeros((num_classes, max_length, max_length))
-                padded_label_matrix[
-                    :, : batch[field][i].shape[1], : batch[field][i].shape[2]
-                ] = batch[field][i]
-                batch[field][i] = padded_label_matrix.tolist()
+                padded_labels = np.zeros((max_length, max_length), dtype=int)
+                padded_labels[: batch[field][i].shape[0], : batch[field][i].shape[1]] = batch[
+                    field
+                ][i].astype(int)
+                batch[field][i] = padded_labels.tolist()
+            else:
+                batch[field][i] = batch[field][i].astype(int).tolist()
 
         return batch

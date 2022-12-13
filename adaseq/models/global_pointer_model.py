@@ -65,6 +65,7 @@ class GlobalPointerModel(Model):
         super().__init__()
         self.id_to_label = id_to_label
         num_labels = len(id_to_label)
+        self.num_classes = num_labels + 1
 
         if isinstance(embedder, Embedder):
             self.embedder = embedder
@@ -117,12 +118,14 @@ class GlobalPointerModel(Model):
     def forward(
         self,
         tokens: Dict[str, Any],
-        label_matrix: Optional[torch.LongTensor] = None,
+        span_labels: Optional[torch.LongTensor] = None,
         meta: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:  # noqa
         """TODO: docstring"""
         entity_score = self._forward(tokens)
         if self.training:
+            onehot = nn.functional.one_hot(span_labels, self.num_classes)
+            label_matrix = onehot.permute(0, 3, 1, 2)[:, 1:, ...]
             loss = self._calculate_loss(entity_score, label_matrix)
             outputs = {'entity_score': entity_score, 'loss': loss}
         else:
