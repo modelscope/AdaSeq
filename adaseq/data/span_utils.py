@@ -19,7 +19,7 @@ class InvalidTagSequence(Exception):  # noqa: D101
 def bio_tags_to_spans(tags: List[str], classes_to_ignore: Optional[List[str]] = None) -> List[Dict]:
     """
     Given a sequence corresponding to BIO tags, extracts spans.
-    Spans are exclusive.
+    Span start is inclusive (closed), end is exclusive (open).
     This function works properly when the spans are unlabeled (i.e., your labels
     are simply "B", "I", and "O").
     # Parameters
@@ -48,13 +48,13 @@ def bio_tags_to_spans(tags: List[str], classes_to_ignore: Optional[List[str]] = 
         if bio_tag == 'O' or category in classes_to_ignore:
             # The span has ended.
             if active_category is not None:
-                spans.append({'start': start, 'end': end + 1, 'type': active_category})
+                spans.append(dict(start=start, end=end + 1, type=active_category))
             active_category = None
             continue
         elif bio_tag == 'B':
             # We are entering a new span; reset indices and active tag to new span.
             if active_category is not None:
-                spans.append({'start': start, 'end': end + 1, 'type': active_category})
+                spans.append(dict(start=start, end=end + 1, type=active_category))
             active_category = category
             start = index
             end = index
@@ -65,5 +65,5 @@ def bio_tags_to_spans(tags: List[str], classes_to_ignore: Optional[List[str]] = 
             raise InvalidTagSequence(tags)
     # Last token might have been a part of a valid span.
     if active_category is not None:
-        spans.append({'start': start, 'end': end + 1, 'type': active_category})
-    return list(spans)
+        spans.append(dict(start=start, end=end + 1, type=active_category))
+    return spans

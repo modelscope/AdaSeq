@@ -119,30 +119,6 @@ class MultiLabelSpanTypingModel(Model):
             self.sigmoid = nn.Sigmoid()
             self.loss_fn = BCELoss()
 
-    def _token2span_encode(
-        self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor
-    ) -> torch.Tensor:
-        embed = self.embedder(**tokens)
-        # embed: B x W x K
-        if self.use_dropout:
-            embed = self.dropout(embed)
-        # span_reprs: B x S x D: trans sentence sequence to mentions sequence
-        # the shape of boundary_ids is batch_size x 2 x max_mention_num, providing the detected mentions
-        span_reprs = self.span_encoder(embed, mention_boundary)
-        return span_reprs
-
-    def _forward(self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor) -> torch.Tensor:
-        # B*M x K
-        if self.use_biaffine:
-            span_start_reprs, span_end_reprs = self._token2span_encode(tokens, mention_boundary)
-            span_reprs = span_start_reprs * span_end_reprs
-        else:
-            span_reprs = self._token2span_encode(tokens, mention_boundary)
-
-        # B*M x label_num
-        logits = self.linear(span_reprs)
-        return logits
-
     def forward(  # noqa: D102
         self,
         tokens: Dict[str, Any],
@@ -160,9 +136,33 @@ class MultiLabelSpanTypingModel(Model):
         else:
             batch_size, max_mention_per_sent = type_ids.shape[0:2]  # TODO: no supervision
             logits = logits.reshape(batch_size, max_mention_per_sent, -1)
-            predicts = self.classify(logits, mention_boundary, mask)
+            predicts = self.classify(logits, mask)
             outputs = {'logits': logits, 'predicts': predicts}
         return outputs
+
+    def _forward(self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor) -> torch.Tensor:
+        # B*M x K
+        if self.use_biaffine:
+            span_start_reprs, span_end_reprs = self._token2span_encode(tokens, mention_boundary)
+            span_reprs = span_start_reprs * span_end_reprs
+        else:
+            span_reprs = self._token2span_encode(tokens, mention_boundary)
+
+        # B*M x label_num
+        logits = self.linear(span_reprs)
+        return logits
+
+    def _token2span_encode(
+        self, tokens: Dict[str, Any], mention_boundary: torch.LongTensor
+    ) -> torch.Tensor:
+        embed = self.embedder(**tokens)
+        # embed: B x W x K
+        if self.use_dropout:
+            embed = self.dropout(embed)
+        # span_reprs: B x S x D: trans sentence sequence to mentions sequence
+        # the shape of boundary_ids is batch_size x 2 x max_mention_num, providing the detected mentions
+        span_reprs = self.span_encoder(embed, mention_boundary)
+        return span_reprs
 
     def _calculate_loss(self, logits, targets, mask):
         logits = logits * mask  # B*M x L
@@ -175,29 +175,23 @@ class MultiLabelSpanTypingModel(Model):
         loss = loss.sum() / (mask.sum())
         return loss
 
-    def classify(self, logits, mention_boundary, mask):  # noqa: D102
+    def classify(self, logits, mention_mask):  # noqa: D102
         if self.loss_function_type == 'BCE':
             logits = self.sigmoid(logits)  # B*M x L
             predicts = torch.where(logits > self.class_threshold, 1, 0)  # B*M x L
         else:
             raise ValueError('Unsupported loss %s', self.loss_function_type)
+
         predicts = predicts.detach().cpu().numpy()
-        batch_mention_boundaries = mention_boundary.detach().cpu().numpy()
+        batch_mention_mask = mention_mask.detach().cpu().numpy()
         batch_mentions = []
-        for sent_idx, sent_predcit in enumerate(predicts):
-            sent_predict = predicts[sent_idx]
-            sent_mention_boundary = batch_mention_boundaries[sent_idx]
-            sent_mentions = []
-            for mention_idx, mention_pred in enumerate(sent_predict):
-                types = [i for i, p in enumerate(mention_pred) if p == 1]
-                sent_mentions.append(
-                    (
-                        sent_mention_boundary[0][mention_idx],
-                        sent_mention_boundary[1][mention_idx] + 1,
-                        types,
-                    )
-                )
-            batch_mentions.append(sent_mentions)
+        for prediction, mask in zip(predicts, batch_mention_mask):
+            mentions = []
+            for pred, flag in zip(prediction, mask):
+                if flag == 1:
+                    types = set(self.id_to_label[i] for i, p in enumerate(pred) if p == 1)
+                    mentions.append(types)
+            batch_mentions.append(mentions)
 
         return batch_mentions
 
@@ -275,13 +269,21 @@ class MultiLabelConcatTypingModel(Model):
                 labels=[id_to_label[i] for i in range(self.num_labels)], **decoder
             )
 
-    def _token2span_encode(self, tokens: Dict[str, Any]) -> torch.Tensor:
-        embed = self.embedder(**tokens)
-        # embed: B x W x K
-        if self.use_dropout:
-            embed = self.dropout(embed)
-        # use the cls embedding
-        return embed[:, 0, :]
+    def forward(  # noqa: D102
+        self,
+        tokens: Dict[str, Any],
+        type_ids: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # TODO docstring
+        # B x M -> B*M x 1
+        logits = self._forward(tokens)
+        if self.training and type_ids is not None:
+            loss = self.loss_fn(logits, type_ids.float())
+            outputs = {'logits': logits, 'loss': loss}
+        else:
+            predicts = self.classify(logits)
+            outputs = {'logits': logits, 'predicts': predicts}
+        return outputs
 
     def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
         span_reprs = self._token2span_encode(tokens)  # B x K
@@ -292,27 +294,13 @@ class MultiLabelConcatTypingModel(Model):
 
         return logits
 
-    def forward(  # noqa: D102
-        self,
-        tokens: Dict[str, Any],
-        type_ids: Optional[torch.LongTensor] = None,
-        meta: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:  # TODO docstring
-        # B x M -> B*M x 1
-        logits = self._forward(tokens)
-        if self.training:
-            loss = self._calculate_loss(logits, type_ids)
-            outputs = {'logits': logits, 'loss': loss}
-        else:
-            logits = logits
-            predicts = self.classify(logits)
-            outputs = {'logits': logits, 'predicts': predicts}
-        return outputs
-
-    def _calculate_loss(self, logits, targets):
-        loss = self.loss_fn(logits, targets.float())
-
-        return loss
+    def _token2span_encode(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        embed = self.embedder(**tokens)
+        # embed: B x W x K
+        if self.use_dropout:
+            embed = self.dropout(embed)
+        # use the cls embedding
+        return embed[:, 0, :]
 
     def classify(self, logits):  # noqa: D102
         logits = self.sigmoid(logits)  # B x L
@@ -321,5 +309,6 @@ class MultiLabelConcatTypingModel(Model):
             pred_ = (logits[i] > 0.5).nonzero()  # at least predict one
             if len(pred_) < 1:
                 pred_ = logits[i].topk(k=1).indices
-            predicts.append(set(pred_.view(-1).cpu().numpy()))
+            types = set(self.id_to_label[i] for i in pred_.view(-1).cpu().numpy())
+            predicts.append([types])
         return predicts

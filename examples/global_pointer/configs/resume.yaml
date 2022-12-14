@@ -45,5 +45,5 @@ train:
 
 evaluation:
   dataloader:
-    batch_size_per_gpu: 2
+    batch_size_per_gpu: 64
   metrics: span-extraction-metric

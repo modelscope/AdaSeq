@@ -1,4 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import json
 import os
 
 import yaml
@@ -195,12 +196,8 @@ class DefaultTrainer(EpochBasedTrainer):
         self.eval_dataset = backup_eval_dataset
 
         # log to terminal
-        log_items = []
-        for name, val in metric_values.items():
-            if isinstance(val, float):
-                val = f'{val:.4f}'
-            log_items.append(f'{name}: {val}')
-        self.logger.info('test\t' + ', '.join(log_items))
+        metric_string = json.dumps(metric_values, indent=2, ensure_ascii=False)
+        self.logger.info('test: ' + metric_string)
 
         # log to file
         self._init_file_logger()

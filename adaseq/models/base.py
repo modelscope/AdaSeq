@@ -87,9 +87,12 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
         save_checkpoint_names: str = ModelFile.TORCH_MODEL_BIN_FILE,
         save_function: Callable = save_checkpoint,
         config: Optional[dict] = None,
+        manual_call: bool = False,
         **kwargs,
     ) -> None:
         """`MsModel.save_pretrained`"""
+        if not manual_call:
+            return  # prevent modelscope call this method in training stage.
         super().save_pretrained(
             target_folder, save_checkpoint_names, save_function, config, **kwargs
         )

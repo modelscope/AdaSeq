@@ -1,5 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
 
 from modelscope.preprocessors.builder import PREPROCESSORS
 
@@ -20,7 +20,7 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
     def __init__(self, model_dir: str, **kwargs):
         super().__init__(model_dir, return_offsets=True, **kwargs)
 
-    def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
+    def __call__(self, data: Dict) -> Dict[str, Any]:
         """prepare inputs for Entity Typing model"""
         output = super().__call__(data)
 
@@ -58,7 +58,7 @@ class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
     # label_ids:
     #    in: [{'start': s, 'end': e, 'types': l}]
     #    out: [[0,1,0]] # [[*] * num_classes(one-hot type vector)]
-    def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:  # noqa: D102
+    def __call__(self, data: Dict) -> Dict[str, Any]:  # noqa: D102
         spans = data.get('spans', [])
         assert len(spans) == 1, 'ConcatTyping only supports single mention per data'
         span = spans[0]
@@ -69,7 +69,7 @@ class MultiLabelConcatTypingPreprocessor(NLPPreprocessor):
             if t != -1:
                 padded_type_ids[t] = 1
 
-        mention = tokens[span['start'] : span['end']]  # TODO +1?
+        mention = tokens[span['start'] : span['end']]  # since end is open
         sent = (
             [self.tokenizer.cls_token]
             + tokens

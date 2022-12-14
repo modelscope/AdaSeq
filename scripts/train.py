@@ -27,9 +27,11 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('train.py')
-    parser.add_argument('config_path', type=str, help='configuration YAML file')
+    parser.add_argument(
+        '-c', '--config_path', required=True, type=str, help='configuration YAML file'
+    )
     parser.add_argument('-n', '--run_name', type=str, default=None, help='trial name.')
-    parser.add_argument('-d', '--device', type=str, default='cpu', help='device name.')
+    parser.add_argument('-d', '--device', type=str, default='gpu', help='device name.')
     parser.add_argument(
         '-f', '--force', default=None, help='overwrite the output directory if it exists.'
     )

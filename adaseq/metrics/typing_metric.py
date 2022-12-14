@@ -104,8 +104,13 @@ class TypingMetric(Metric):
         self.scorer = SetScore()
 
     def add(self, outputs: Dict, inputs: Dict):  # noqa: D102
-        pred_results = outputs['predicts']
-        ground_truths = [set((i > 0).nonzero().view(-1).cpu().numpy()) for i in inputs['type_ids']]
+        predicts = outputs['predicts']
+        pred_results = list()
+        ground_truths = list()
+        for i, meta in enumerate(inputs['meta']):
+            for j, s in enumerate(meta['spans']):
+                pred_results.append(predicts[i][j])
+                ground_truths.append(set(s['type']))
         self.scorer.update(ground_truths, pred_results)
 
     def evaluate(self):  # noqa: D102

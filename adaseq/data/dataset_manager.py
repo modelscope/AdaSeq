@@ -161,10 +161,14 @@ class DatasetManager:
 
             assert task is not None and task in BUILTIN_TASKS, 'Need a specific task!'
             # where we have some pre-defined dataset builders
+            task_builder_name = task
+            if task in {Tasks.chinese_word_segmentation, Tasks.part_of_speech}:
+                task_builder_name = Tasks.named_entity_recognition
+
             path = osp.join(
                 osp.dirname(osp.abspath(__file__)),
                 'dataset_builders',
-                task.replace('-', '_') + '_dataset_builder.py',
+                task_builder_name.replace('-', '_') + '_dataset_builder.py',
             )
 
         # TODO maps for huggingface datasets

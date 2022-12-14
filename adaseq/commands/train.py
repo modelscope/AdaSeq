@@ -39,7 +39,7 @@ class Train(Subcommand):
         subparser = parser.add_parser('train', help='train a model')
         subparser.add_argument('config_path', type=str, help='configuration YAML file')
         subparser.add_argument('-n', '--run_name', type=str, default=None, help='trial name.')
-        subparser.add_argument('-d', '--device', type=str, default='cpu', help='device name.')
+        subparser.add_argument('-d', '--device', type=str, default='gpu', help='device name.')
         subparser.add_argument(
             '-f', '--force', default=None, help='overwrite the output directory if it exists.'
         )

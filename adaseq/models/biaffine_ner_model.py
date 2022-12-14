@@ -127,7 +127,7 @@ class BiaffineNerModel(Model):
                     if self.flat_ner and (s <= pred_s <= pred_e <= e or pred_s <= s <= e <= pred_e):
                         break  # for flat ner nested mentions are not allowed
                 else:
-                    pre_res.append((s, e + 1, cls))
+                    pre_res.append((s, e + 1, self.id_to_label[cls]))
             final.append(pre_res)
 
         return final

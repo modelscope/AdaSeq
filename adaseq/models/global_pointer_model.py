@@ -1,11 +1,12 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
 
+from adaseq.data.span_utils import TypedSpan
 from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
@@ -82,6 +83,24 @@ class GlobalPointerModel(Model):
         if self.use_dropout:
             self.dropout = WordDropout(word_dropout)
 
+    def forward(
+        self,
+        tokens: Dict[str, Any],
+        span_labels: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:  # noqa
+        """TODO: docstring"""
+        entity_score = self._forward(tokens)
+        if self.training:
+            onehot = nn.functional.one_hot(span_labels, self.num_classes)
+            label_matrix = onehot.permute(0, 3, 1, 2)[:, 1:, ...]
+            loss = self._calculate_loss(entity_score, label_matrix)
+            outputs = {'entity_score': entity_score, 'loss': loss}
+        else:
+            predicts = self.decode(entity_score)
+            outputs = {'entity_score': entity_score, 'predicts': predicts}
+        return outputs
+
     def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
         embed = self.embedder(**tokens)
 
@@ -114,24 +133,6 @@ class GlobalPointerModel(Model):
             entity_score, mask=get_tokens_mask(tokens, entity_score.size(2))
         )
         return entity_score
-
-    def forward(
-        self,
-        tokens: Dict[str, Any],
-        span_labels: Optional[torch.LongTensor] = None,
-        meta: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:  # noqa
-        """TODO: docstring"""
-        entity_score = self._forward(tokens)
-        if self.training:
-            onehot = nn.functional.one_hot(span_labels, self.num_classes)
-            label_matrix = onehot.permute(0, 3, 1, 2)[:, 1:, ...]
-            loss = self._calculate_loss(entity_score, label_matrix)
-            outputs = {'entity_score': entity_score, 'loss': loss}
-        else:
-            predicts = self.decode(entity_score)
-            outputs = {'entity_score': entity_score, 'predicts': predicts}
-        return outputs
 
     def _calculate_loss(self, entity_score, targets) -> torch.Tensor:
         """
@@ -187,12 +188,13 @@ class GlobalPointerModel(Model):
 
         return (neg_loss + pos_loss).mean()
 
-    def decode(self, entity_score):  # noqa
-        score_matrixes = entity_score.detach().cpu().numpy()
-        pred_entities_batch = []
-        for score_matrix in score_matrixes:
-            pred_entities_sent = []
-            for t, s, e in zip(*np.where(score_matrix > 0)):
-                pred_entities_sent.append((s, e + 1, t))
-            pred_entities_batch.append(pred_entities_sent)
-        return pred_entities_batch
+    def decode(self, entity_scores: torch.Tensor) -> List[List[TypedSpan]]:  # noqa
+        entity_scores = entity_scores.detach().cpu().numpy()
+        batch = list()
+        for score_matrix in entity_scores:
+            entities = [
+                (start, end + 1, self.id_to_label[type_id])
+                for type_id, start, end in zip(*np.where(score_matrix > 0))  # type: ignore
+            ]
+            batch.append(entities)
+        return batch

@@ -102,21 +102,26 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
 
     @classmethod
     def _load_sequence_labeling_json_data_file(cls, filepath, corpus_config):
+        tags_key = corpus_config.get('tags_key', 'labels')
+        text_key = corpus_config.get('text_key', 'text')
+        tokenizer = corpus_config.get('tokenizer', 'char')
         with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
                 example = json.loads(line)
-                text = example['text']
+                text = example[text_key]
                 if isinstance(text, list):
                     tokens = text
                 elif isinstance(text, str):
-                    if corpus_config['tokenizer'] == 'char':
+                    if tokenizer == 'char':
                         tokens = list(text)
-                    elif corpus_config['tokenizer'] == 'blank':
+                    elif tokenizer == 'blank':
                         tokens = text.split(' ')
                     else:
                         raise NotImplementedError
-                labels = example['labels']
+                else:
+                    raise ValueError('Unsupported text input.')
+                labels = example[tags_key]
                 assert len(tokens) == len(labels)
                 spans = cls._labels_to_spans(labels)
                 mask = cls._labels_to_mask(labels)
@@ -126,6 +131,7 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
     @classmethod
     def _load_json_spans_data_file(cls, filepath, corpus_config):
         # {'text': 'aaa', 'labels': [{'start': 0, 'end': 1, type: 'LOC'}, ...]}
+        # {'tokens': ['a', 'aa', ...], 'spans': [{'start': 0, 'end': 1, type: 'LOC'}, ...]}
         spans_key = corpus_config.get('spans_key', 'spans')
         text_key = corpus_config.get('text_key', 'text')
         tokenizer = corpus_config.get('tokenizer', 'char')
@@ -160,6 +166,8 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
 
     @classmethod
     def _load_cluener_json_data_file(cls, filepath, corpus_config):
+        is_end_included = corpus_config.get('is_end_included', False)
+
         with open(filepath, encoding='utf-8') as f:
             guid = 0
             for line in f:
@@ -174,22 +182,16 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
                         tokens = text.split(' ')
                     else:
                         raise NotImplementedError
-                entity_list = []
-                entities = example['label']
-                for entity_type, span_list in entities.items():
+                else:
+                    raise NotImplementedError
+                entities = list()
+                for entity_type, span_list in example['label'].items():
                     for name, span in span_list.items():
-                        end_offset = 0
-                        if corpus_config['is_end_included'] is True:
-                            end_offset = 1
-                        entity_list.append(
-                            {
-                                'start': span[0][0],
-                                'end': span[0][1] + end_offset,
-                                'type': entity_type,
-                            }
-                        )
+                        end_offset = int(is_end_included)
+                        span = dict(start=span[0][0], end=span[0][1] + end_offset, type=entity_type)
+                        entities.append(span)
                 mask = [True] * len(tokens)
-                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': entity_list, 'mask': mask}
+                yield guid, {'id': str(guid), 'tokens': tokens, 'spans': entities, 'mask': mask}
                 guid += 1
 
     @classmethod
@@ -197,23 +199,23 @@ class NamedEntityRecognitionDatasetReader(DatasetReader):
         spans = []
         in_entity = False
         start = -1
-        for i in range(len(labels)):
+        for i, tag in enumerate(labels):
             # fix label error
-            if labels[i][0] in 'IE' and not in_entity:
-                labels[i] = 'B' + labels[i][1:]
-            if labels[i][0] in 'BS':
+            if tag[0] in 'IE' and not in_entity:
+                tag = 'B' + tag[1:]
+            if tag[0] in 'BS':
                 if i + 1 < len(labels) and labels[i + 1][0] in 'IE':
                     start = i
                 else:
-                    spans.append({'start': i, 'end': i + 1, 'type': labels[i][2:]})
-            elif labels[i][0] in 'IE':
+                    spans.append(dict(start=i, end=i + 1, type=tag[2:]))
+            elif tag[0] in 'IE':
                 if i + 1 >= len(labels) or labels[i + 1][0] not in 'IE':
                     assert start >= 0, 'Invalid label sequence found: {}'.format(labels)
-                    spans.append({'start': start, 'end': i + 1, 'type': labels[i][2:]})
+                    spans.append(dict(start=start, end=i + 1, type=tag[2:]))
                     start = -1
-            if labels[i][0] in 'B':
+            if tag[0] in 'B':
                 in_entity = True
-            elif labels[i][0] in 'OES':
+            elif tag[0] in 'OES':
                 in_entity = False
         return spans
 
@@ -234,43 +236,42 @@ class EntityTypingDatasetReader(DatasetReader):
         Args:
         file_path: string, data file path.
         corpus_config: dictionary, required keys:
-                       tokenizer: string, specify the tokenization method,
-                                  'char' list(text) and 'blank' for text.split(' ')
-                       is_end_included: bool, wheather the end index pointer to the
-                                        last token or the token next to the last token.
-                                         e.g., text = 'This is an example.',
-                                               mention = 'example',
-                                               end = 3 if is_end_included is True.
+        tokenizer: string, specify the tokenization method,
+            'char' list(text) and 'blank' for text.split(' ')
+        is_end_included: bool, wheather the end index pointer to the
+            last token or the token next to the last token.
+            e.g., text = 'This is an example.', mention = 'example',
+            end = 3 if is_end_included is True.
 
         """
+        spans_key = corpus_config.get('spans_key', 'label')
+        text_key = corpus_config.get('text_key', 'text')
+        tokenizer = corpus_config.get('tokenizer', 'char')
+        is_end_included = corpus_config.get('is_end_included', False)
 
         with open(file_path, encoding='utf-8') as f:
             guid = 0
             for line in f:
                 example = json.loads(line)
-                text = example['text']
+                text = example[text_key]
                 if isinstance(text, list):
                     tokens = text
                 elif isinstance(text, str):
-                    if corpus_config['tokenizer'] == 'char':
+                    if tokenizer == 'char':
                         tokens = list(text)
-                    elif corpus_config['tokenizer'] == 'blank':
+                    elif tokenizer == 'blank':
                         tokens = text.split()
                     else:
                         raise NotImplementedError
-                entity_list = []
-                entities = example['label']
-                for entity in entities:
-                    end_offset = 0
-                    if corpus_config.get('is_end_included', False) is True:
-                        end_offset = 1
-                    entity_list.append(
-                        {
-                            'start': entity['start'],
-                            'end': entity['end'] + end_offset,
-                            'type': entity['type'],
-                        }
-                    )
+                else:
+                    raise ValueError('Unsupported text input.')
+
+                entities = list()
+                for span in example[spans_key]:
+                    if is_end_included:
+                        span['end'] += 1
+                    entities.append(span)
+
                 mask = [True] * len(tokens)
 
                 reading_format = corpus_config.get('encoding_format', 'span')
@@ -278,12 +279,12 @@ class EntityTypingDatasetReader(DatasetReader):
                     yield guid, {
                         'id': str(guid),
                         'tokens': tokens,
-                        'spans': entity_list,
+                        'spans': entities,
                         'mask': mask,
                     }
                     guid += 1
                 elif reading_format == 'concat':
-                    for entity in entity_list:
+                    for entity in entities:
                         yield guid, {
                             'id': str(guid),
                             'tokens': tokens,
