@@ -47,7 +47,6 @@ def tune(args):
         env_config['python_interpreter'] = 'python'
     if 'python_file' not in env_config:
         env_config['python_file'] = 'scripts.train'
-    assert 'trainer' in config or 'trainer' in env_config
 
     print('===== experiment meta config =====')
     print(config.to_dict())
