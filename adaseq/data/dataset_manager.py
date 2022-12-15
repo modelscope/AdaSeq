@@ -198,6 +198,9 @@ class DatasetManager:
         if 'test' in datasets and 'valid' not in datasets:
             datasets['valid'] = datasets['test']
 
+        if 'valid' in datasets and 'test' not in datasets:
+            datasets['test'] = datasets['valid']
+
         # apply transform
         if transform:
             datasets = apply_transform(datasets, **transform)
@@ -212,6 +215,9 @@ class DatasetManager:
                 labels = dict(type='count_span_labels')
             elif task == Tasks.relation_extraction:
                 labels = dict(type='count_labels')
+
+        if 'train' in datasets:
+            logger.info('First sample in train set: ' + str(datasets['train'][0]))
 
         return cls(datasets, labels)  # type: ignore
 

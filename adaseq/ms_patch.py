@@ -71,6 +71,10 @@ def _save_pretrained(self, trainer):
         )
 
 
+def _should_save(self, trainer):
+    return is_master() and self._is_best_metric(trainer.metric_values)
+
+
 def after_run(self, trainer):  # noqa
     if self.restore_best:
         if is_master():
@@ -89,6 +93,7 @@ def suppress_modelscope_ast_warning():  # noqa
 
 CheckpointHook._save_pretrained = _save_pretrained
 BestCkptSaverHook._save_checkpoint = _save_checkpoint
+BestCkptSaverHook._should_save = _should_save
 BestCkptSaverHook.after_run = after_run
 
 suppress_modelscope_ast_warning()

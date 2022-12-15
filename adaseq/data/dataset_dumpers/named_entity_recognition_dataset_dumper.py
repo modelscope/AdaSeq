@@ -3,6 +3,7 @@ import json
 from typing import Dict
 
 from modelscope.metrics.builder import METRICS
+from modelscope.trainers.parallel.utils import is_parallel
 from modelscope.utils.tensor_utils import torch_nested_detach, torch_nested_numpify
 
 from adaseq.data.constant import PAD_LABEL_ID
@@ -39,7 +40,10 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
             raise NotImplementedError
 
     def _add_sequence_labeling_data(self, outputs: Dict, inputs: Dict):
-        id2label = self.trainer.model.id_to_label
+        if is_parallel(self.trainer.model):
+            id2label = self.trainer.model.module.id_to_label
+        else:
+            id2label = self.trainer.model.id_to_label
         batch_meta = inputs['meta']
         batch_labels = torch_nested_numpify(torch_nested_detach(inputs['label_ids'])).tolist()
         batch_predicts = torch_nested_numpify(torch_nested_detach(outputs['predicts'])).tolist()

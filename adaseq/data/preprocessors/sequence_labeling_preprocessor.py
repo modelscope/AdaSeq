@@ -1,4 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import logging
 from typing import Any, Dict, List, Union
 
 from modelscope.preprocessors.builder import PREPROCESSORS
@@ -7,6 +8,8 @@ from adaseq.data.constant import NON_ENTITY_LABEL, PARTIAL_LABEL, PARTIAL_LABEL_
 from adaseq.metainfo import Preprocessors
 
 from .nlp_preprocessor import NLPPreprocessor
+
+logger = logging.getLogger(__name__)
 
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.sequence_labeling_preprocessor)
@@ -21,6 +24,7 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
             raise ValueError('Invalid tag scheme! Options: [BIO, BIOES]')
         # self.tag_scheme = self._determine_tag_scheme_from_labels(labels)
         label_to_id = self._gen_label_to_id_with_bio(labels, self.tag_scheme)
+        logger.info('label2id: ' + str(label_to_id))
         super().__init__(model_dir, label_to_id=label_to_id, return_offsets=True, **kwargs)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
