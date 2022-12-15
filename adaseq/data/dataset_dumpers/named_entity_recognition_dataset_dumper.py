@@ -1,4 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import json
 from typing import Dict
 
 from modelscope.metrics.builder import METRICS
@@ -23,13 +24,17 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
         """Only support sequence_labeling models now."""
         if self.model_type == 'sequence_labeling':
             self._add_sequence_labeling_data(outputs, inputs)
+        elif self.model_type == 'span_based':
+            self._add_span_based_data(outputs, inputs)
         else:
             raise NotImplementedError
 
     def dump(self):
-        """Only support dump CoNLL format now."""
+        """Only support dump CoNLL format and jsonline now."""
         if self.dump_format == 'column':
             self._dump_to_column()
+        elif self.dump_format == 'jsonline':
+            self._dump_to_jsonline()
         else:
             raise NotImplementedError
 
@@ -47,6 +52,11 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
                 }
             )
 
+    def _add_span_based_data(self, outputs: Dict, inputs: Dict):
+        for meta, predicts in zip(inputs['meta'], outputs['predicts']):
+            obj = dict(tokens=meta['tokens'], spans=meta['spans'], predicts=predicts)
+            self.data.append(obj)
+
     def _dump_to_column(self):
         with open(self.save_path, 'w', encoding='utf8') as fout:
             for example in self.data:
@@ -59,3 +69,8 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
                         file=fout,
                     )
                 print('', file=fout)
+
+    def _dump_to_jsonline(self):
+        with open(self.save_path, 'w', encoding='utf8') as file:
+            for example in self.data:
+                file.write(json.dumps(example, ensure_ascii=False) + '\n')

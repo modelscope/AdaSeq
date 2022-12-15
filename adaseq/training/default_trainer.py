@@ -1,5 +1,6 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 import json
+import logging
 import os
 
 import yaml
@@ -22,6 +23,8 @@ from adaseq.models.base import Model
 from .default_config import DEFAULT_CONFIG
 from .lr_scheduler import build_lr_scheduler
 from .optimizer import build_optimizer
+
+logger = logging.getLogger(__name__)
 
 
 @TRAINERS.register_module(module_name=Trainers.default_trainer)
@@ -197,7 +200,7 @@ class DefaultTrainer(EpochBasedTrainer):
 
         # log to terminal
         metric_string = json.dumps(metric_values, indent=2, ensure_ascii=False)
-        self.logger.info('test: ' + metric_string)
+        logger.info('test: ' + metric_string)
 
         # log to file
         self._init_file_logger()

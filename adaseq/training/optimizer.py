@@ -1,15 +1,15 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 
+import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from modelscope.trainers.optimizer.builder import OPTIMIZERS
 from modelscope.utils.config import ConfigDict
-from modelscope.utils.logger import get_logger
 from modelscope.utils.registry import build_from_cfg, default_group
 from torch import nn
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 
 def build_optimizer(model: nn.Module, cfg: ConfigDict, default_args: dict = None):

@@ -12,6 +12,7 @@ from adaseq.metainfo import Trainers
 from adaseq.training import build_trainer
 from adaseq.utils.checks import ConfigurationError
 from adaseq.utils.common_utils import create_datetime_str
+from adaseq.utils.logging import prepare_logging
 
 
 class Train(Subcommand):
@@ -89,6 +90,9 @@ def train_model(
     if os.path.exists(work_dir) and os.listdir(work_dir):
         raise ConfigurationError(f'`work_dir` ({work_dir}) already exists and is not empty.')
     os.makedirs(work_dir, exist_ok=True)
+
+    world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1
+    prepare_logging(work_dir, int(local_rank), world_size)
 
     # Get seed from the comand line args first.
     if seed is None:

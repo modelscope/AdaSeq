@@ -1,4 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import logging
 import os.path as osp
 from functools import partial
 from typing import Any, Dict, List, Optional, Union
@@ -7,15 +8,13 @@ from datasets import Dataset, DownloadManager
 from datasets import load_dataset as hf_load_dataset
 from datasets.utils.file_utils import is_remote_url
 from modelscope.msdatasets import MsDataset
-from modelscope.utils.logger import get_logger
 
 from adaseq.metainfo import Tasks, get_member_set
 
 from .utils import COUNT_LABEL_FUNCTIONS, DATASET_TRANSFORMS
 
-logger = get_logger(log_level='INFO')
-
 BUILTIN_TASKS = get_member_set(Tasks)
+logger = logging.getLogger(__name__)
 
 
 class DatasetManager:
@@ -90,8 +89,8 @@ class DatasetManager:
         cls,
         task: Optional[str] = None,
         data_file: Optional[Union[str, Dict[str, str]]] = None,
-        name: Optional[str] = None,
         path: Optional[str] = None,
+        name: Optional[str] = None,
         access_token: Optional[str] = None,
         labels: Optional[Union[str, List[str], Dict[str, Any]]] = None,
         transform: Optional[Dict[str, Any]] = None,
@@ -120,15 +119,14 @@ class DatasetManager:
             `{'train': '/home/data/train.txt', 'valid': '/home/data/valid.txt'}`, or
             `{'train': 'http://DOMAIN/train.txt', 'valid': 'http://DOMAIN/valid.txt'}`.
 
-        name: `str`,  optional (default = `None`)
-            It is a modelscope dataset name, which is officially uploaded by Alibaba
-            DAMO Academy with some specific pre-process operations.
-            It is not used when loading local files with built-in `DatasetBuilder`s.
-
         path: `str`,  optional (default = `None`)
             It is the name of a huggingface-hosted dataset or the absolute path
             of a custom python script for the `datasets.load_dataset`.
-            It is not used when loading local files with built-in `DatasetBuilder`s.
+
+        name: `str`,  optional (default = `None`)
+            If `data_file` or `path` are given, it is the `name` argument in
+            `datasets.load_dataset`.
+            If not, it is used as a modelscope dataset name.
 
         access_token: `str`, optional (default = `None`)
             If given, use this token to login modelscope, then we can access some
@@ -171,12 +169,14 @@ class DatasetManager:
                 task_builder_name.replace('-', '_') + '_dataset_builder.py',
             )
 
-        # TODO maps for huggingface datasets
         if isinstance(path, str):
             if path.endswith('.py') or osp.isdir(path):
                 logger.info('Will use a custom loading script: %s', path)
 
-            hfdataset = hf_load_dataset(path, **kwargs)
+            if name is not None:
+                logger.info("Passing `name='%s'` to `datasets.load_dataset`", name)
+
+            hfdataset = hf_load_dataset(path, name=name, **kwargs)
             datasets = {k: v for k, v in hfdataset.items()}
 
         elif isinstance(name, str):

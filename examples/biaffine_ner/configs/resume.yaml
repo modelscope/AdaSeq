@@ -50,4 +50,8 @@ train:
 evaluation:
   dataloader:
     batch_size_per_gpu: 64
-  metrics: span-extraction-metric
+  metrics:
+    - type: span-extraction-metric
+    - type: ner-dumper
+      model_type: span_based
+      dump_format: jsonline

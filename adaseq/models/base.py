@@ -1,4 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import logging
 import os
 import os.path as osp
 from abc import abstractmethod
@@ -11,9 +12,8 @@ from modelscope.models.builder import build_model
 from modelscope.utils.checkpoint import save_checkpoint
 from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.constant import DEFAULT_MODEL_REVISION, ModelFile
-from modelscope.utils.logger import get_logger
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 
 class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
