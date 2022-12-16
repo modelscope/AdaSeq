@@ -126,7 +126,7 @@ def make_parameter_groups(
                 no_grad_group_indices.append(k)
                 logger.info(
                     'Disabling gradient for the following parameters: %s',
-                    json.dumps(names, indent=2),
+                    json.dumps(sorted(names), indent=2),
                 )
                 for param in group['params']:
                     param.requires_grad_(False)
@@ -139,7 +139,7 @@ def make_parameter_groups(
                     logger.warning(
                         'Ignoring unused options %s for %s',
                         unused_options,
-                        json.dumps(names, indent=2),
+                        json.dumps(sorted(names), indent=2),
                     )
         parameter_group_names = [
             names
@@ -156,7 +156,7 @@ def make_parameter_groups(
             group_options = {
                 key: val for key, val in parameter_groups[k].items() if key != 'params'
             }
-            name_string = json.dumps(list(sorted(parameter_group_names[k])), indent=2)
+            name_string = json.dumps(sorted(parameter_group_names[k]), indent=2)
             logger.info('Group %s: %s, %s', k, group_options, name_string)
 
         # check for unused regex

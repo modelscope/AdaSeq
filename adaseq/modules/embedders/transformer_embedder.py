@@ -140,7 +140,7 @@ class TransformerEmbedder(Embedder):
         input_ids: torch.LongTensor,
         attention_mask: torch.BoolTensor,
         token_type_ids: Optional[torch.LongTensor] = None,
-        has_special_tokens: bool = True,
+        has_special_tokens: Optional[torch.BoolTensor] = None,
         offsets: Optional[torch.LongTensor] = None,
         mask: Optional[torch.BoolTensor] = None,
     ) -> torch.Tensor:
@@ -170,8 +170,9 @@ class TransformerEmbedder(Embedder):
             # then reconstruct token-level ones by offsets
             encoded = self.reconstruct(encoded, offsets)
 
-        if self.drop_special_tokens and has_special_tokens:
-            encoded = encoded[:, 1:-1]  # So far, we only consider [CLS] and [SEP]
+        if has_special_tokens is not None:
+            if self.drop_special_tokens and has_special_tokens.bool()[0]:
+                encoded = encoded[:, 1:-1]  # So far, we only consider [CLS] and [SEP]
         return encoded
 
     def encode(

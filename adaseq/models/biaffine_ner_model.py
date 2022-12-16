@@ -110,8 +110,8 @@ class BiaffineNerModel(Model):
         final = []
         for span_score, tids, l in zip(span_max_score, type_idxs, lengths):
             cands = []
-            for s in range(1, l - 1):
-                for e in range(s, l - 1):
+            for s in range(l):
+                for e in range(s, l):
                     type_id = tids[s, e].item()
                     if type_id > 0:
                         # we do not have non-entity label, we set index 0 as non-entity label

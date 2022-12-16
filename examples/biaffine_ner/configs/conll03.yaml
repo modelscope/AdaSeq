@@ -1,0 +1,47 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: conll03
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_file: https://data.deepai.org/conll2003.zip
+  data_type: sequence_labeling
+  data_format: column
+
+preprocessor:
+  type: span-extraction-preprocessor
+  model_dir: bert-base-cased
+  max_length: 200
+
+data_collator: SpanExtractionDataCollatorWithPadding
+
+model:
+  type: biaffine-ner-model
+  embedder:
+    model_name_or_path: bert-base-cased
+  biaffine_ffnn_size: 150
+  flat_ner: true
+  word_dropout: 0.2
+
+train:
+  max_epochs: 20
+  dataloader:
+    batch_size_per_gpu: 32
+  optimizer:
+    type: AdamW
+    lr: 1.0e-3
+    eps: 1.0e-08
+    weight_decay: 0.01
+    param_groups:
+      - regex: ".*transformer_model((?!(bias|LayerNorm)).)*$"
+        lr: 1.0e-5
+      - regex: ".*transformer_model.*(bias|LayerNorm)"
+        lr: 1.0e-05
+        weight_decay": 0
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 64
+  metrics: span-extraction-metric
