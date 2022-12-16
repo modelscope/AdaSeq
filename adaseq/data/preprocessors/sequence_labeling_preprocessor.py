@@ -24,14 +24,14 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
             raise ValueError('Invalid tag scheme! Options: [BIO, BIOES]')
         # self.tag_scheme = self._determine_tag_scheme_from_labels(labels)
         label_to_id = self._gen_label_to_id_with_bio(labels, self.tag_scheme)
-        logger.info('label2id: ' + str(label_to_id))
+        logger.info('label_to_id: ' + str(label_to_id))
         super().__init__(model_dir, label_to_id=label_to_id, return_offsets=True, **kwargs)
 
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """prepare inputs for Sequence Labeling models."""
         output = super().__call__(data)
         if isinstance(data, Dict) and 'spans' in data:
-            length = len(output['tokens']['offsets']) - 2 * int(self.add_special_tokens)
+            length = len(output['tokens']['mask']) - 2 * int(self.add_special_tokens)
             labels = self._spans_to_bio_labels(data['spans'], length, self.tag_scheme)
             output['label_ids'] = [
                 PARTIAL_LABEL_ID if labels[i] == PARTIAL_LABEL else self.label_to_id[labels[i]]

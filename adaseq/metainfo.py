@@ -40,6 +40,7 @@ class Models:
 class Embedders:
     """Names for different embedders"""
 
+    embedding = 'embedding'
     transformer_embedder = 'transformer-embedder'
 
 
@@ -47,6 +48,9 @@ class Encoders:
     """Names for different encoders"""
 
     span_encoder = 'span-encoder'
+    gru_encoder = 'gru'
+    rnn_encoder = 'rnn'
+    lstm_encoder = 'lstm'
 
 
 class Decoders:

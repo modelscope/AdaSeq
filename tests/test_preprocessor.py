@@ -82,10 +82,7 @@ class TestPreprocessor(unittest.TestCase):
             'E-PER',
         ] + ['O'] * 16
         self.assertEqual(output2['tokens']['input_ids'], input_ids)
-        self.assertEqual(output2['tokens']['attention_mask'], [True] * len(input_ids))
         self.assertEqual(output2['tokens']['mask'], [True] * len(labels))
-        offsets = [(i, i) for i in range(len(labels))]
-        self.assertEqual(output2['tokens']['offsets'], offsets)
         output_labels = [id_to_label[i] for i in output2['label_ids']]
         self.assertEqual(output_labels, labels)
 

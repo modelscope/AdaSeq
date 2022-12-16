@@ -22,7 +22,8 @@ class SpanEncoder(Encoder):
         use_biaffine: bool = False,
         **kwargs
     ):
-        super().__init__(input_dim)
+        super().__init__()
+        self.input_dim = input_dim
         self.add_span_linear = add_span_linear
         self.encode_span_method = encode_span_method
         if self.add_span_linear:
@@ -44,6 +45,9 @@ class SpanEncoder(Encoder):
             else:
                 self.span_reprs_dim = 2 * self.input_dim
                 self.output_dim = self.span_reprs_dim
+
+    def get_input_dim(self) -> int:  # noqa: D102
+        return self.input_dim
 
     def get_output_dim(self) -> int:  # noqa: D102
         return self.output_dim

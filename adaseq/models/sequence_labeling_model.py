@@ -13,6 +13,7 @@ from adaseq.models.base import Model
 from adaseq.modules.decoders import CRF, PartialCRF
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
+from adaseq.modules.encoders import Encoder
 from adaseq.modules.util import get_tokens_mask
 
 
@@ -35,8 +36,9 @@ class SequenceLabelingModel(Model):
     def __init__(
         self,
         id_to_label: Dict[int, str],
-        embedder: Union[Embedder, str, ConfigDict] = None,
-        word_dropout: Optional[float] = 0.0,
+        embedder: Union[Embedder, ConfigDict],
+        encoder: Optional[Union[Encoder, ConfigDict]] = None,
+        word_dropout: float = 0.0,
         use_crf: Optional[bool] = True,
         multiview: Optional[bool] = False,
         temperature: Optional[float] = 1.0,
@@ -48,11 +50,24 @@ class SequenceLabelingModel(Model):
         super().__init__()
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label)
+
         if isinstance(embedder, Embedder):
             self.embedder = embedder
         else:
-            self.embedder = Embedder.from_config(cfg_dict_or_path=embedder)
-        self.linear = nn.Linear(self.embedder.get_output_dim(), self.num_labels)
+            self.embedder = Embedder.from_config(embedder)
+        hidden_size = self.embedder.get_output_dim()
+
+        if encoder is None:
+            self.encoder = None
+        else:
+            if isinstance(encoder, Encoder):
+                self.encoder = encoder
+            else:
+                self.encoder = Encoder.from_config(encoder)
+            assert hidden_size == self.encoder.get_input_dim()
+            hidden_size = self.encoder.get_output_dim()
+
+        self.linear = nn.Linear(hidden_size, self.num_labels)
 
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
@@ -71,16 +86,6 @@ class SequenceLabelingModel(Model):
         self.mv_loss_type = mv_loss_type
         self.temperature = temperature
         self.mv_interpolation = mv_interpolation
-
-    def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
-        embed = self.embedder(**tokens)
-
-        if self.use_dropout:
-            embed = self.dropout(embed)
-
-        logits = self.linear(embed)
-
-        return logits
 
     def forward(  # noqa
         self,
@@ -126,6 +131,22 @@ class SequenceLabelingModel(Model):
             outputs = {'logits': logits, 'predicts': predicts}
 
         return outputs
+
+    def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        x = self.embedder(**tokens)
+
+        if self.use_dropout:
+            x = self.dropout(x)
+
+        if self.encoder is not None:
+            mask = get_tokens_mask(tokens, x.size(1))
+            x = self.encoder(x, mask)
+
+            if self.use_dropout:
+                x = self.dropout(x)
+
+        logits = self.linear(x)
+        return logits
 
     def _calculate_loss(
         self, logits: torch.Tensor, targets: torch.Tensor, mask: torch.Tensor

@@ -27,9 +27,11 @@ class Encoder(nn.Module):
     The encoder base class for encoding embeddings to features.
     """
 
-    def __init__(self, input_dim: int) -> None:
-        super().__init__()
-        self.input_dim = input_dim
+    def get_input_dim(self) -> int:
+        """
+        Get the input feature dim.
+        """
+        raise NotImplementedError
 
     def get_output_dim(self) -> int:
         """

@@ -27,7 +27,7 @@ class SpanExtracionPreprocessor(NLPPreprocessor):
             return output
 
         # origin sequence length
-        length = len(output['tokens']['offsets']) - 2 * int(self.add_special_tokens)
+        length = len(output['tokens']['mask']) - 2 * int(self.add_special_tokens)
         # calculate span labels
         span_labels = np.zeros([length, length])
         for span in data['spans']:

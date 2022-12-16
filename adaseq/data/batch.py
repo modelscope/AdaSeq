@@ -41,17 +41,9 @@ class DataBatch(Mapping):
             return dict(batch)
         for k in batch.keys():
             if k.endswith('tokens'):
-                batch[k]['input_ids'] = torch.tensor(batch[k]['input_ids'], dtype=torch.long)
-                batch[k]['attention_mask'] = torch.tensor(
-                    batch[k]['attention_mask'], dtype=torch.bool
-                )
-                if 'token_type_ids' in batch[k]:
-                    batch[k]['token_type_ids'] = torch.tensor(
-                        batch[k]['token_type_ids'], dtype=torch.long
-                    )
-                if 'offsets' in batch[k]:
-                    batch[k]['offsets'] = torch.tensor(batch[k]['offsets'], dtype=torch.long)
-                    batch[k]['mask'] = torch.tensor(batch[k]['mask'], dtype=torch.bool)
+                for sub in batch[k].keys():
+                    dtype = torch.bool if sub.endswith('mask') else torch.long
+                    batch[k][sub] = torch.tensor(batch[k][sub], dtype=dtype)
             elif k in self.keep_fields:
                 continue
             else:

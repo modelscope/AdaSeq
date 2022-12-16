@@ -62,12 +62,15 @@ class DataCollatorWithPadding:
 
         batch_size = len(batch['meta'])
         for field in [f for f in batch.keys() if f.endswith('tokens')]:
-            sub_field_pair = [('input_ids', self.tokenizer.pad_token_id), ('attention_mask', False)]
+            sub_field_pair = [
+                ('input_ids', self.tokenizer.pad_token_id),
+                ('attention_mask', False),
+                ('mask', False),
+            ]
             if 'token_type_ids' in batch[field][0]:
                 sub_field_pair.append(('token_type_ids', self.tokenizer.pad_token_type_id))
             if 'offsets' in batch[field][0]:
                 sub_field_pair.append(('offsets', (0, 0)))
-                sub_field_pair.append(('mask', False))
 
             padded_tokens = dict()
             for sub, pad_value in sub_field_pair:

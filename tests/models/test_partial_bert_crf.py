@@ -3,8 +3,7 @@ import unittest
 
 from modelscope.utils.config import Config
 
-from adaseq.metainfo import Trainers
-from adaseq.training import build_trainer
+from adaseq.commands.train import build_trainer_from_partial_objects
 from tests.models.base import TestModel, compare_fn
 
 
@@ -12,7 +11,7 @@ class TestPartialBertCRF(TestModel):
     def test_partial_bert_crf(self):
         cfg_file = os.path.join('tests', 'resources', 'configs', 'train_partial_bert_crf.yaml')
         config = Config.from_file(cfg_file)
-        trainer = build_trainer(Trainers.default_trainer, config, work_dir=config.work_dir, seed=42)
+        trainer = build_trainer_from_partial_objects(config, work_dir=config.work_dir, seed=42)
 
         with self.regress_tool.monitor_ms_train(
             trainer,

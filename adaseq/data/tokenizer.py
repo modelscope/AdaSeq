@@ -9,14 +9,12 @@ from transformers.tokenization_utils import PreTrainedTokenizer
 
 
 def build_tokenizer(
-    model_name_or_path: str, use_fast: bool = True, **kwargs
+    model_name_or_path: str, use_fast: bool = True, is_word2vec: bool = False, **kwargs
 ) -> PreTrainedTokenizer:
     """build tokenizer from `transformers`."""
     tokenizer = BertTokenizerFast if use_fast else BertTokenizer
-    if 'word2vec' in model_name_or_path:
-        return tokenizer.from_pretrained(model_name_or_path, **kwargs)
 
-    elif 'nezha' in model_name_or_path:
+    if is_word2vec or 'nezha' in model_name_or_path:
         return tokenizer.from_pretrained(model_name_or_path, **kwargs)
 
     try:

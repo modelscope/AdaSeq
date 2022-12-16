@@ -1,5 +1,6 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 
+import json
 import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -123,7 +124,10 @@ def make_parameter_groups(
         for k, (names, group) in enumerate(zip(parameter_group_names, parameter_groups)):
             if group.get('requires_grad') is False:
                 no_grad_group_indices.append(k)
-                logger.info('Disabling gradient for the following parameters: %s', names)
+                logger.info(
+                    'Disabling gradient for the following parameters: %s',
+                    json.dumps(names, indent=2),
+                )
                 for param in group['params']:
                     param.requires_grad_(False)
 
@@ -132,7 +136,11 @@ def make_parameter_groups(
                     key: val for key, val in group.items() if key not in ('params', 'requires_grad')
                 }
                 if unused_options:
-                    logger.warning('Ignoring unused options %s for %s', unused_options, names)
+                    logger.warning(
+                        'Ignoring unused options %s for %s',
+                        unused_options,
+                        json.dumps(names, indent=2),
+                    )
         parameter_group_names = [
             names
             for (k, names) in enumerate(parameter_group_names)
@@ -148,7 +156,8 @@ def make_parameter_groups(
             group_options = {
                 key: val for key, val in parameter_groups[k].items() if key != 'params'
             }
-            logger.info('Group %s: %s, %s', k, list(parameter_group_names[k]), group_options)
+            name_string = json.dumps(list(parameter_group_names[k]), indent=2)
+            logger.info('Group %s: %s, %s', k, group_options, name_string)
 
         # check for unused regex
         for regex, count in regex_use_counts.items():

@@ -11,6 +11,7 @@ from adaseq.metainfo import Models
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
+from adaseq.modules.encoders import Encoder
 from adaseq.modules.util import get_tokens_mask
 
 
@@ -59,6 +60,7 @@ class GlobalPointerModel(Model):
         self,
         id_to_label: Dict[int, str],
         embedder: Union[Embedder, Dict[str, Any]],
+        encoder: Optional[Union[Encoder, Dict[str, Any]]] = None,
         token_ffn_out_width: int = -1,
         word_dropout: float = 0.0,
         **kwargs
@@ -73,6 +75,16 @@ class GlobalPointerModel(Model):
         else:
             self.embedder = Embedder.from_config(cfg_dict_or_path=embedder)
         hidden_size = self.embedder.get_output_dim()
+
+        if encoder is None:
+            self.encoder = None
+        else:
+            if isinstance(encoder, Encoder):
+                self.encoder = encoder
+            else:
+                self.encoder = Encoder.from_config(encoder)
+            assert hidden_size == self.encoder.get_input_dim()
+            hidden_size = self.encoder.get_output_dim()
 
         self.token_ffn_out_width = token_ffn_out_width
         self.token_inner_embed_ffn = nn.Linear(hidden_size, token_ffn_out_width * 2)
@@ -102,12 +114,19 @@ class GlobalPointerModel(Model):
         return outputs
 
     def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
-        embed = self.embedder(**tokens)
+        x = self.embedder(**tokens)
+        mask = get_tokens_mask(tokens, x.size(1))
 
         if self.use_dropout:
-            embed = self.dropout(embed)
+            x = self.dropout(x)
 
-        token_inner_embed = self.token_inner_embed_ffn(embed)
+        if self.encoder is not None:
+            x = self.encoder(x, mask)
+
+            if self.use_dropout:
+                x = self.dropout(x)
+
+        token_inner_embed = self.token_inner_embed_ffn(x)
         start_token, end_token = token_inner_embed[..., ::2], token_inner_embed[..., 1::2]
         pos = self.pos_embed(token_inner_embed)
         cos_pos = pos[..., 1::2].repeat_interleave(2, dim=-1)
@@ -124,14 +143,12 @@ class GlobalPointerModel(Model):
         span_score = (
             torch.einsum('bmd,bnd->bmn', start_token, end_token) / self.token_ffn_out_width**0.5
         )
-        typing_score = torch.einsum('bnh->bhn', self.type_score_ffn(embed)) / 2
+        typing_score = torch.einsum('bnh->bhn', self.type_score_ffn(x)) / 2
         entity_score = (
             span_score[:, None] + typing_score[:, ::2, None] + typing_score[:, 1::2, :, None]
         )  # [:, None] 增加一个维度
 
-        entity_score = self._add_mask_tril(
-            entity_score, mask=get_tokens_mask(tokens, entity_score.size(2))
-        )
+        entity_score = self._add_mask_tril(entity_score, mask=mask)
         return entity_score
 
     def _calculate_loss(self, entity_score, targets) -> torch.Tensor:

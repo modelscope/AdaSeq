@@ -81,7 +81,7 @@ class BiaffineNerModel(Model):
         return outputs
 
     def _calculate_loss(
-        self, span_scores: torch.Tensor, span_labels: torch.LongTensor, mask: torch.Tensor
+        self, span_scores: torch.Tensor, span_labels: torch.LongTensor, mask: torch.BoolTensor
     ) -> torch.Tensor:
         """
         span_labels : (batch_size, seq_len, seq_len)

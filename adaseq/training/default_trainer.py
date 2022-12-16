@@ -3,7 +3,6 @@ import json
 import logging
 import os
 
-import yaml
 from datasets.arrow_dataset import Dataset
 from modelscope.msdatasets.task_datasets.torch_base_dataset import TorchTaskDataset
 from modelscope.preprocessors.base import Preprocessor
@@ -14,9 +13,8 @@ from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.constant import ModeKeys
 from torch import nn
 
-from adaseq.data.data_collators.base import DataCollatorWithPadding, build_data_collator
+from adaseq.data.data_collators.base import DataCollatorWithPadding
 from adaseq.data.dataset_manager import DatasetManager
-from adaseq.data.preprocessors.nlp_preprocessor import build_preprocessor
 from adaseq.metainfo import Trainers
 from adaseq.models.base import Model
 
@@ -87,51 +85,6 @@ class DefaultTrainer(EpochBasedTrainer):
                 mode=ModeKeys.EVAL,
                 preprocessor=self.eval_preprocessor,
             )
-
-    @classmethod
-    def _instantiate(cls, work_dir: str, config: Config, **kwargs) -> 'DefaultTrainer':
-        """
-        Entrypoint of build the trainer from `config` by modelscope.
-        In this method, we will build the `DatasetManager` first, then use the
-        counted or loaded `labels` to build the`Preprocessor`.
-        The the`Preprocessor` will provide the final `id_to_label` mapping,
-        which is a required argument of all `AdaSeq` models, we update it to the
-        `model` section of `config` and dump the updated `config` to the `work_dir`.
-
-        Args:
-
-        work_dir (`str`): required
-            The created directionary to save all produced files in training.
-        config (`Config`): required
-            The `Config` of this trial.
-        """
-        # build datasets via `DatasetManager`
-        dm = DatasetManager.from_config(task=config.task, **config.dataset)
-        # build preprocessor with config and labels
-        preprocessor = build_preprocessor(config.preprocessor, labels=dm.labels)
-
-        # Finally, get `id_to_label` for model.
-        config.model.id_to_label = preprocessor.id_to_label
-        # Dump config to work_dir and reload.
-        new_config_path = os.path.join(work_dir, 'config.yaml')
-        with open(new_config_path, mode='w', encoding='utf8') as file:
-            yaml.dump(config.to_dict(), file, allow_unicode=True)
-
-        # build `DataCollator` from config and tokenizer.
-        collator_config = config.data_collator
-        if isinstance(collator_config, str):
-            collator_config = dict(type=collator_config)
-        data_collator = build_data_collator(preprocessor.tokenizer, collator_config)
-
-        trainer = cls(
-            new_config_path,
-            work_dir,
-            dataset_manager=dm,
-            data_collator=data_collator,
-            preprocessor=preprocessor,
-            **kwargs,
-        )
-        return trainer
 
     def rebuild_config(self, config: Config) -> Config:
         """
@@ -212,9 +165,8 @@ class DefaultTrainer(EpochBasedTrainer):
         return metric_values
 
 
-def build_trainer(name: str, config: Config, **kwargs) -> EpochBasedTrainer:
+def build_trainer(name: str, **kwargs) -> EpochBasedTrainer:
     """build trainer from config"""
-    kwargs.update(config=config)
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = kwargs.get('local_rank', '0')
     if 'WORLD_SIZE' in os.environ and int(os.environ['WORLD_SIZE']) > 1:

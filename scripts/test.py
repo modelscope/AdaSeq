@@ -4,43 +4,23 @@ import os
 import sys
 import warnings
 
-from modelscope.trainers import build_trainer as ms_build_trainer
-from modelscope.utils.config import Config
-
 parent_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(parent_folder)
 
-import adaseq  # noqa # isort:skip
+from adaseq.commands.test import test_model  # noqa: E402 isort:skip
 
 warnings.filterwarnings('ignore')
 
 
 def main(args):
     """test a model from args"""
-    trainer = build_trainer(args)
-    trainer.test(args.checkpoint_path)
-
-
-def build_trainer(args):
-    """build a trainer from args"""
-    if args.trainer is not None:
-        trainer_name = args.trainer
-    else:
-        cfg = Config.from_file(args.cfg_file)
-        assert 'trainer' in cfg, 'trainer must be specified!'
-        trainer_name = cfg.trainer
-
-    kwargs = vars(args)
-    kwargs['work_dir'] = '.'
-    trainer = ms_build_trainer(trainer_name, kwargs)
-    return trainer
+    test_model(args.work_dir, args.device, args.checkpoint_path)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('train.py')
-    parser.add_argument('-c', '--cfg_file', required=True, help='configuration YAML file')
-    parser.add_argument('-t', '--trainer', default=None, help='trainer name')
-    parser.add_argument('-cp', '--checkpoint_path', required=True, help='model checkpoint')
+    parser = argparse.ArgumentParser('test with a model checkpoint')
+    parser.add_argument('-w', '--work_dir', required=True, help='configuration YAML file')
+    parser.add_argument('-d', '--device', default='gpu', help='device name')
+    parser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
     args = parser.parse_args()
-
     main(args)

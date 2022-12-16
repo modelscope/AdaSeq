@@ -1,4 +1,5 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
+import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from modelscope.preprocessors.base import Preprocessor
@@ -9,6 +10,8 @@ from modelscope.utils.config import ConfigDict
 from adaseq.data.tokenizer import build_tokenizer
 from adaseq.metainfo import Preprocessors
 
+logger = logging.getLogger(__name__)
+
 
 @PREPROCESSORS.register_module(module_name=Preprocessors.nlp_preprocessor)
 class NLPPreprocessor(Preprocessor):
@@ -17,6 +20,8 @@ class NLPPreprocessor(Preprocessor):
 
     Args:
         model_dir (str): pre-trained model name or path.
+        is_word2vec (bool): if True, tokens will be indexed in word2vec style,
+            i.e., 1 to 1 mapping, without word pieces.
         tokenizer_kwargs (Optional[Dict[str, Any]]): some arguments to init tokenizer
             from huggingface, modelscope or ...
         max_length (int): we will discard tokens that exceed the `max_length`.
@@ -36,6 +41,7 @@ class NLPPreprocessor(Preprocessor):
     def __init__(
         self,
         model_dir: str,
+        is_word2vec: bool = False,
         tokenizer_kwargs: Optional[Dict[str, Any]] = None,
         max_length: int = 512,
         return_offsets: bool = False,
@@ -46,11 +52,18 @@ class NLPPreprocessor(Preprocessor):
         **kwargs
     ) -> None:
         super().__init__(**kwargs)
+        if 'word2vec' in model_dir and is_word2vec is False:
+            is_word2vec = True
+            logger.warn('You are using word2vec embedder, auto set `is_word2vec = True`')
+
+        self.is_word2vec = is_word2vec
         self.max_length = max_length
         self.add_special_tokens = add_special_tokens
         self.return_offsets = return_offsets
         self.return_original_view = return_original_view
-        self.tokenizer = build_tokenizer(model_dir, **(tokenizer_kwargs or {}))
+        self.tokenizer = build_tokenizer(
+            model_dir, is_word2vec=is_word2vec, **(tokenizer_kwargs or {})
+        )
 
         if label_to_id is not None:
             self.label_to_id = label_to_id
@@ -95,28 +108,50 @@ class NLPPreprocessor(Preprocessor):
 
     def encode_text(self, text: str) -> Dict[str, Any]:
         """encode `text` to ids"""
+        assert self.is_word2vec is False, 'encode text string is not supported in word2vec!'
         assert self.return_offsets is False
-        output = self.tokenizer.encode_plus(
+        encoded = self.tokenizer.encode_plus(
             text,
             add_special_tokens=self.add_special_tokens,
             return_tensors=None,
             return_offsets_mapping=False,
         )
-        output['has_special_tokens'] = self.add_special_tokens
-        return output
+        encoded['has_special_tokens'] = self.add_special_tokens
+        return encoded
 
     def encode_tokens(self, tokens: List[str]) -> Dict[str, Any]:
-        """conver tokens to ids, add some mask."""
+        """
+        Convert tokens to ids, add some mask.
+        """
+        if self.is_word2vec:
+            return self.encode_tokens_word2vec(tokens)
+        else:
+            return self.encode_tokens_wordpiece(tokens)
+
+    def encode_tokens_word2vec(self, tokens: List[str]) -> Dict[str, Any]:
+        """
+        Convert tokens to ids, one by one via vocab, no word pieces.
+        """
+        input_ids = self.tokenizer.convert_tokens_to_ids(tokens)
+        encoded = {'input_ids': input_ids, 'mask': [True] * len(tokens)}
+        return encoded
+
+    def encode_tokens_wordpiece(self, tokens: List[str]) -> Dict[str, Any]:
+        """
+        Convert tokens to ids by word piece tokenizer.
+        """
         input_ids = []
         # the corresponding inclusive sub-token span of tokens
         offsets: List[Optional[Tuple[int, int]]] = []
+
+        max_length = self.max_length
 
         if self.add_special_tokens:
             input_ids.append(self.tokenizer.cls_token_id)
             offsets.append((0, 0))
 
-        # if `add_special_tokens`, the max_length should minus 1 for the appending `[SEP]`
-        max_length = self.max_length - int(self.add_special_tokens)
+            # if `add_special_tokens`, the max_length should minus 1 for the appending `[SEP]`
+            max_length -= int(self.add_special_tokens)
 
         for token_string in tokens:
             wordpieces = self.tokenizer.encode_plus(
@@ -145,15 +180,15 @@ class NLPPreprocessor(Preprocessor):
             offsets.append((len(input_ids), len(input_ids)))
             input_ids.append(self.tokenizer.sep_token_id)
 
-        output = {
+        encoded = {
             'input_ids': input_ids,
             'attention_mask': [True] * len(input_ids),
             'has_special_tokens': self.add_special_tokens,
         }
         if self.return_offsets:
-            output['mask'] = [True] * len(offsets)
-            output['offsets'] = offsets
-        return output
+            encoded['mask'] = [True] * len(offsets)
+            encoded['offsets'] = offsets
+        return encoded
 
     def make_label_to_id(self, labels: List[str]) -> Dict[str, int]:
         """
