@@ -16,23 +16,29 @@ from adaseq.metainfo import Trainers
 from adaseq.training import build_trainer
 from adaseq.utils.checks import ConfigurationError
 from adaseq.utils.common_utils import create_datetime_str
+from adaseq.utils.file_utils import is_empty_dir
 from adaseq.utils.logging import prepare_logging
 
 
 class Train(Subcommand):
     """
-    usage: adaseq train [-h] CONFIG_PATH [-n/--run_name RUN_NAME]
-            [-d/--device DEVICE] [-f/--force] [-cp CHECKPOINT_PATH]
-            [--seed SEED] [--local_rank LOCAL_RANK]
+    usage: adaseq train [-h] -c CONFIG_PATH [-w WORK_DIR] [-n RUN_NAME]
+                        [-d DEVICE] [-f FORCE] [-ckpt CHECKPOINT_PATH]
+                        [--seed SEED] [--local_rank LOCAL_RANK]
 
     optional arguments:
       -h, --help            show this help message and exit
+      -c CONFIG_PATH, --config_path CONFIG_PATH
+                            configuration YAML file
+      -w WORK_DIR, --work_dir WORK_DIR
+                            directory to save experiment logs and checkpoints
       -n RUN_NAME, --run_name RUN_NAME
-                            a trial name to save training files.
+                            trial name
       -d DEVICE, --device DEVICE
-                            device name for PyTorch.
-      -f, --force           overwrite the output directory if it exists.
-      -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
+                            device name
+      -f FORCE, --force FORCE
+                            overwrite the output directory if it exists.
+      -ckpt CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
                             model checkpoint
       --seed SEED           random seed for everything
       --local_rank LOCAL_RANK
@@ -42,13 +48,22 @@ class Train(Subcommand):
     def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
         """Add training arguments parser"""
         subparser = parser.add_parser('train', help='train a model')
-        subparser.add_argument('config_path', type=str, help='configuration YAML file')
-        subparser.add_argument('-n', '--run_name', type=str, default=None, help='trial name.')
-        subparser.add_argument('-d', '--device', type=str, default='gpu', help='device name.')
+        subparser.add_argument(
+            '-c', '--config_path', type=str, required=True, help='configuration YAML file'
+        )
+        subparser.add_argument(
+            '-w',
+            '--work_dir',
+            type=str,
+            default=None,
+            help='directory to save experiment logs and checkpoints',
+        )
+        subparser.add_argument('-n', '--run_name', type=str, default=None, help='trial name')
+        subparser.add_argument('-d', '--device', type=str, default='gpu', help='device name')
         subparser.add_argument(
             '-f', '--force', default=None, help='overwrite the output directory if it exists.'
         )
-        subparser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
+        subparser.add_argument('-ckpt', '--checkpoint_path', default=None, help='model checkpoint')
         subparser.add_argument('--seed', type=int, default=None, help='random seed for everything')
         subparser.add_argument('--local_rank', type=str, default='0')
 
@@ -59,6 +74,7 @@ class Train(Subcommand):
 def train_model_from_args(args: argparse.Namespace):  # noqa: D103
     train_model(
         config_path=args.config_path,
+        work_dir=args.work_dir,
         run_name=args.run_name,
         seed=args.seed,
         force=args.force,
@@ -70,6 +86,7 @@ def train_model_from_args(args: argparse.Namespace):  # noqa: D103
 
 def train_model(
     config_path: str,
+    work_dir: Optional[str] = None,
     run_name: Optional[str] = None,
     seed: Optional[int] = None,
     force: bool = False,
@@ -84,14 +101,15 @@ def train_model(
     config = Config.from_file(config_path)
 
     # create work_dir
-    work_dir = os.path.join(
-        config.safe_get('experiment.exp_dir', 'experiments/'),
-        config.safe_get('experiment.exp_name', 'unknown/'),
-        run_name or create_datetime_str(),
-    )
+    if work_dir is None:
+        work_dir = os.path.join(
+            config.safe_get('experiment.exp_dir', 'experiments/'),
+            config.safe_get('experiment.exp_name', 'unknown/'),
+            run_name or create_datetime_str(),
+        )
     if os.path.exists(work_dir) and force:
-        shutil.rmtree(work_dir)
-    if os.path.exists(work_dir) and os.listdir(work_dir):
+        shutil.rmtree(work_dir, ignore_errors=True)
+    if os.path.exists(work_dir) and not is_empty_dir(work_dir):
         raise ConfigurationError(f'`work_dir` ({work_dir}) already exists and is not empty.')
     os.makedirs(work_dir, exist_ok=True)
 

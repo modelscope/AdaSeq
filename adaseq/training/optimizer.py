@@ -156,7 +156,7 @@ def make_parameter_groups(
             group_options = {
                 key: val for key, val in parameter_groups[k].items() if key != 'params'
             }
-            name_string = json.dumps(list(parameter_group_names[k]), indent=2)
+            name_string = json.dumps(list(sorted(parameter_group_names[k])), indent=2)
             logger.info('Group %s: %s, %s', k, group_options, name_string)
 
         # check for unused regex

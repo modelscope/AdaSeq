@@ -16,6 +16,7 @@ def main(args):
     """train a model from args"""
     train_model(
         config_path=args.config_path,
+        work_dir=args.work_dir,
         run_name=args.run_name,
         seed=args.seed,
         force=args.force,
@@ -30,12 +31,19 @@ if __name__ == '__main__':
     parser.add_argument(
         '-c', '--config_path', required=True, type=str, help='configuration YAML file'
     )
-    parser.add_argument('-n', '--run_name', type=str, default=None, help='trial name.')
-    parser.add_argument('-d', '--device', type=str, default='gpu', help='device name.')
+    parser.add_argument(
+        '-w',
+        '--work_dir',
+        type=str,
+        default=None,
+        help='directory to save experiment logs and checkpoints',
+    )
+    parser.add_argument('-n', '--run_name', type=str, default=None, help='trial name')
+    parser.add_argument('-d', '--device', type=str, default='gpu', help='device name')
     parser.add_argument(
         '-f', '--force', default=None, help='overwrite the output directory if it exists.'
     )
-    parser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
+    parser.add_argument('-ckpt', '--checkpoint_path', default=None, help='model checkpoint')
     parser.add_argument('--seed', type=int, default=None, help='random seed for everything')
     parser.add_argument('--local_rank', type=str, default='0')
 

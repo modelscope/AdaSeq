@@ -12,17 +12,18 @@ from adaseq.data.preprocessors.nlp_preprocessor import build_preprocessor
 from adaseq.metainfo import Trainers
 from adaseq.training import build_trainer
 from adaseq.utils.checks import ConfigurationError
+from adaseq.utils.file_utils import is_empty_dir
 
 
 class Test(Subcommand):
     """
-    usage: adaseq test [-h] -w WORK_DIR [-d DEVICE_NAME] [-cp CHECKPOINT_PATH]
+    usage: adaseq test [-h] -w WORK_DIR [-d DEVICE] [-cp CHECKPOINT_PATH]
 
     optional arguments:
       -h, --help            show this help message and exit
       -w WORK_DIR, --work_dir WORK_DIR
-                            work dir
-      -d DEVICE_NAME, --device DEVICE_NAME
+                            directory to load config and checkpoint
+      -d DEVICE, --device DEVICE
                             device name
       -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
                             model checkpoint
@@ -32,7 +33,9 @@ class Test(Subcommand):
     def add_subparser(cls, parser: argparse._SubParsersAction) -> argparse.ArgumentParser:
         """Add testing arguments parser"""
         subparser = parser.add_parser('test', help='test with a model checkpoint')
-        subparser.add_argument('-w', '--work_dir', required=True, help='configuration YAML file')
+        subparser.add_argument(
+            '-w', '--work_dir', required=True, help='directory to load config and checkpoint'
+        )
         subparser.add_argument('-d', '--device', default='gpu', help='device name')
         subparser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
 
@@ -60,7 +63,7 @@ def test_model(
     config = Config.from_file(os.path.join(work_dir, 'config.yaml'))
     checkpoint_path = checkpoint_path or os.path.join(work_dir, 'best_model.pth')
 
-    if not (os.path.exists(work_dir) and os.listdir(work_dir)):
+    if not os.path.exists(work_dir) and not is_empty_dir(work_dir):
         raise ConfigurationError(f'`work_dir` ({work_dir}) do not exists or is not empty.')
 
     # build datasets via `DatasetManager`

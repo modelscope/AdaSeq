@@ -40,4 +40,6 @@ train:
     total_iters: 20
 
 evaluation:
+  dataloader:
+    batch_size_per_gpu: 128
   metrics: ner-metric
