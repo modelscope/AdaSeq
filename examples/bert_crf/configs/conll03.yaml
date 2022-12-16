@@ -7,8 +7,7 @@ task: named-entity-recognition
 
 dataset:
   data_file: https://data.deepai.org/conll2003.zip
-  data_type: sequence_labeling
-  data_format: column
+  data_type: column
 
 preprocessor:
   type: sequence-labeling-preprocessor
@@ -21,7 +20,7 @@ model:
   type: sequence-labeling-model
   embedder:
     model_name_or_path: xlm-roberta-large
-  word_dropout: 0.1
+  dropout: 0.1
   use_crf: true
 
 train:

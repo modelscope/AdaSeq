@@ -26,7 +26,7 @@ model:
   embedder:
     model_name_or_path: roberta-large
     drop_special_tokens: false
-  word_dropout: 0
+  dropout: 0
   decoder:
     type: linear
   loss_function: WBCE

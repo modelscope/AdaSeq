@@ -85,6 +85,7 @@ class DefaultTrainer(EpochBasedTrainer):
                 mode=ModeKeys.EVAL,
                 preprocessor=self.eval_preprocessor,
             )
+        logger.info(f'device: {self.device}')
 
     def rebuild_config(self, config: Config) -> Config:
         """

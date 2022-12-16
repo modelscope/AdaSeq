@@ -99,8 +99,7 @@ class TestDatasets(unittest.TestCase):
         dm = DatasetManager.from_config(
             task=self.ner_task,
             data_file=dict(train=self.ner_local_train_file, test=self.ner_local_test_file),
-            data_type='sequence_labeling',
-            data_format='column',
+            data_type='column',
         )
         self._select_and_test(dm, True)
 
@@ -109,8 +108,7 @@ class TestDatasets(unittest.TestCase):
         dm = DatasetManager.from_config(
             task=self.ner_task,
             data_file=self.ner_remote_splits,
-            data_type='sequence_labeling',
-            data_format='column',
+            data_type='column',
         )
         self._select_and_test(dm, True)
 
@@ -119,8 +117,7 @@ class TestDatasets(unittest.TestCase):
         dm = DatasetManager.from_config(
             task=self.ner_task,
             data_file=self.ner_local_zip_file,
-            data_type='sequence_labeling',
-            data_format='column',
+            data_type='column',
         )
         self._select_and_test(dm, True)
 
@@ -139,8 +136,7 @@ class TestDatasets(unittest.TestCase):
         dm = DatasetManager.from_config(
             task=self.ner_task,
             data_file=self.ner_remote_file,
-            data_type='sequence_labeling',
-            data_format='column',
+            data_type='column',
         )
         self._select_and_test(dm, True)
 

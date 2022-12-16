@@ -4,8 +4,7 @@ task: named-entity-recognition
 
 dataset:
   data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
-  data_type: sequence_labeling
-  data_format: column
+  data_type: column
   labels:
     type: count_span_labels
 

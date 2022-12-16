@@ -1,9 +1,9 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 
+import json
+
 import datasets
 from datasets import Features, Value
-
-from adaseq.data.dataset_builders.dataset_reader import EntityTypingDatasetReader
 
 from .base import CustomDatasetBuilder
 
@@ -51,8 +51,66 @@ class EntityTypingDatasetBuilder(CustomDatasetBuilder):
         return info
 
     def _generate_examples(self, filepath):
-        if 'corpus_reader' in self.config.corpus_config:
-            # TODO: get the reader via reflection
-            raise NotImplementedError
-        else:
-            return EntityTypingDatasetReader.load_data_file(filepath, self.config.corpus_config)
+        """Load data file.
+        Args:
+        file_path: string, data file path.
+        corpus_config: dictionary, required keys:
+        tokenizer: string, specify the tokenization method,
+            'char' list(text) and 'blank' for text.split(' ')
+        is_end_included: bool, wheather the end index pointer to the
+            last token or the token next to the last token.
+            e.g., text = 'This is an example.', mention = 'example',
+            end = 3 if is_end_included is True.
+
+        """
+        corpus_config = self.config.corpus_config
+        spans_key = corpus_config.get('spans_key', 'label')
+        text_key = corpus_config.get('text_key', 'text')
+        tokenizer = corpus_config.get('tokenizer', 'char')
+        is_end_included = corpus_config.get('is_end_included', False)
+
+        with open(filepath, encoding='utf-8') as f:
+            guid = 0
+            for line in f:
+                example = json.loads(line)
+                text = example[text_key]
+                if isinstance(text, list):
+                    tokens = text
+                elif isinstance(text, str):
+                    if tokenizer == 'char':
+                        tokens = list(text)
+                    elif tokenizer == 'blank':
+                        tokens = text.split()
+                    else:
+                        raise NotImplementedError
+                else:
+                    raise ValueError('Unsupported text input.')
+
+                entities = list()
+                for span in example[spans_key]:
+                    if is_end_included:
+                        span['end'] += 1
+                    entities.append(span)
+
+                mask = [True] * len(tokens)
+
+                reading_format = corpus_config.get('encoding_format', 'span')
+                if reading_format == 'span':
+                    yield guid, {
+                        'id': str(guid),
+                        'tokens': tokens,
+                        'spans': entities,
+                        'mask': mask,
+                    }
+                    guid += 1
+                elif reading_format == 'concat':
+                    for entity in entities:
+                        yield guid, {
+                            'id': str(guid),
+                            'tokens': tokens,
+                            'spans': [entity],
+                            'mask': mask,
+                        }
+                        guid += 1
+                else:
+                    raise NotImplementedError('unimplemented reading_format')

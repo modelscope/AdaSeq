@@ -24,7 +24,8 @@ class RelationExtractionModel(Model):
         self,
         id_to_label: Dict[int, str],
         embedder: Union[Embedder, str],
-        word_dropout: Optional[float] = 0.0,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
         multiview: Optional[bool] = False,
         temperature: Optional[float] = 1.0,
         **kwargs
@@ -37,9 +38,12 @@ class RelationExtractionModel(Model):
         else:
             self.embedder = Embedder.from_config(embedder)
 
-        self.use_dropout = word_dropout > 0.0
+        self.use_dropout = dropout > 0.0
         if self.use_dropout:
-            self.dropout = WordDropout(word_dropout)
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
 
         hidden_size = self.embedder.get_output_dim()
         self.linear = nn.Linear(2 * hidden_size, self.num_labels)

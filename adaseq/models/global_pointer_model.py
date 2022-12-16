@@ -62,7 +62,8 @@ class GlobalPointerModel(Model):
         embedder: Union[Embedder, Dict[str, Any]],
         encoder: Optional[Union[Encoder, Dict[str, Any]]] = None,
         token_ffn_out_width: int = -1,
-        word_dropout: float = 0.0,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
         **kwargs
     ) -> None:
         super().__init__()
@@ -89,11 +90,14 @@ class GlobalPointerModel(Model):
         self.token_ffn_out_width = token_ffn_out_width
         self.token_inner_embed_ffn = nn.Linear(hidden_size, token_ffn_out_width * 2)
         self.type_score_ffn = nn.Linear(hidden_size, num_labels * 2)
-
         self.pos_embed = SinusoidalPositionEmbedding(token_ffn_out_width, 'zero')
-        self.use_dropout = word_dropout > 0.0
+
+        self.use_dropout = dropout > 0.0
         if self.use_dropout:
-            self.dropout = WordDropout(word_dropout)
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
 
     def forward(
         self,

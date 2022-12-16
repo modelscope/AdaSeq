@@ -6,8 +6,7 @@ task: chinese-word-segmentation
 
 dataset:
   data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/pku_cws/repo/files?Revision=master&FilePath=pku.zip'
-  data_type: sequence_labeling
-  data_format: column
+  data_type: column
 
 preprocessor:
   type: sequence-labeling-preprocessor
@@ -21,7 +20,7 @@ model:
   type: sequence-labeling-model
   embedder:
     model_name_or_path: bert-base-chinese
-  word_dropout: 0.1
+  dropout: 0.1
   use_crf: true
 
 train:

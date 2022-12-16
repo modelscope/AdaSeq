@@ -28,7 +28,8 @@ class SequenceLabelingModel(Model):
         num_labels (int): number of labels
         embedder (Union[Embedder, str], `optional`): embedder used in the model.
             It can be an `Embedder` instance or an embedder config file or an embedder config dict.
-        word_dropout (float, `optional`): word dropout rate, default `0.0`.
+        dropout (float, `optional`): dropout rate, default `0.0`.
+        word_dropout (bool): if `True`, use `WordDropout`.
         use_crf (bool, `optional`): whether to use crf, default `True`.
         **kwargs: other arguments
     """
@@ -38,7 +39,8 @@ class SequenceLabelingModel(Model):
         id_to_label: Dict[int, str],
         embedder: Union[Embedder, ConfigDict],
         encoder: Optional[Union[Encoder, ConfigDict]] = None,
-        word_dropout: float = 0.0,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
         use_crf: Optional[bool] = True,
         multiview: Optional[bool] = False,
         temperature: Optional[float] = 1.0,
@@ -69,9 +71,12 @@ class SequenceLabelingModel(Model):
 
         self.linear = nn.Linear(hidden_size, self.num_labels)
 
-        self.use_dropout = word_dropout > 0.0
+        self.use_dropout = dropout > 0.0
         if self.use_dropout:
-            self.dropout = WordDropout(word_dropout)
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
 
         self.use_crf = use_crf
         if use_crf:

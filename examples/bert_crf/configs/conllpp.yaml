@@ -10,8 +10,7 @@ dataset:
     train: 'https://www.modelscope.cn/api/v1/datasets/damo/conllpp_ner/repo/files?Revision=master&FilePath=train.txt'
     valid: 'https://www.modelscope.cn/api/v1/datasets/damo/conllpp_ner/repo/files?Revision=master&FilePath=dev.txt'
     test: 'https://www.modelscope.cn/api/v1/datasets/damo/conllpp_ner/repo/files?Revision=master&FilePath=test.txt'
-  data_type: sequence_labeling
-  data_format: column
+  data_type: column
 
 preprocessor:
   type: sequence-labeling-preprocessor
@@ -24,7 +23,7 @@ model:
   type: sequence-labeling-model
   embedder:
     model_name_or_path: xlm-roberta-large
-  word_dropout: 0.1
+  dropout: 0.1
   use_crf: true
 
 train:

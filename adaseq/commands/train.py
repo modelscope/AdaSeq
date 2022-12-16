@@ -181,5 +181,6 @@ def build_trainer_from_partial_objects(config, work_dir, **kwargs):
         dataset_manager=dm,
         data_collator=data_collator,
         preprocessor=preprocessor,
+        **kwargs,
     )
     return trainer

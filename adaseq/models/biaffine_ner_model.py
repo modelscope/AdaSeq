@@ -10,6 +10,7 @@ from adaseq.models.base import Model
 from adaseq.modules.biaffine import Biaffine
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
+from adaseq.modules.encoders import Encoder
 from adaseq.modules.util import get_tokens_mask
 
 
@@ -24,10 +25,12 @@ class BiaffineNerModel(Model):
         self,
         id_to_label: Union[Dict[int, str], List[str]],
         embedder: Optional[Union[Embedder, Dict]] = None,
+        encoder: Optional[Union[Encoder, Dict[str, Any]]] = None,
         biaffine_ffnn_size: int = -1,
         biaffine_bias: bool = True,
         flat_ner: bool = True,
-        word_dropout: float = 0.0,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
         **kwargs
     ):
         super().__init__()
@@ -40,13 +43,27 @@ class BiaffineNerModel(Model):
         else:
             self.embedder = Embedder.from_config(embedder, **kwargs)
         hidden_size = self.embedder.get_output_dim()
+
+        if encoder is None:
+            self.encoder = None
+        else:
+            if isinstance(encoder, Encoder):
+                self.encoder = encoder
+            else:
+                self.encoder = Encoder.from_config(encoder)
+            assert hidden_size == self.encoder.get_input_dim()
+            hidden_size = self.encoder.get_output_dim()
+
         self.scorer = BiaffineScorer(
             hidden_size, biaffine_ffnn_size, self.num_labels, biaffine_bias
         )
 
-        self.use_dropout = word_dropout > 0.0
+        self.use_dropout = dropout > 0.0
         if self.use_dropout:
-            self.dropout = WordDropout(word_dropout)
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
 
     def forward(
         self,
@@ -63,13 +80,19 @@ class BiaffineNerModel(Model):
         meta (Dict[str, Any]):
             meta data of raw inputs.
         """
-        embed = self.embedder(**tokens)
-        mask = get_tokens_mask(tokens, embed.size(1))
+        x = self.embedder(**tokens)
+        mask = get_tokens_mask(tokens, x.size(1))
 
         if self.use_dropout:
-            embed = self.dropout(embed)
+            x = self.dropout(x)
 
-        span_scores = self.scorer(embed)
+        if self.encoder is not None:
+            x = self.encoder(x, mask)
+
+            if self.use_dropout:
+                x = self.dropout(x)
+
+        span_scores = self.scorer(x)
         outputs = {'span_scores': span_scores}
 
         if self.training and span_labels is not None:

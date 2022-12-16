@@ -6,8 +6,7 @@ experiment:
 task: named-entity-recognition
 
 dataset:
-  data_type: sequence_labeling
-  data_format: column
+  data_type: column
   data_file:
     train: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_train.json.txt
     dev: ${root_dir}/examples/ICASSP2023_MUG_track4/dataset/processed_dev.json.txt
@@ -24,7 +23,7 @@ model:
   type: sequence-labeling-model
   embedder:
     model_name_or_path: damo/nlp_structbert_backbone_base_std
-  word_dropout: 0.1
+  dropout: 0.1
   use_crf: true
 
 train:

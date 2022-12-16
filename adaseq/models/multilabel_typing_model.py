@@ -86,7 +86,8 @@ class MultiLabelSpanTypingModel(Model):
         id_to_label: Dict[int, str],
         embedder: Union[Embedder, str],
         span_encoder_method: str = 'concat',
-        word_dropout: Optional[float] = 0.0,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
         loss_function: str = 'BCE',
         class_threshold: float = 0.5,
         use_biaffine: bool = False,
@@ -107,9 +108,12 @@ class MultiLabelSpanTypingModel(Model):
         self.num_labels = len(id_to_label)
         self.linear = nn.Linear(self.linear_input_dim, self.num_labels)
 
-        self.use_dropout = word_dropout > 0.0
+        self.use_dropout = dropout > 0.0
         if self.use_dropout:
-            self.dropout = WordDropout(word_dropout)
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
 
         self.loss_function_type = loss_function
         self.class_threshold = class_threshold
@@ -219,7 +223,8 @@ class MultiLabelConcatTypingModel(Model):
         self,
         id_to_label: Dict[int, str],
         embedder: Union[Embedder, Dict] = None,
-        word_dropout: Optional[float] = 0.0,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
         loss_function: str = 'BCE',
         class_threshold: float = 0.5,
         pos_weight: float = 1.0,
@@ -238,9 +243,12 @@ class MultiLabelConcatTypingModel(Model):
 
         self.linear_input_dim = self.embedder.get_output_dim()
 
-        self.use_dropout = word_dropout > 0.0
+        self.use_dropout = dropout > 0.0
         if self.use_dropout:
-            self.dropout = WordDropout(word_dropout)
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
 
         self.loss_function_type = loss_function
         self.class_threshold = class_threshold

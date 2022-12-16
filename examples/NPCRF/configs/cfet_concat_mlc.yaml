@@ -26,7 +26,7 @@ model:
   embedder:
     model_name_or_path: sijunhe/nezha-cn-base
     drop_special_tokens: false
-  word_dropout: 0.1
+  dropout: 0.1
   decoder:
     type: linear
   loss_function: WBCE
