@@ -29,8 +29,9 @@
 
 ## ⚡ Quick Experience
 You can try out our models via online demos built on ModelScope:
-[NER](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
-[CWS](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
+[[English NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_english-large-news/summary)
+[[Chinese NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
+[[CWS]](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
 
 All modelcards we released can be found in this [page](.).
 
@@ -62,17 +63,20 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 ```
 
 ## 📖 Tutorials
-- Quick Start
+- [Quick Start](./docs/tutorials/quick_start.md)
 - Basics
+  - [Learning about Configs](./docs/tutorials/learning_about_configs.md)
+  - [Customizing Dataset](./docs/tutorials/customizing_datasets.md)
+  - [Common Architectures](./docs/tutorials/common_architectures.md)
+  - [TODO] Useful Hooks
+  - [Hyperparameter Optimization](./docs/tutorials/hyperparameter_optimization.md)
+  - [Training with Multiple GPUs](./docs/tutorials/training_with_multiple_gpus.md)
 - Best Practice
-  - Training a model with custom dataset
-    - [Training a Model & Configuration Explanation](./docs/tutorials/training_a_model.md)
-    - [Preparing Custom Dataset](./docs/tutorials/preparing_custom_dataset.md)
-    - [Hyperparameter Tuning with Grid Search](./docs/tutorials/hyperparameter_tuning_with_grid_search.md)
-    - [Training with Multiple GPUs](./docs/tutorials/training_with_multiple_gpus.md)
-    - (TODO) Upload your model to ModelScope
-  - Reproducing results in published papers
-  - Building your model
+  - [Training a Model with Custom Dataset](./docs/tutorials/training_a_model.md)
+  - [Reproducing Results in Published Papers](./docs/tutorials/reproducing_papers.md)
+  - [TODO] Uploading Saved Model to ModelScope
+  - [TODO] Customizing your Model
+  - [TODO] Serving with AdaLA
 
 ## 📝 Contributing
 All contributions are welcome to improve AdaSeq. Please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for the contributing guideline.
