@@ -7,7 +7,7 @@ task: named-entity-recognition
 
 dataset:
   data_file: https://data.deepai.org/conll2003.zip
-  data_type: column
+  data_type: conll
 
 preprocessor:
   type: span-extraction-preprocessor

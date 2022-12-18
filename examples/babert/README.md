@@ -36,8 +36,7 @@ dataset:
     train: local_path_to/train.txt
     valid: local_path_to/dev.txt
     test: local_path_to/test.txt
-  data_type: sequence_labeling
-  data_format: column
+  data_type: conll
 ```
 
 ## Model Checkpoint

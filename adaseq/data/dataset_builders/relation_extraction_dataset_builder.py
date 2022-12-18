@@ -49,21 +49,21 @@ class RelationExtractionDatasetBuilder(CustomDatasetBuilder):
 
     def _generate_examples(self, filepath):
         corpus_config = self.config.corpus_config
-        if corpus_config['data_type'] == 'column':
-            return self._load_column_data_file(filepath, corpus_config)
+        if corpus_config['data_type'] == 'conll':
+            return self._load_conll_file(filepath, corpus_config)
         else:
             raise ValueError('Unknown corpus format type [%s]' % corpus_config['data_type'])
 
     @classmethod
     def load_data_file(cls, file_path, corpus_config):
         """load CoNLL format file."""
-        if corpus_config['data_type'] == 'column':
-            return cls._load_column_data_file(file_path, corpus_config)
+        if corpus_config['data_type'] == 'conll':
+            return cls._load_conll_file(file_path, corpus_config)
         else:
             raise ValueError('Unknown corpus format type [%s]' % corpus_config['data_type'])
 
     @classmethod
-    def _load_column_data_file(cls, file_path, corpus_config):
+    def _load_conll_file(cls, file_path, corpus_config):
         delimiter = corpus_config.get('delimiter', None)
 
         with open(file_path, encoding='utf-8') as f:

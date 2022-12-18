@@ -10,7 +10,7 @@ dataset:
     train: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=train.txt'
     valid: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=dev.txt'
     test: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=test.txt'
-  data_type: column
+  data_type: conll
 
 preprocessor:
   type: sequence-labeling-preprocessor
@@ -49,4 +49,4 @@ evaluation:
     - type: ner-metric
     - type: ner-dumper
       model_type: sequence_labeling
-      dump_format: column
+      dump_format: conll

@@ -7,7 +7,7 @@ task: named-entity-recognition
 
 dataset:
   data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
-  data_type: column
+  data_type: conll
 
 preprocessor:
   type: sequence-labeling-preprocessor
@@ -47,4 +47,4 @@ evaluation:
     - type: ner-metric
     - type: ner-dumper
       model_type: sequence_labeling
-      dump_format: column
+      dump_format: conll

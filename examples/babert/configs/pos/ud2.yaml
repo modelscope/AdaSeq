@@ -6,7 +6,7 @@ task: part-of-speech
 
 dataset:
   data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/ud1_pos/repo/files?Revision=master&FilePath=ud2.zip'
-  data_type: column
+  data_type: conll
 
 preprocessor:
   type: sequence-labeling-preprocessor
@@ -43,4 +43,4 @@ evaluation:
     - type: ner-metric
     - type: ner-dumper
       model_type: sequence_labeling
-      dump_format: column
+      dump_format: conll

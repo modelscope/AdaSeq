@@ -110,7 +110,7 @@ class DatasetManager:
 
         data_file: `Union[str, Dict[str, str]]`, optional (default = `None`)
             Used only when loading a dataset with built-in `DatasetBuilder`s.
-            It could be a url like `"https://data.deepai.org/conll2003.zip"`,
+            It could be an url like `"https://data.deepai.org/conll2003.zip"`,
             or a local directory (absolute path) like `"/home/data/conll2003"`,
             or a local archieve file absolute path like `"/home/data/conll2003.zip"`.
             Details refer to `./dataset_builders/base.py`.

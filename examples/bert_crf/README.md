@@ -24,33 +24,7 @@ model:
 ```
 
 ### Using Custom Dataset
-See [tutorial](../../docs/tutorials/preparing_custom_dataset.md)
-
-### Supported Dataset Format
-1. CoNLL format (column format)
-```
-鲁  B-ORG
-迅  I-ORG
-文  I-ORG
-学  I-ORG
-院  I-ORG
-组  O
-织  O
-有  O
-关  O
-专  O
-家  O
-```
-
-2. Sequence labeling json format
-```
-{"text": "鲁迅文学院组织有关专家", "labels": ["B-ORG", "I-ORG", "I-ORG", "I-ORG", "I-ORG", "O", "O", "O", "O", "O", "O"]}
-```
-
-3. Span-based json format
-```
-{"text": "人民日报出版社新近出版了王梦奎的短文集《翠微居杂笔》。", "label": [{"start": 0, "end": 7, "type": ["组织", "出版商", "出版社"]}]}
-```
+See [tutorial](../../docs/tutorials/customizing_dataset.md)
 </details>
 
 ## Benchmarks

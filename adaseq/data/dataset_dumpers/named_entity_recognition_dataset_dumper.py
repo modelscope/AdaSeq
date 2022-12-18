@@ -32,8 +32,8 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
 
     def dump(self):
         """Only support dump CoNLL format and jsonline now."""
-        if self.dump_format == 'column':
-            self._dump_to_column()
+        if self.dump_format == 'conll':
+            self._dump_to_conll()
         elif self.dump_format == 'jsonline':
             self._dump_to_jsonline()
         else:
@@ -61,7 +61,7 @@ class NamedEntityRecognitionDatasetDumper(DatasetDumper):
             obj = dict(tokens=meta['tokens'], spans=meta['spans'], predicts=predicts)
             self.data.append(obj)
 
-    def _dump_to_column(self):
+    def _dump_to_conll(self):
         with open(self.save_path, 'w', encoding='utf8') as fout:
             for example in self.data:
                 for i in range(len(example['labels'])):

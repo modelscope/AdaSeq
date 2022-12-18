@@ -46,4 +46,4 @@ evaluation:
     - type: ner-metric
     - type: ner-dumper
       model_type: sequence_labeling
-      dump_format: column
+      dump_format: conll

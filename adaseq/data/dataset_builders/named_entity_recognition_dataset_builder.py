@@ -56,15 +56,22 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
     def _generate_examples(self, filepath):
         """
         NER reader supports:
-        1. CoNLL format ('column'),
-        2. json tags format
+        1. data_type: conll
+            ```
+            duck B-PER
+            duck I-PER
+            duck O
+            ```
+
+        2. data_type: json_tags
         ```
         {
             'text': 'duck duck duck duck',
             'labels': ['B-PER', 'O', ...]
         }
         ```
-        3. json spans format
+
+        3. data_type: json_spans
         ```
         {
             'text': 'duck duck',
@@ -73,7 +80,8 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
                 ...
             ]
         ```
-        4. cluener format
+
+        4. data_type: cluener
         ```
         {
             'text': 'duck duck',
@@ -81,22 +89,22 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
                 'LOC': [[0, 1], ...]
             }
         }
-        ```.
+        ```
         """
         corpus_config = self.config.corpus_config
-        if corpus_config['data_type'] == 'column':
-            return self._load_column_data_file(filepath, corpus_config)
+        if corpus_config['data_type'] == 'conll':
+            return self._load_conll_file(filepath, corpus_config)
         elif corpus_config['data_type'] == 'json_tags':
-            return self._load_sequence_labeling_json_data_file(filepath, corpus_config)
+            return self._load_json_tags_file(filepath, corpus_config)
         elif corpus_config['data_type'] == 'json_spans':
-            return self._load_json_spans_data_file(filepath, corpus_config)
+            return self._load_json_spans_file(filepath, corpus_config)
         elif corpus_config['data_type'] == 'cluener':
-            return self._load_cluener_json_data_file(filepath, corpus_config)
+            return self._load_cluener_file(filepath, corpus_config)
         else:
             raise ValueError('Unknown corpus format type [%s]' % corpus_config['data_type'])
 
     @classmethod
-    def _load_column_data_file(cls, file_path, corpus_config: Dict):
+    def _load_conll_file(cls, file_path, corpus_config: Dict):
         delimiter = corpus_config.get('delimiter', None)
         with open(file_path, encoding='utf-8') as f:
             guid = 0
@@ -126,7 +134,7 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
                 yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans, 'mask': mask}
 
     @classmethod
-    def _load_sequence_labeling_json_data_file(cls, filepath, corpus_config):
+    def _load_json_tags_file(cls, filepath, corpus_config):
         tags_key = corpus_config.get('tags_key', 'labels')
         text_key = corpus_config.get('text_key', 'text')
         tokenizer = corpus_config.get('tokenizer', 'char')
@@ -154,7 +162,7 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
                 guid += 1
 
     @classmethod
-    def _load_json_spans_data_file(cls, filepath, corpus_config):
+    def _load_json_spans_file(cls, filepath, corpus_config):
         # {'text': 'aaa', 'labels': [{'start': 0, 'end': 1, type: 'LOC'}, ...]}
         # {'tokens': ['a', 'aa', ...], 'spans': [{'start': 0, 'end': 1, type: 'LOC'}, ...]}
         spans_key = corpus_config.get('spans_key', 'spans')
@@ -190,7 +198,7 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
                 guid += 1
 
     @classmethod
-    def _load_cluener_json_data_file(cls, filepath, corpus_config):
+    def _load_cluener_file(cls, filepath, corpus_config):
         is_end_included = corpus_config.get('is_end_included', False)
 
         with open(filepath, encoding='utf-8') as f:
