@@ -17,7 +17,7 @@ from adaseq.utils.file_utils import is_empty_dir
 
 class Test(Subcommand):
     """
-    usage: adaseq test [-h] -w WORK_DIR [-d DEVICE] [-cp CHECKPOINT_PATH]
+    usage: adaseq test [-h] -w WORK_DIR [-d DEVICE] [-ckpt CHECKPOINT_PATH]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -25,7 +25,7 @@ class Test(Subcommand):
                             directory to load config and checkpoint
       -d DEVICE, --device DEVICE
                             device name
-      -cp CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
+      -ckpt CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
                             model checkpoint
     """
 
@@ -37,7 +37,7 @@ class Test(Subcommand):
             '-w', '--work_dir', required=True, help='directory to load config and checkpoint'
         )
         subparser.add_argument('-d', '--device', default='gpu', help='device name')
-        subparser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
+        subparser.add_argument('-ckpt', '--checkpoint_path', default=None, help='model checkpoint')
 
         subparser.set_defaults(func=test_model_from_args)
         return subparser

@@ -19,8 +19,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('test with a model checkpoint')
-    parser.add_argument('-w', '--work_dir', required=True, help='configuration YAML file')
+    parser.add_argument(
+        '-w', '--work_dir', required=True, help='directory to load config and checkpoint'
+    )
     parser.add_argument('-d', '--device', default='gpu', help='device name')
-    parser.add_argument('-cp', '--checkpoint_path', default=None, help='model checkpoint')
+    parser.add_argument('-ckpt', '--checkpoint_path', default=None, help='model checkpoint')
     args = parser.parse_args()
     main(args)
