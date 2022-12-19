@@ -1,6 +1,6 @@
 addict
 datasets
-modelscope>=1.1.1,<1.1.3
+modelscope==1.1.2
 pyyaml
 seqeval
 torch>=1.11.0,<1.13.0
