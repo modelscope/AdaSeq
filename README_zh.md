@@ -1,7 +1,7 @@
 # AdaSeq: An All-in-One Library for Developing State-of-the-Art Sequence Understanding Models
 
 [![license](https://img.shields.io/github/license/modelscope/adaseq.svg)](./LICENSE)
-[![modelscope](https://img.shields.io/badge/modelscope-1.1.0-624aff.svg)](https://modelscope.cn/)
+[![modelscope](https://img.shields.io/badge/modelscope-1.1.2-624aff.svg)](https://modelscope.cn/)
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
@@ -48,7 +48,6 @@
 
 ## ⚡ 快速体验
 可以在ModelScope上快速体验我们的模型：
-
 [[英文NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_english-large-news/summary)
 [[中文NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
 [[中文分词]](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
@@ -62,6 +61,7 @@
 - [Transformer-based CRF](./examples/bert_crf)
 - [Partial CRF](./examples/partial_bert_crf)
 - [Retrieval Augmented NER](./examples/RaNER)
+- [Biaffine NER](./examples/biaffine_ner)
 - [Global-Pointer](./examples/global_pointer)
 - [Multi-label Entity Typing](./examples/entity_typing)
 - ...

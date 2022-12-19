@@ -1,7 +1,7 @@
 # AdaSeq: An All-in-One Library for Developing State-of-the-Art Sequence Understanding Models
 
 [![license](https://img.shields.io/github/license/modelscope/adaseq.svg)](./LICENSE)
-[![modelscope](https://img.shields.io/badge/modelscope-1.1.0-624aff.svg)](https://modelscope.cn/)
+[![modelscope](https://img.shields.io/badge/modelscope-1.1.2-624aff.svg)](https://modelscope.cn/)
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
@@ -61,14 +61,14 @@ All modelcards we released can be found in this page [Modelcards](./docs/modelca
 - [Transformer-based CRF](./examples/bert_crf)
 - [Partial CRF](./examples/partial_bert_crf)
 - [Retrieval Augmented NER](./examples/RaNER)
+- [Biaffine NER](./examples/biaffine_ner)
 - [Global-Pointer](./examples/global_pointer)
 - [Multi-label Entity Typing](./examples/entity_typing)
 - ...
 </details>
 
 ## 💾 Dataset Zoo
-All datasets we collected can be found in this page [Datasets](./docs/datasets.md).
-
+We collected many datasets for sequence understanding tasks. All can be found in this page [Datasets](./docs/datasets.md).
 
 ## 📦 Installation
 AdaSeq project is based on `Python version >= 3.7` and `PyTorch version >= 1.8`.
