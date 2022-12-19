@@ -1,14 +1,6 @@
 # Training with Multiple GPUs
 This part of tutorial shows how you can train models with multiple GPUs.
 
-## Modify configuration file
-Add this script to the end of your configuration file to enable DDP training mode.
-```yaml
-parallel:
-  type: DistributedDataParallel
-  find_unused_parameters: true
-```
-
 ## single machine & multi gpus
 ```shell
 python -m torch.distributed.launch --nproc_per_node=${NUMBER_GPUS} --master_port=${MASTER_PORT} scripts/train.py -c ${cfg_file}
@@ -33,3 +25,11 @@ python -m torch.distributed.launch --nproc_per_node=${NUMBER_GPUS} --nnodes=2 --
 - **node_rank**(`int`): Rank of current node, starting from 0.
 - **master_addr**(`int`): Master IP, for example `--master_addr=192.168.1.1`.
 - **master_port**(`int`): Master port, for example `--master_port=29527`.
+
+## [Optional] Modify configuration file
+Add this script to the end of your configuration file when RuntimeError occurs.
+```yaml
+parallel:
+  type: DistributedDataParallel
+  find_unused_parameters: true
+```
