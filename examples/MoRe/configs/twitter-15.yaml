@@ -1,0 +1,49 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: more-twitter-15
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_file: 'https://modelscope.cn/api/v1/datasets/caijiong_sijun/MoRE-processed-data/repo/files?Revision=master&FilePath=twitter2015.zip'
+  data_type: conll
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  model_dir: xlm-roberta-large
+  max_length: 512
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  embedder:
+    model_name_or_path: xlm-roberta-large
+  word_dropout: 0.1
+  use_crf: true
+
+train:
+  max_epochs: 10
+  dataloader:
+    batch_size_per_gpu: 4
+  optimizer:
+    type: AdamW
+    lr: 1.0e-5
+    param_groups:
+      - regex: crf
+        lr: 5.0e-2
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 10
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 32
+  metrics:
+    - type: ner-metric
+    - type: ner-dumper
+      model_type: sequence_labeling
+      dump_format: conll
