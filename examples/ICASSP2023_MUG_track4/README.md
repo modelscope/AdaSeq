@@ -4,9 +4,9 @@ This tutorial shows how to train a baseline model for the Keyphrase Extraction t
 
 ## 4 Steps to Train a Model
 
-We model KPE as a sequence-labeling problem and apply the Bert-CRF model implemented in [AdaSeq](https://github.com/modelscope/adaseq/examples/ICASSP2023_MUG_track4/README.md) to solve it.
+We model KPE as a sequence-labeling problem and apply the Bert-CRF model implemented in [AdaSeq](https://github.com/modelscope/adaseq) to solve it.
 
-> AdaSeq is a an easy-to-use library, built on ModelScope, which provides plenty of cutting-edge models, training methods and useful toolkits for sequence understanding tasks.
+> AdaSeq is an easy-to-use library, built on ModelScope, which provides plenty of cutting-edge models, training methods and useful toolkits for sequence understanding tasks.
 
 #### Step1: Requirements & Installation
 Python version >= 3.7
@@ -37,7 +37,7 @@ python scripts/train.py -c examples/ICASSP2023_MUG_track4/configs/bert_crf_sbert
 
 Also, there are many methods other than Bert-CRF implemented in AdaSeq, such as RaNER, Global-Pointer, etc.
 
-What's more, a [grid search tool](https://github.com/modelscope/adaseq/docs/tutorials/hyperparameter_tuning_with_grid_search.md) is provided for efficient tuning.
+What's more, a [grid search tool](../../docs/tutorials/hyperparameter_optimization.md) is provided for efficient tuning.
 
 #### Step4: Evaluate Your Model
 First install some requirements in the evaluation script.
