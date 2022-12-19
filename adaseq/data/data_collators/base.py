@@ -73,7 +73,11 @@ class DataCollatorWithPadding:
                 sub_field_pair.append(('offsets', (0, 0)))
 
             sub = 'has_special_tokens'
-            padded_tokens = {sub: [batch[field][i][sub] for i in range(batch_size)]}
+            try:
+                padded_tokens = {sub: [batch[field][i][sub] for i in range(batch_size)]}
+            except KeyError:
+                padded_tokens = {}
+
             for sub, pad_value in sub_field_pair:
                 if sub not in batch[field][0]:
                     continue
