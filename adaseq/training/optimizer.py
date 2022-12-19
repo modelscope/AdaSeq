@@ -178,4 +178,8 @@ def make_parameter_groups(
             num_parameters += parameter_group.numel()  # type: ignore
     logger.info('Number of trainable parameters: %s', num_parameters)
 
+    # Move the default group to the first, since `modelscope` only log lr of the first group.
+    # This is the fastest way I think.
+    parameter_groups.reverse()
+
     return parameter_groups
