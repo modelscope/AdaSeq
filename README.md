@@ -24,6 +24,7 @@
 ⚠️**Notice:** This project is under quick development. This means some interfaces could be changed in the future.
 
 ## 📢 What's New
+- 2022-12: [[EMNLP 2022] Released MoRE code](./examples/MoRe)
 - 2022-11: [[EMNLP 2022] Released NPCRF code](./examples/NPCRF)
 - 2022-11: [[EMNLP 2022] Released BABERT models](./examples/babert)
 
@@ -33,9 +34,9 @@ You can try out our models via online demos built on ModelScope:
 [[Chinese NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
 [[CWS]](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
 
-All modelcards we released can be found in this [page](.).
+All modelcards we released can be found in this [page](./docs/modelcards.md).
 
-## 🛠️ Model Zoo & Dataset Zoo
+## 🛠️ Model Zoo
 <details open>
 <summary><b>Supported models:</b></summary>
 
@@ -47,11 +48,8 @@ All modelcards we released can be found in this [page](.).
 - ...
 </details>
 
-<details open>
-<summary><b>Supported datasets:</b></summary>
-
-- TODO
-</details>
+## 💾 Dataset Zoo
+All datasets we collected can be found in this [page](./docs/datasets.md).
 
 
 ## 📦 Installation
@@ -66,8 +64,8 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 - [Quick Start](./docs/tutorials/quick_start.md)
 - Basics
   - [Learning about Configs](./docs/tutorials/learning_about_configs.md)
-  - [Customizing Dataset](./docs/tutorials/customizing_datasets.md)
-  - [Common Architectures](./docs/tutorials/common_architectures.md)
+  - [Customizing Dataset](./docs/tutorials/customizing_dataset.md)
+  - [TODO] Common Architectures
   - [TODO] Useful Hooks
   - [Hyperparameter Optimization](./docs/tutorials/hyperparameter_optimization.md)
   - [Training with Multiple GPUs](./docs/tutorials/training_with_multiple_gpus.md)

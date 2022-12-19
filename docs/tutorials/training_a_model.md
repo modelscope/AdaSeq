@@ -1,125 +1,132 @@
-# Training a Model & Configuration Explanation
-This part of tutorial shows how you can train you own models using state-of-the-art methods.
+# Training a Model with Custom Dataset
+Generally speaking, `Model = Data + Network + Training`.
 
-## Training a model
-We currently provide a preset script to train a model with a configuration file. You can also write your own code to assemble a training procedure following the [doc](https://modelscope.cn/docs/%E6%A8%A1%E5%9E%8B%E7%9A%84%E8%AE%AD%E7%BB%83Train).
+AdaSeq currently supports file-based mode, which means you need to clarify these arguments in a configuration file before starting training. And the configuration file is all you need to train a model.
 
-### Using preset script
-```shell
-python scripts/train.py -c ${cfg_file} [-t ${trainer} --seed ${seed}]
-```
-- **cfg_file** (`str`): Path to the configuration file.
-- **trainer** (`str`, optional, default: `None`): A trainer name defined in [metainfo](../../adaseq/metainfo.py). If this argument is not set, the trainer name should be found in `trainer: ${trainer}` in the configuration file.
-- **seed** (`int`, optional, default: `None`): The random seed used for everything. If this argument is not set, we will try to find it in `experiments.seed: ${seed}` in the configuration file. If neither is set, the seed will be set to `0`. If `seed = -1`， a random seed will be used.
+This part of tutorial will introduce how to train a model with a custom dataset step by step in the sections to come.
 
-## Resuming training
-```shell
-python scripts/train.py -c ${cfg_file} -cp ${checkpoint_path} [-t ${trainer} --seed ${seed}]
-```
-- **checkpoint_path** (`str`): Path to the checkpoint file.
+- [1. Writing a Configuration File](#1-writing-a-configuration-file)
+  - [1.1 Meta Settings](#11-meta-settings)
+  - [1.2 Preparing Dataset](#12-preparing-dataset)
+  - [1.3 Assembling Model Architecture](#13-assembling-model-architecture)
+  - [1.4 Specifying Training Hyper-parameters](#14-specifying-training-arguments)
+- [2. Starting Training](#2-starting-training)
+- [3. Fetching Evaluation Results and Predictions](#3-fetching-evaluation-results-and-predictions)
 
-## Configuration Explanation
+## 1. Writing a Configuration File
 Let's take [resume.yaml](../../examples/bert_crf/configs/resume.yaml) as an example.
 
-#### Experiment
+> For detailed descriptions of the configuration arguments, please refer to this tutorial [Learning about Configs](./learning_about_configs.md).
+
+### 1.1 Meta Settings
+First, tell AdaSeq where to save all outputs during training.
+
 ```yaml
 experiment:
-  exp_dir: experiments/  # experiment root directory
-  exp_name: resume  # experiment name
-  seed: 42  # random seed
+  exp_dir: experiments/
+  exp_name: resume
+  seed: 42
 ```
+So the training logs, model checkpoints, prediction results and a copy of the configuration files will all be saved to `./experiments/resume/${datetime}/`
 
-#### Task
-```yaml
-task: named-entity-recognition  # task name, used to configure task-specific dataset-builders
-```
+### 1.2 Preparing Dataset
+The `dataset` argument determines what the dataset look like (data format) and where to fetch the dataset (data source).
 
-#### Dataset
-4 types of dataset loading methods are supported:
-
-1. Load dataset from ModelScope
 ```yaml
 dataset:
-  name_or_path: damo/resume
+  data_file:
+    train: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=train.txt'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=dev.txt'
+    test: 'https://www.modelscope.cn/api/v1/datasets/damo/resume_ner/repo/files?Revision=master&FilePath=test.txt'
+  data_type: conll
 ```
+As the example snippet shows, AdaSeq will fetch the training, validation and testing dataset files from remote urls. The data is specified as `conll` format so that a corresponding script will be used to parse the data.
 
-2. Load local dataset python script or folder with python script inside
-```yaml
-dataset:
-  name_or_path: ${abs_path_to_py_script_or_folder}
-```
+> For more dataset loading approaches and supported data formats, please refer to this tutorial [Customizing Dataset](./customizing_dataset.md).
 
-3. Load local/remote dataset zip
-```yaml
-dataset:
-  data_dir: ${path_to_dataset_zip}
-  data_type: sequence_labeling
-  data_format: column
-```
+### 1.3 Assembling Model Architecture
+This part specifies the `task` `preprocessor` `data_collator` `model` in the training.
 
-4. Load local/remote dataset files
-```yaml
-dataset:
-  data_files:
-    train: ${path_to_train_file}
-    valid: ${path_to_validation_file}
-    test: ${path_to_test_file}
-  data_type: sequence_labeling
-  data_format: column
-```
+The basic data flow is:
+`dataset -> preprocessor -> data_collator -> model`
 
-#### Preprocessor
+`preprocessor` tells how AdaSeq processes a data sample. It needs a `model_dir` indicating the tokenizer to use and is used to turn a sentence into ids and masks.
+
+`data_collator` tells how to collate data samples into batches.
+
+`model` tells how a model is assembled where `type` indicates the basic architecture. A model usually consists of several replaceable components such as `embeder`, `encoder`, etc.
+
 ```yaml
+task: named-entity-recognition
+
 preprocessor:
   type: sequence-labeling-preprocessor
   model_dir: sijunhe/nezha-cn-base
   max_length: 150
-  data_collator: SequenceLabelingDataCollatorWithPadding
-```
 
-#### Model
-```yaml
+data_collator: SequenceLabelingDataCollatorWithPadding
+
 model:
   type: sequence-labeling-model
-  encoder:
+  embedder:
     model_name_or_path: sijunhe/nezha-cn-base
-  word_dropout: 0.1
+  dropout: 0.1
   use_crf: true
 ```
 
-#### Trainer
-```yaml
-trainer: ner-trainer
-```
+### 1.4 Specifying Training Arguments
+Last but not least, set some training and evaluation arguments in `train` and `evaluation`. Model performances can vary widely under different training settings.
 
-#### Training arguments
+This part is relatively easy to understand (I think). You can copy one and adjust the values to whatever you want.
 ```yaml
 train:
   max_epochs: 20
   dataloader:
     batch_size_per_gpu: 16
-    workers_per_gpu: 1
   optimizer:
     type: AdamW
     lr: 5.0e-5
-    crf_lr: 5.0e-1
+    param_groups:
+      - regex: crf
+        lr: 5.0e-1
   lr_scheduler:
     type: LinearLR
     start_factor: 1.0
     end_factor: 0.0
     total_iters: 20
-```
 
-#### Evaluation arguments
-```yaml
 evaluation:
   dataloader:
     batch_size_per_gpu: 128
-    workers_per_gpu: 1
-    shuffle: false
   metrics:
     - type: ner-metric
     - type: ner-dumper
       model_type: sequence_labeling
-      dump_format: column
+      dump_format: conll
 ```
+
+## 2. Starting Training
+Once you have a configuration file, it is easy to training a model. You can also use any of the configuration files in the examples. Just try it!
+
+```commandline
+python scripts/train.py -c examples/bert_crf/configs/resume.yaml
+```
+
+> We also provide advanced tutorials if you want to improve your training.
+> - [Hyperparameter Optimization](./hyperparameter_optimization.md)
+> - [Training with Multiple GPUs](./training_with_multiple_gpus.md)
+
+## 3. Fetching Evaluation Results and Predictions
+During training, the process bar and the evaluation results will be logged to both the terminal and to a log file.
+
+As we mentioned in [1.1 Meta Settings](#11-meta-settings), all outputs will be saved to `./experiments/resume/${datetime}/`. After training, there will be 5 files in the folder.
+```
+./experiments/resume/${datetime}/
+├── best_model.pth
+├── config.yaml
+├── metrics.json
+├── out.log
+└── pred.txt
+```
+
+You can either collect the evaluation results in `metrics.json` or review all training logs in `out.log`. `pred.txt` will give predictions on the test dataset. You can analyze it to improve your model or submit it to some competition. `best_model.pth` can be used for further tuning or deployment.
