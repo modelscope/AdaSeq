@@ -7,6 +7,11 @@
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
 [![contribution](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
+<div align="center">
+
+English | [简体中文](./README_zh.md)
+
+</div>
 
 ## Introduction
 ***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence Understanding Toolkit) is an easy-to-use all-in-one library, built on [ModelScope](https://modelscope.cn/home), that allows researchers and developers to train custom models for sequence understanding tasks, including word segmentation, POS tagging, chunking, NER, entity typing, relation extraction, etc.
@@ -16,9 +21,22 @@
 <details open>
 <summary>🌟 <b>Features:</b></summary>
 
-- **State-of-the-Art**: we provide plenty of cutting-edge models, training methods and useful toolkits for sequence understanding tasks.
-- **Easy-to-Use**: one line of command is all you need to obtain the best model.
-- **Extensible**: easily register new tasks, models, modules, criteria, optimizers, lr_schedulers and training methods.
+- **Plentiful Models**:
+
+  AdaSeq provide plenty of cutting-edge models, training methods and useful toolkits for sequence understanding tasks.
+
+- **State-of-the-Art**:
+
+  Our aim to develop the best implementation, which can beat many off-the-shelf frameworks on performance.
+
+- **Easy-to-Use**:
+
+  One line of command is all you need to obtain the best model.
+
+- **Extensible**:
+
+  It's easy to register a module, or build a customized sequence understanding model by assembling the predefined modules.
+
 </details>
 
 ⚠️**Notice:** This project is under quick development. This means some interfaces could be changed in the future.
@@ -34,7 +52,7 @@ You can try out our models via online demos built on ModelScope:
 [[Chinese NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
 [[CWS]](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
 
-All modelcards we released can be found in this [page](./docs/modelcards.md).
+All modelcards we released can be found in this page [Modelcards](./docs/modelcards.md).
 
 ## 🛠️ Model Zoo
 <details open>
@@ -49,7 +67,7 @@ All modelcards we released can be found in this [page](./docs/modelcards.md).
 </details>
 
 ## 💾 Dataset Zoo
-All datasets we collected can be found in this [page](./docs/datasets.md).
+All datasets we collected can be found in this page [Datasets](./docs/datasets.md).
 
 
 ## 📦 Installation
