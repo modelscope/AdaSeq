@@ -16,7 +16,7 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 ```
 
 #### Step2: Download & Preprocess Data
-1. Download and put `train.json` `dev.json` to `${root_dir}/examples/ICASSP2023_MUG_track4/dataset/`. `${root_dir}` is the absolute path of the AdaSeq repository.
+1. Download and put `train.json` `dev.json` `except_TS_test1_without_label.csv` to `${root_dir}/examples/ICASSP2023_MUG_track4/dataset/`. `${root_dir}` is the absolute path of the AdaSeq repository.
 
 2. Preprocess the downloaded data by splitting it into splits of 128 characters (or longer) and reformat data into CoNLL format.
 ```
@@ -59,6 +59,26 @@ For example:
 cd examples/ICASSP2023_MUG_track4
 python evaluate_kw.py dataset/dev.json ${root_dir}/experiments/kpe_sbert/outputs/${datetime}/pred.txt dataset/split_list_dev.json evaluation.log
 ```
+
+#### Step5: Make predictions on test files
+First use your trained model to make predictions on the test file.
+
+```shell
+cd ${root_dir}
+python scripts/test.py -c examples/ICASSP2023_MUG_track4/configs/bert_crf_sbert.yaml -cp ${model_path}
+```
+The output file is pred.txt in your current path.
+
+Then use `get_keywords.py` to make predictions on test file. There are 4 necessary parameters as same as those in `Step4`.
+
+For example:
+
+```shell
+cd examples/ICASSP2023_MUG_track4
+python get_keywords.py dataset/test.json ../../pred.txt dataset/split_list_test.json ${out_path}
+```
+
+
 
 ## Benchmarks
 

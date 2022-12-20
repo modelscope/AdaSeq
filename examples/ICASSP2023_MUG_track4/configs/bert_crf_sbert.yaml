@@ -45,6 +45,7 @@ train:
 evaluation:
   dataloader:
     batch_size_per_gpu: 256
+    shuffle: false
   metrics:
     - type: ner-metric
     - type: ner-dumper

@@ -2,6 +2,8 @@ import json
 import re
 from functools import cmp_to_key
 
+import pandas as pd
+
 LENGTH_LIMIT = 150
 
 
@@ -88,6 +90,24 @@ def process_data(filename, all_sentences=True):
     return final_docs, split_list
 
 
+def csv2json(csv_name, out_name='test.json'):
+    data_frame = pd.read_csv(csv_name, sep='\t')
+    jsons = []
+    for i, row in data_frame.iterrows():
+        content = json.loads(row['content'])
+        jsons.append(content)
+    data_dir = csv_name.split('/')[0]
+    f = open(f'{data_dir}/{out_name}', 'w')
+    json.dump(jsons, f)
+    return jsons
+
+
 if __name__ == '__main__':
-    dev_doc, dev = process_data('dataset/dev.json')
-    train_doc, train = process_data('dataset/train.json')
+
+    # train = json.loads(open('zyp_data/train.json', 'r').read())
+    # dev = open('zyp_data/dev.json', 'r').read()
+    dataset = 'dataset'
+    dev_doc, dev = process_data(f'{dataset}/dev.json')
+    train_doc, train = process_data(f'{dataset}/train.json')
+    test_json = csv2json(f'{dataset}/except_TS_test1_without_label.csv')
+    test_doc, test = process_data(f'{dataset}/test.json')
