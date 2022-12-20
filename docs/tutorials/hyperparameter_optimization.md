@@ -8,7 +8,7 @@ The grid search tool contains 3 modes:
 
 #### Table of contents:
 - [Modify configuration file](#modify-configuration-file)
-- [[Optional] Environment configuration file](#optional-environment-configuration-file)
+  - [[Optional] Environment configuration file](#optional-environment-configuration-file)
 - [Usage](#usage)
   - [tune](#tune)
   - [collect](#collect)

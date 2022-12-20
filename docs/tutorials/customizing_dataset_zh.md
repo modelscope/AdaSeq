@@ -92,7 +92,7 @@ dataset:
 ```
 
 > `name` 是在 ModelScope 上已有数据集的名字，比如
-> [`damo/resume`](https://modelscope.cn/datasets/damo/resume_ner/summary)。
+> [`damo/resume_ner`](https://modelscope.cn/datasets/damo/resume_ner/summary)。
 
 > `transform` 是可用的数据集格式转换函数名称，如果您的数据与 `adaseq` 内建格式不一致时，则需要指定此项，更多细节见第 4.1 节。
 

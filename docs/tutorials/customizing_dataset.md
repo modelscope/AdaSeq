@@ -39,7 +39,7 @@ dataset:
 ```
 
 > `name` should be one of the uploaded datasets in ModelScope, such
-> as [damo/resume](https://modelscope.cn/datasets/damo/resume_ner/summary). `access_token` is NOT necessary unless the
+> as [damo/resume_ner](https://modelscope.cn/datasets/damo/resume_ner/summary). `access_token` is NOT necessary unless the
 > dataset is private.
 
 #### 2.2 Loading dataset from Huggingface

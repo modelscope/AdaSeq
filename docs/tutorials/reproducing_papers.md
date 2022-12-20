@@ -1,6 +1,6 @@
 # Reproducing Results in Published Papers
 
-We've provided several re-implementations and experiment settings of papers in the area of Sequence Understanding. You can reproduce the results simply using one command.
+AdaSeq provides several re-implementations and experiment settings of papers in the area of Sequence Understanding. You can reproduce the results simply using one command.
 
 For example, to reproduce [BABERT](../../examples/babert), you can run:
 ```commandline
