@@ -14,7 +14,7 @@
 </div>
 
 ## 简介
-***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence Understanding Toolkit) 是一个基于[ModelScope](https://modelscope.cn/home)的序列理解开源工具箱，旨在提高开发者和研究者们的开发和创新效率，助力前沿论文工作落地。
+***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence Understanding Toolkit) 是一个基于[ModelScope](https://modelscope.cn/home)的**一站式**序列理解开源工具箱，旨在提高开发者和研究者们的开发和创新效率，助力前沿论文工作落地。
 
 ![](./docs/imgs/task_examples_zh.png)
 
@@ -42,9 +42,9 @@
 ⚠️**注意：** 这个项目仍在高速开发阶段，部分接口可能会发生改变。
 
 ## 📢 最新进展
-- 2022-12: [[EMNLP 2022] 实现 MoRE 算法](./examples/MoRe)
-- 2022-11: [[EMNLP 2022] 实现 NPCRF 算法](./examples/NPCRF)
-- 2022-11: [[EMNLP 2022] BABERT 模型释出，实验复现](./examples/babert)
+- 2022-12: [[EMNLP 2022] 实现检索增强多模态实体理解MoRE模型](./examples/MoRe)
+- 2022-11: [[EMNLP 2022] 实现超细粒度实体分类NPCRF模型](./examples/NPCRF)
+- 2022-11: [[EMNLP 2022] 无监督边界感知预训练模型模型BABERT释出，实验复现](./examples/babert)
 
 ## ⚡ 快速体验
 可以在ModelScope上快速体验我们的模型：
