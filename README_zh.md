@@ -1,11 +1,15 @@
 # AdaSeq: An All-in-One Library for Developing State-of-the-Art Sequence Understanding Models
 
+<div align="center">
+
 [![license](https://img.shields.io/github/license/modelscope/adaseq.svg)](./LICENSE)
 [![modelscope](https://img.shields.io/badge/modelscope-1.1.2-624aff.svg)](https://modelscope.cn/)
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
 [![contribution](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+</div>
 
 <div align="center">
 
@@ -100,6 +104,14 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
   - [TODO] 上传模型到ModelScope
   - [TODO] 实现自定义模型
   - [TODO] 使用AdaLA进行推理
+
+## 👫 开源社区
+钉钉扫一扫，加入官方技术交流群。欢迎各位业界同好一起交流技术心得。
+
+<div align="center">
+<img src="./docs/imgs/community_qrcode.jpg" width="150"/>
+<p>AdaSeq序列理解技术交流群</p>
+</div>
 
 ## 📝 贡献指南
 我们感谢所有为了改进AdaSeq而做的贡献，也欢迎社区用户积极参与到本项目中来。请参考 [CONTRIBUTING.md](./CONTRIBUTING.md) 来了解参与项目贡献的相关指引。

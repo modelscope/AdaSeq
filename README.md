@@ -1,11 +1,15 @@
 # AdaSeq: An All-in-One Library for Developing State-of-the-Art Sequence Understanding Models
 
+<div align="center">
+
 [![license](https://img.shields.io/github/license/modelscope/adaseq.svg)](./LICENSE)
 [![modelscope](https://img.shields.io/badge/modelscope-1.1.2-624aff.svg)](https://modelscope.cn/)
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
 [![contribution](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+</div>
 
 <div align="center">
 
