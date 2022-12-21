@@ -72,6 +72,13 @@ We collected many datasets for sequence understanding tasks. All can be found in
 
 ## 📦 Installation
 AdaSeq project is based on `Python version >= 3.7` and `PyTorch version >= 1.8`.
+
+- installation via pip：
+```
+pip install adaseq
+```
+
+- installation from source：
 ```
 git clone https://github.com/modelscope/adaseq.git
 cd adaseq

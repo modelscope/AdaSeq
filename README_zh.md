@@ -72,6 +72,13 @@
 
 ## 📦 安装AdaSeq
 AdaSeq项目基于 `Python version >= 3.7` 和 `PyTorch version >= 1.8`.
+
+- pip安装：
+```
+pip install adaseq
+```
+
+- 源码安装：
 ```
 git clone https://github.com/modelscope/adaseq.git
 cd adaseq

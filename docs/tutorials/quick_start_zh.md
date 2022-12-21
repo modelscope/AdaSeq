@@ -3,11 +3,11 @@
 本教程介绍如何安装 `AdaSeq` 并且使用它训练一个模型。
 
 - [1. 需求环境和安装方式](#1-需求环境和安装方式)
-    - [a. 直接使用源代码（目前方式）](#1a-直接使用源代码)
-    - [b. 使用 pip 安装（未来可用）](#1b-使用-pip-安装未来可用)
+    - [a. 直接使用源代码](#1a-直接使用源代码)
+    - [b. 使用 pip 安装](#1b-使用-pip-安装未来可用)
 - [2. 使用示例](#2-使用示例)
-    - [a. 使用代码脚本（目前方式）](#2a-使用代码脚本)
-    - [b. 使用命令行（未来可用）](#2b-使用命令未来可用)
+    - [a. 使用代码脚本](#2a-使用代码脚本)
+    - [b. 使用命令行](#2b-使用命令未来可用)
 
 ## 1. 需求环境和安装方式
 
@@ -21,7 +21,7 @@ cd adaseq
 pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
 ```
 
-### 1.b 使用 pip 安装（未来可用）
+### 1.b 使用 pip 安装
 我们暂时还没有发布到pypi，未来可以使用这种方式。
 ```commandline
 pip install adaseq
@@ -46,7 +46,7 @@ python scripts/train.py -c examples/bert_crf/configs/resume.yaml
 python scripts/test.py -w ${checkpoint_dir}
 ```
 
-### 2.b 使用命令（未来可用）
+### 2.b 使用命令
 
 #### 2.b.1 训练模型
 ```

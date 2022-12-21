@@ -4,7 +4,7 @@ This tutorial introduces how to install AdaSeq and use it train a model.
 
 - [1. Requirements and Installation](#1-requirements-and-installation)
     - [a. Installation from source](#1a-installation-from-source)
-    - [b. Installation via pip](#1b-installation-via-pip-temporarily-no-available)
+    - [b. Installation via pip](#1b-installation-via-pip)
 - [2. Example Usage](#2-example-usage)
     - [a. Usage by code](#2a-usage-by-code)
     - [b. Usage via command-line tool](#2b-usage-via-command-line-tool)
@@ -21,7 +21,7 @@ cd adaseq
 pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
 ```
 
-### 1.b Installation via pip (temporarily no available)
+### 1.b Installation via pip
 ```commandline
 pip install adaseq
 ```
