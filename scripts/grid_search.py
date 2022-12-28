@@ -10,6 +10,7 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
+import yaml
 from tqdm import tqdm
 
 
@@ -235,19 +236,20 @@ def collect(args):
     assert 'experiment' in config
     assert 'exp_name' in config.experiment
 
-    output_path = os.path.join(config.experiment.exp_dir, config.experiment.exp_name, 'outputs')
+    output_path = os.path.join(config.experiment.exp_dir, config.experiment.exp_name)
 
     keys = None
     records = []
-    log_files = glob.glob(os.path.join(output_path, '*/*.log.json'))
-    for log_file in tqdm(log_files):
+    output_dirs = glob.glob(os.path.join(output_path, '*/best_model.pth'))
+    for output_dir in tqdm(output_dirs):
         try:
-            result = _parse_log(log_file)
+            output_dir = output_dir[: output_dir.rfind('/')]
+            result = _parse_log(output_dir)
         except Exception:
-            print('error during parsing log file {}'.format(log_file))
+            print('error during parsing log file {}'.format(output_dir))
             continue
-        records.append(list(result.values()) + [log_file])
-        keys = list(result.keys()) + ['log_file']
+        records.append(list(result.values()) + [output_dir])
+        keys = list(result.keys()) + ['output_dir']
 
     df = pd.DataFrame.from_records(records, columns=keys)
     df.to_csv(args.output_file)
@@ -262,25 +264,28 @@ def collect(args):
     df_seed_avg.to_csv(args.output_avg_file)
 
 
-IGNORE_KEY_REGEX = re.compile('dataset|evaluation|experiment_exp|hooks')
+IGNORE_KEY_REGEX = re.compile('dataset|evaluation|experiment_exp|hooks|id_to_label')
 
 
-def _parse_log(log_file):
+def _parse_log(output_dir):
     ret = OrderedDict(dev_f1='NaN', p='NaN', r='NaN', f1='NaN')
     best_dev = -1
-    with open(log_file, 'r') as f:
-        hp = json.loads(f.readline())
+    config_file = os.path.join(output_dir, 'config.yaml')
+    with open(config_file, 'r') as f:
+        hp = yaml.load(f, Loader=yaml.FullLoader)
         hp_list = _flatten_config(hp)
         for k, v in hp_list:
             k = '_'.join(map(str, k))
             if IGNORE_KEY_REGEX.search(k):
                 continue
             ret[k] = v
+    log_file = os.path.join(output_dir, 'metrics.json')
+    with open(log_file, 'r') as f:
         for line in f:
             if '"eval"' in line:
                 result = json.loads(line)
-                if result['f1'] > best_dev:
-                    best_dev = result['f1']
+                if result['evaluation/f1'] > best_dev:
+                    best_dev = result['evaluation/f1']
                 ret['dev_f1'] = best_dev
             elif '"test"' in line:
                 result = json.loads(line)
