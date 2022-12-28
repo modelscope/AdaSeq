@@ -42,9 +42,9 @@ def get_predictions(cur_tagging, cur_doc):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print('Usage: python <pyfile> <data_path> <test_path> <doc_split_path> <outpath>')
-        exit(1)
+    # if len(sys.argv) != 5:
+    #     print('Usage: python <pyfile> <data_path> <test_path> <doc_split_path> <outpath>')
+    #     exit(1)
     results = {}
     labels = []
     testdata = load_json_file(sys.argv[1])

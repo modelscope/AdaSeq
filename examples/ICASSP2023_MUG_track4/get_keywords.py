@@ -10,28 +10,19 @@ KEYWORD = 'key_word'
 def get_predictions(cur_tagging):
     j = 0
     predictions = set({})
-    while j < len(cur_tagging):
-        cur_line = cur_tagging[j]
+    word = ''
+    for cur_line in cur_tagging:
         if not cur_line:
-            j += 1
             continue
         char, label, predict = cur_line.split('\t')
-        if predict.startswith('B'):
-            cur_word = char
-            j += 1
-            while j < len(cur_tagging):
-                cur_line = cur_tagging[j]
-                if not cur_line:
-                    break
-                char, label, predict = cur_line.split('\t')
-                if not predict.startswith('I'):
-                    break
-                else:
-                    cur_word += char
-                    j += 1
-            predictions.add(cur_word)
-        else:
-            j += 1
+        if predict[0] in 'BSO':
+            if word:
+                predictions.add(word)
+                word = ''
+        if predict[0] in 'BIES':
+            word += char
+    if word:
+        predictions.add(word)
     return predictions
 
 
