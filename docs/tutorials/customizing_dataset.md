@@ -177,4 +177,4 @@ group.
 }
 ```
 
-> To use CoNLL format, set `data_type: cluener`.
+> To use CLUENER format, set `data_type: cluener`.
