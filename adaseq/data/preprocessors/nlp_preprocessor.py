@@ -170,7 +170,7 @@ class NLPPreprocessor(Preprocessor):
             offsets.append((len(input_ids), len(input_ids) + len(wp_ids) - 1))
             input_ids.extend(wp_ids)
 
-            if len(input_ids) > max_length:
+            if len(input_ids) >= max_length:
                 # discard sub-tokens that exceed the `max_length`
                 input_ids = input_ids[:max_length]
                 offsets[-1] = (offsets[-1][0], len(input_ids) - 1)
