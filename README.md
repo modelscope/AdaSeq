@@ -18,7 +18,7 @@ English | [简体中文](./README_zh.md)
 </div>
 
 ## Introduction
-***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence Understanding Toolkit) is an easy-to-use all-in-one library, built on [ModelScope](https://modelscope.cn/home), that allows researchers and developers to train custom models for sequence understanding tasks, including word segmentation, POS tagging, chunking, NER, entity typing, relation extraction, etc.
+***AdaSeq*** (**A**libaba **D**amo **A**cademy **Seq**uence Understanding Toolkit) is an easy-to-use all-in-one library, built on [ModelScope](https://modelscope.cn/home), that allows researchers and developers to train custom models for sequence understanding tasks, including part-of-speech tagging (POS Tagging), chunking, named entity recognition (NER), entity typing, relation extraction (RE), etc.
 
 ![](./docs/imgs/task_examples_en.png)
 
