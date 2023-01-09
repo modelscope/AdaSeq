@@ -18,12 +18,17 @@ class SequenceLabelingMetric(Metric):
     This metric class uses seqeval to calculate scores.
 
     Args:
+        return_macro_f1 (bool, *optional*):
+            Whether to return macro-f1, default False.
         return_class_level_metric (bool, *optional*):
             Whether to return every class's detailed metrics, default False.
     """
 
-    def __init__(self, return_class_level_metric=False, mode=None, *args, **kwargs):
+    def __init__(
+        self, return_macro_f1=False, return_class_level_metric=False, mode=None, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
+        self.return_macro_f1 = return_macro_f1
         self.return_class_level_metric = return_class_level_metric
         self.mode = mode
         self.preds = []
@@ -61,15 +66,17 @@ class SequenceLabelingMetric(Metric):
 
         report = classification_report(gold_labels, pred_labels, output_dict=True, mode=self.mode)
 
-        report.pop('macro avg')
         report.pop('weighted avg')
-        overall_score = report.pop('micro avg')
+        macro_score = report.pop('macro avg')
+        micro_score = report.pop('micro avg')
 
         scores = {}
-        scores[MetricKeys.PRECISION] = overall_score['precision']
-        scores[MetricKeys.RECALL] = overall_score['recall']
-        scores[MetricKeys.F1] = overall_score['f1-score']
+        scores[MetricKeys.PRECISION] = micro_score['precision']
+        scores[MetricKeys.RECALL] = micro_score['recall']
+        scores[MetricKeys.F1] = micro_score['f1-score']
         scores[MetricKeys.ACCURACY] = accuracy_score(y_true=gold_labels, y_pred=pred_labels)
+        if self.return_macro_f1:
+            scores['macro-f1'] = macro_score['f1-score']
         if self.return_class_level_metric:
             for tp, tp_score in report.items():
                 scores[tp] = {}
