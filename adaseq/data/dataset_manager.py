@@ -48,11 +48,11 @@ class DatasetManager:
         if labels is None:
             labels = None
         elif isinstance(labels, list):
-            labels = sorted(labels)
+            pass
         elif isinstance(labels, str):
             if is_remote_url(labels):
                 labels = DownloadManager().download(labels)
-            labels = sorted(line.strip() for line in open(labels))  # type: ignore
+            labels = [line.strip() for line in open(labels)]  # type: ignore
         elif isinstance(labels, dict):
             labels = labels.copy()
             label_set = set()
@@ -112,7 +112,7 @@ class DatasetManager:
             Used only when loading a dataset with built-in `DatasetBuilder`s.
             It could be an url like `"https://data.deepai.org/conll2003.zip"`,
             or a local directory (absolute path) like `"/home/data/conll2003"`,
-            or a local archieve file absolute path like `"/home/data/conll2003.zip"`.
+            or a local archive file absolute path like `"/home/data/conll2003.zip"`.
             Details refer to `./dataset_builders/base.py`.
             It could also be a dict that specifies file paths (absolute) for each
             dataset splits, for example:
