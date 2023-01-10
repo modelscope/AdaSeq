@@ -33,7 +33,7 @@ class BiaffineNerModel(Model):
         word_dropout: bool = False,
         **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label) + 1  # leave 0 as non-entity label
         self.flat_ner = flat_ner
@@ -64,6 +64,8 @@ class BiaffineNerModel(Model):
                 self.dropout = WordDropout(dropout)
             else:
                 self.dropout = nn.Dropout(dropout)
+
+        self.load_model_ckpt()
 
     def forward(
         self,

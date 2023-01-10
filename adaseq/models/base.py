@@ -5,6 +5,7 @@ import os.path as osp
 from abc import abstractmethod
 from typing import Any, Callable, Dict, Optional, Union
 
+import torch
 import torch.nn as nn
 from modelscope.hub.snapshot_download import snapshot_download
 from modelscope.models.base.base_model import Model as MsModel
@@ -21,13 +22,21 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
     The model base class
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, model_dir: str = None, **kwargs):
         super().__init__()
-        MsModel.__init__(self, model_dir=None, **kwargs)
+        MsModel.__init__(self, model_dir=model_dir, **kwargs)
 
     def __call__(self, *args, **kwargs) -> Dict[str, Any]:  # noqa: D102
         # use `nn.Module.__call__` rather than `MsModel.__call__`
         return self.postprocess(super()._call_impl(*args, **kwargs))
+
+    def load_model_ckpt(self, model_dir: str = None) -> None:
+        """Try to load model checkpoint from model_dir/pytorch_model.bin"""
+        if model_dir is None:
+            model_dir = self.model_dir
+        if model_dir is not None:
+            model_ckpt = os.path.join(model_dir, ModelFile.TORCH_MODEL_BIN_FILE)
+            self.load_state_dict(torch.load(model_ckpt, map_location=torch.device('cpu')))
 
     @abstractmethod
     def forward(

@@ -49,7 +49,7 @@ class SequenceLabelingModel(Model):
         partial: Optional[bool] = False,
         **kwargs
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label)
 
@@ -91,6 +91,8 @@ class SequenceLabelingModel(Model):
         self.mv_loss_type = mv_loss_type
         self.temperature = temperature
         self.mv_interpolation = mv_interpolation
+
+        self.load_model_ckpt()
 
     def forward(  # noqa
         self,

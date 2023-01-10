@@ -93,7 +93,7 @@ class MultiLabelSpanTypingModel(Model):
         use_biaffine: bool = False,
         **kwargs
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
         if isinstance(embedder, Embedder):
             self.embedder = embedder
         else:
@@ -122,6 +122,8 @@ class MultiLabelSpanTypingModel(Model):
         if self.loss_function_type == 'BCE':
             self.sigmoid = nn.Sigmoid()
             self.loss_fn = BCELoss()
+
+        self.load_model_ckpt()
 
     def forward(  # noqa: D102
         self,

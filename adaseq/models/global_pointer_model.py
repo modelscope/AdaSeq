@@ -66,8 +66,8 @@ class GlobalPointerModel(Model):
         word_dropout: bool = False,
         **kwargs
     ) -> None:
-        super().__init__()
-        self.id_to_label = id_to_label
+        super().__init__(**kwargs)
+        self.id_to_label = {int(k): v for k, v in id_to_label.items()}
         num_labels = len(id_to_label)
         self.num_classes = num_labels + 1
 
@@ -98,6 +98,8 @@ class GlobalPointerModel(Model):
                 self.dropout = WordDropout(dropout)
             else:
                 self.dropout = nn.Dropout(dropout)
+
+        self.load_model_ckpt()
 
     def forward(
         self,

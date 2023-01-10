@@ -30,7 +30,7 @@ class RelationExtractionModel(Model):
         temperature: Optional[float] = 1.0,
         **kwargs
     ):
-        super(RelationExtractionModel, self).__init__()
+        super(RelationExtractionModel, self).__init__(**kwargs)
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label)
         if isinstance(embedder, Embedder):
@@ -53,6 +53,8 @@ class RelationExtractionModel(Model):
 
         self.multiview = multiview
         self.temperature = temperature
+
+        self.load_model_ckpt()
 
     def _forward(self, tokens: Dict[str, Any], so_head_mask: torch.Tensor) -> torch.Tensor:
         embed = self.embedder(**tokens)
