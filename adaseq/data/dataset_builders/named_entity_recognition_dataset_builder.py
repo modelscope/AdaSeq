@@ -192,6 +192,8 @@ class NamedEntityRecognitionDatasetBuilder(CustomDatasetBuilder):
                 for span in example[spans_key]:
                     if is_end_included:
                         span['end'] += 1
+                    if 'word' in span:
+                        del span['word']
                     spans.append(span)
                 mask = [True] * len(tokens)
                 yield guid, {'id': str(guid), 'tokens': tokens, 'spans': spans, 'mask': mask}
