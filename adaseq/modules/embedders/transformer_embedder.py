@@ -143,6 +143,7 @@ class TransformerEmbedder(Embedder):
         has_special_tokens: Optional[torch.BoolTensor] = None,
         offsets: Optional[torch.LongTensor] = None,
         mask: Optional[torch.BoolTensor] = None,
+        **kwargs,
     ) -> torch.Tensor:
         """
         input_ids: `torch.LongTensor`

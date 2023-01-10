@@ -2,10 +2,12 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import PREPROCESSORS
 from modelscope.preprocessors.builder import build_preprocessor as ms_build_preprocessor
 from modelscope.utils.config import ConfigDict
+from modelscope.utils.constant import ModeKeys
 
 from adaseq.data.tokenizer import build_tokenizer
 from adaseq.metainfo import Preprocessors
@@ -104,19 +106,20 @@ class NLPPreprocessor(Preprocessor):
                 # only used in retrieval-augmented models.
                 output_dict['origin_tokens'] = self.encode_tokens_origin_view(data)
 
+        if self.mode == ModeKeys.INFERENCE:
+            for key, value in output_dict['tokens'].items():
+                output_dict['tokens'][key] = np.expand_dims(np.array(value), 0)
+
         return output_dict
 
     def encode_text(self, text: str) -> Dict[str, Any]:
         """encode `text` to ids"""
-        assert self.is_word2vec is False, 'encode text string is not supported in word2vec!'
-        assert self.return_offsets is False
-        encoded = self.tokenizer.encode_plus(
-            text,
-            add_special_tokens=self.add_special_tokens,
-            return_tensors=None,
-            return_offsets_mapping=False,
+        inputs_with_offsets = self.tokenizer(
+            text, add_special_tokens=False, return_offsets_mapping=self.return_offsets
         )
-        encoded['has_special_tokens'] = self.add_special_tokens
+        encoded = self.encode_tokens(inputs_with_offsets.tokens())
+        if self.return_offsets:
+            encoded['offset_mapping'] = inputs_with_offsets['offset_mapping']
         return encoded
 
     def encode_tokens(self, tokens: List[str]) -> Dict[str, Any]:

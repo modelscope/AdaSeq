@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from modelscope.preprocessors.builder import build_preprocessor
+from modelscope.utils.constant import ModeKeys
 from transformers import BertTokenizerFast
 
 from adaseq.data.preprocessors import NLPPreprocessor
@@ -28,10 +29,13 @@ class TestPreprocessor(unittest.TestCase):
             'spans': [{'start': 0, 'end': 2, 'type': 'PER'}],
         }
 
-        self.ner_labels3 = ['PER', 'ORG', 'LOC']
+        self.ner_labels2 = ['PER', 'ORG', 'LOC']
+
+        self.ner_input3 = {'text': 'EU rejects German call to boycott British lamb .'}
 
     def test_bert_sequence_labeling_preprocessor(self):
         cfg = dict(
+            mode=ModeKeys.TRAIN,
             type='sequence-labeling-preprocessor',
             model_dir='bert-base-cased',
             labels=self.ner_labels,
@@ -53,6 +57,7 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_bert_sequence_labeling_bioes_preprocessor(self):
         cfg = dict(
+            mode=ModeKeys.TRAIN,
             type='sequence-labeling-preprocessor',
             model_dir='bert-base-cased',
             labels=self.ner_labels,
@@ -65,8 +70,9 @@ class TestPreprocessor(unittest.TestCase):
         output_labels = [id_to_label[i] for i in output1['label_ids']]
         self.assertEqual(output_labels, labels)
 
-    def test_lstm_sequence_labeling_preprocessor(self):
+    def test_word2vec_sequence_labeling_preprocessor(self):
         cfg = dict(
+            mode=ModeKeys.TRAIN,
             type='sequence-labeling-preprocessor',
             model_dir='pangda/word2vec-skip-gram-mixed-large-chinese',
             labels=self.ner_labels,
@@ -88,9 +94,10 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_bert_span_extraction_preprocessor(self):
         cfg = dict(
+            mode=ModeKeys.TRAIN,
             type='span-extraction-preprocessor',
             model_dir='bert-base-cased',
-            labels=self.ner_labels3,
+            labels=self.ner_labels2,
         )
         preprocessor = build_preprocessor(cfg)
         output2 = preprocessor(self.ner_input2)
@@ -108,6 +115,7 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_span_typing_preprocessor(self):
         cfg = dict(
+            mode=ModeKeys.TRAIN,
             type='multilabel-span-typing-preprocessor',
             model_dir='bert-base-cased',
             labels=self.typing_labels,
@@ -150,6 +158,63 @@ class TestPreprocessor(unittest.TestCase):
             model_dir='damo/nlp_structbert_backbone_tiny_std', labels=['O', 'B']
         )
         self.assertTrue(isinstance(processor.tokenizer, BertTokenizerFast))
+
+    def test_text_preprocessor_train(self):
+        cfg = dict(
+            mode=ModeKeys.TRAIN,
+            type='nlp-preprocessor',
+            model_dir='bert-base-cased',
+            return_offsets=True,
+            labels=['O'],
+        )
+        preprocessor = build_preprocessor(cfg)
+        output = preprocessor(self.ner_input3)
+        input_ids = [
+            101,
+            7270,
+            22961,
+            1528,
+            1840,
+            1106,
+            21423,
+            1418,
+            2495,
+            108,
+            108,
+            182,
+            1830,
+            119,
+            102,
+        ]
+        offsets = [
+            (0, 0),
+            (1, 1),
+            (2, 2),
+            (3, 3),
+            (4, 4),
+            (5, 5),
+            (6, 6),
+            (7, 7),
+            (8, 8),
+            (9, 12),
+            (13, 13),
+            (14, 14),
+        ]
+        self.assertTrue(np.array_equal(output['tokens']['input_ids'], input_ids))
+        self.assertTrue(np.array_equal(output['tokens']['attention_mask'], [True] * 15))
+        self.assertTrue(np.array_equal(output['tokens']['offsets'], offsets))
+
+    def test_text_preprocessor_inference(self):
+        cfg = dict(
+            mode=ModeKeys.INFERENCE,
+            type='nlp-preprocessor',
+            model_dir='bert-base-cased',
+            labels=['O'],
+        )
+        preprocessor = build_preprocessor(cfg)
+        output = preprocessor(self.ner_input3)
+        self.assertEqual(output['tokens']['input_ids'].ndim, 2)
+        self.assertEqual(output['tokens']['input_ids'].shape[0], 1)
 
 
 if __name__ == '__main__':
