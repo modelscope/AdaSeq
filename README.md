@@ -7,6 +7,7 @@
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
+[![downloads](https://static.pepy.tech/personalized-badge/adaseq?period=total&left_color=grey&right_color=yellowgreen&left_text=downloads)](https://pypi.org/project/adaseq)
 [![contribution](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
 </div>
