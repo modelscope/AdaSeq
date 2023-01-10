@@ -111,3 +111,9 @@ class DatasetDumpers:
     """Names for different dataset dumpers"""
 
     ner_dumper = 'ner-dumper'
+
+
+class Pipelines:
+    """Names for different pipelines"""
+
+    span_based_ner_pipeline = 'span-based-ner-pipeline'
