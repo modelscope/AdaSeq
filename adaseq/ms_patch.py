@@ -82,13 +82,16 @@ def after_run(self, trainer):  # noqa
 
 
 def suppress_modelscope_ast_warning():  # noqa
-    from modelscope.utils.logger import get_logger
+    try:
+        from modelscope.utils.logger import get_logger
 
-    def filter_modelscope_ast_warning(record):
-        return 'not found in ast index file' not in record.msg
+        def filter_modelscope_ast_warning(record):
+            return 'not found in ast index file' not in record.msg
 
-    logger = get_logger('modelscope')
-    logger.addFilter(filter_modelscope_ast_warning)
+        logger = get_logger('modelscope')
+        logger.addFilter(filter_modelscope_ast_warning)
+    except IsADirectoryError:
+        pass
 
 
 CheckpointHook._save_pretrained = _save_pretrained
