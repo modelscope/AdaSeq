@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
 
-from adaseq.metainfo import Models
+from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.biaffine import Biaffine
 from adaseq.modules.dropouts import WordDropout
@@ -14,7 +14,7 @@ from adaseq.modules.encoders import Encoder
 from adaseq.modules.util import get_tokens_mask
 
 
-@MODELS.register_module(module_name=Models.biaffine_ner_model)
+@MODELS.register_module(Tasks.named_entity_recognition, module_name=Models.biaffine_ner_model)
 class BiaffineNerModel(Model):
     """
     Named Entity Recognition as Dependency Parsing (Yu et al., ACL 2020)

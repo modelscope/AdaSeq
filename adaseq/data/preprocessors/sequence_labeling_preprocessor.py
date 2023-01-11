@@ -3,6 +3,7 @@ import logging
 from typing import Any, Dict, List, Union
 
 from modelscope.preprocessors.builder import PREPROCESSORS
+from modelscope.utils.constant import Fields
 
 from adaseq.data.constant import NON_ENTITY_LABEL, PARTIAL_LABEL, PARTIAL_LABEL_ID
 from adaseq.metainfo import Preprocessors
@@ -12,7 +13,7 @@ from .nlp_preprocessor import NLPPreprocessor
 logger = logging.getLogger(__name__)
 
 
-@PREPROCESSORS.register_module(module_name=Preprocessors.sequence_labeling_preprocessor)
+@PREPROCESSORS.register_module(Fields.nlp, module_name=Preprocessors.sequence_labeling_preprocessor)
 class SequenceLabelingPreprocessor(NLPPreprocessor):
     """Preprocessor for Sequence Labeling"""
 

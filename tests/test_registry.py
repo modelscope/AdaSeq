@@ -4,7 +4,7 @@ import unittest
 from modelscope.models.nlp import SbertModel
 from transformers import BertModel
 
-from adaseq.metainfo import Models
+from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
 from adaseq.models.sequence_labeling_model import SequenceLabelingModel
 from adaseq.modules.embedders import Embedder
@@ -35,6 +35,7 @@ class TestRegistry(unittest.TestCase):
         """可以不配置文件初始化一个模型"""
         model = Model.from_config(
             type=Models.sequence_labeling_model,
+            task=Tasks.named_entity_recognition,
             id_to_label={0: 'O', 1: 'B'},
             embedder={'model_name_or_path': 'bert-base-cased'},
         )

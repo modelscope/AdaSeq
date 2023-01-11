@@ -3,13 +3,14 @@ from typing import Any, Dict, List, Union
 
 import numpy as np
 from modelscope.preprocessors.builder import PREPROCESSORS
+from modelscope.utils.constant import Fields
 
 from adaseq.metainfo import Preprocessors
 
 from .nlp_preprocessor import NLPPreprocessor
 
 
-@PREPROCESSORS.register_module(module_name=Preprocessors.span_extraction_preprocessor)
+@PREPROCESSORS.register_module(Fields.nlp, module_name=Preprocessors.span_extraction_preprocessor)
 class SpanExtracionPreprocessor(NLPPreprocessor):
     """Preprocessor of span-based model.
     span targets are processed into `span_labels`

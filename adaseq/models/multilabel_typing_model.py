@@ -6,7 +6,7 @@ import torch.nn as nn
 from modelscope.models.builder import MODELS
 from torch.nn import BCELoss, BCEWithLogitsLoss
 
-from adaseq.metainfo import Models
+from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.decoders import Decoder, PairwiseCRF
 from adaseq.modules.dropouts import WordDropout
@@ -63,7 +63,7 @@ class WBCEWithLogitsLossUFET:
         return loss
 
 
-@MODELS.register_module(module_name=Models.multilabel_span_typing_model)
+@MODELS.register_module(Tasks.entity_typing, module_name=Models.multilabel_span_typing_model)
 class MultiLabelSpanTypingModel(Model):
     """Span based MultiLabel Entity Typing model
 
@@ -202,7 +202,7 @@ class MultiLabelSpanTypingModel(Model):
         return batch_mentions
 
 
-@MODELS.register_module(module_name=Models.multilabel_concat_typing_model)
+@MODELS.register_module(Tasks.entity_typing, module_name=Models.multilabel_concat_typing_model)
 class MultiLabelConcatTypingModel(Model):
     """Concat based Single Mention MultiLabel Entity Typing model
 

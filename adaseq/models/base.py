@@ -72,8 +72,11 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
         elif isinstance(cfg_dict_or_path, (dict, Config)):
             cfg = cfg_dict_or_path
         else:
-            cfg = dict(model=dict())
+            cfg = dict(model=dict(), task=None)
 
+        task: str = cfg['task']
+        if 'task' in kwargs:
+            task = kwargs.pop('task')
         model_config: Dict = cfg['model']
 
         if 'type' in kwargs:
@@ -84,7 +87,7 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
                 'Please pass a correct cfg dict, which should be a reachable file or a dict.'
             )
 
-        model = build_model(model_config, default_args=kwargs)
+        model = build_model(model_config, task_name=task, default_args=kwargs)
         cfg['framework'] = 'pytorch'
         cfg['model'].update(kwargs)  # type: ignore
         setattr(model, 'cfg', cfg)  # follow `MsModel.save_pretrained`

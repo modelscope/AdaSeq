@@ -210,7 +210,7 @@ class DatasetManager:
                 Tasks.named_entity_recognition,
                 Tasks.word_segmentation,
                 Tasks.part_of_speech,
-                Tasks.entity_tying,
+                Tasks.entity_typing,
             }:
                 labels = dict(type='count_span_labels')
             elif task == Tasks.relation_extraction:

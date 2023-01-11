@@ -7,13 +7,13 @@ import torch.nn.functional as F
 from modelscope.models.builder import MODELS
 from torch.nn import LayerNorm
 
-from adaseq.metainfo import Models
+from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
 
 
-@MODELS.register_module(module_name=Models.relation_extraction_model)
+@MODELS.register_module(Tasks.relation_extraction, module_name=Models.relation_extraction_model)
 class RelationExtractionModel(Model):
     """Relation extraction model
 

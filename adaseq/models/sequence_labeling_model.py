@@ -8,7 +8,7 @@ from modelscope.models.builder import MODELS
 from modelscope.utils.config import ConfigDict
 
 from adaseq.data.constant import PAD_LABEL_ID
-from adaseq.metainfo import Models
+from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.decoders import CRF, PartialCRF
 from adaseq.modules.dropouts import WordDropout
@@ -17,7 +17,9 @@ from adaseq.modules.encoders import Encoder
 from adaseq.modules.util import get_tokens_mask
 
 
-@MODELS.register_module(module_name=Models.sequence_labeling_model)
+@MODELS.register_module(Tasks.word_segmentation, module_name=Models.sequence_labeling_model)
+@MODELS.register_module(Tasks.part_of_speech, module_name=Models.sequence_labeling_model)
+@MODELS.register_module(Tasks.named_entity_recognition, module_name=Models.sequence_labeling_model)
 class SequenceLabelingModel(Model):
     """Sequence labeling model
 

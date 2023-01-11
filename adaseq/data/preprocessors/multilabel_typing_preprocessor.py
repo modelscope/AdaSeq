@@ -2,13 +2,16 @@
 from typing import Any, Dict
 
 from modelscope.preprocessors.builder import PREPROCESSORS
+from modelscope.utils.constant import Fields
 
 from adaseq.metainfo import Preprocessors
 
 from .nlp_preprocessor import NLPPreprocessor
 
 
-@PREPROCESSORS.register_module(module_name=Preprocessors.multilabel_span_typing_preprocessor)
+@PREPROCESSORS.register_module(
+    Fields.nlp, module_name=Preprocessors.multilabel_span_typing_preprocessor
+)
 class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
     """Preprocessor for multilabel (aka multi-type) span typing task.
     span targets are processed into mention_boundary, type_ids.

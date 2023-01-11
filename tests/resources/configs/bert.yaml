@@ -1,3 +1,4 @@
+task: named-entity-recognition
 model:
   type: sequence-labeling-model
   id_to_label:

@@ -7,7 +7,7 @@ import torch.nn as nn
 from modelscope.models.builder import MODELS
 
 from adaseq.data.span_utils import TypedSpan
-from adaseq.metainfo import Models
+from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
@@ -49,7 +49,7 @@ class SinusoidalPositionEmbedding(nn.Module):
             return embeddings
 
 
-@MODELS.register_module(module_name=Models.global_pointer_model)
+@MODELS.register_module(Tasks.named_entity_recognition, module_name=Models.global_pointer_model)
 class GlobalPointerModel(Model):
     """GlobalPointer model.
     ref: https://arxiv.org/abs/2208.03054

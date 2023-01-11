@@ -7,7 +7,7 @@ from modelscope.preprocessors.base import Preprocessor
 from modelscope.preprocessors.builder import PREPROCESSORS
 from modelscope.preprocessors.builder import build_preprocessor as ms_build_preprocessor
 from modelscope.utils.config import ConfigDict
-from modelscope.utils.constant import ModeKeys
+from modelscope.utils.constant import Fields, ModeKeys
 
 from adaseq.data.tokenizer import build_tokenizer
 from adaseq.metainfo import Preprocessors
@@ -15,7 +15,7 @@ from adaseq.metainfo import Preprocessors
 logger = logging.getLogger(__name__)
 
 
-@PREPROCESSORS.register_module(module_name=Preprocessors.nlp_preprocessor)
+@PREPROCESSORS.register_module(Fields.nlp, module_name=Preprocessors.nlp_preprocessor)
 class NLPPreprocessor(Preprocessor):
     """
     Some common pre-process operations for NLP tasks.
@@ -118,7 +118,7 @@ class NLPPreprocessor(Preprocessor):
             text, add_special_tokens=False, return_offsets_mapping=self.return_offsets
         )
         encoded = self.encode_tokens(inputs_with_offsets.tokens())
-        if self.return_offsets:
+        if self.return_offsets and self.mode == ModeKeys.INFERENCE:
             encoded['offset_mapping'] = inputs_with_offsets['offset_mapping']
         return encoded
 
@@ -215,5 +215,5 @@ def build_preprocessor(config: ConfigDict, **kwargs) -> Preprocessor:
     """Build preprocessor from config"""
     # get `field_name` for loading modelscope preprocessors,
     # Not sure who will need this.
-    field_name = config.get('field_name', None)
+    field_name = config.get('field_name', Fields.nlp)
     return ms_build_preprocessor(config, field_name, kwargs)  # type: ignore

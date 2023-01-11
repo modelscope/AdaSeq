@@ -35,13 +35,13 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_bert_sequence_labeling_preprocessor(self):
         cfg = dict(
-            mode=ModeKeys.TRAIN,
             type='sequence-labeling-preprocessor',
             model_dir='bert-base-cased',
             labels=self.ner_labels,
             tag_scheme='BIO',
+            mode=ModeKeys.TRAIN,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         id_to_label = {v: k for k, v in preprocessor.label_to_id.items()}
         labels = ['B-ORG', 'O', 'B-MISC', 'O', 'O', 'O', 'B-MISC', 'O', 'O']
         output1 = preprocessor(self.ner_input1)
@@ -57,13 +57,13 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_bert_sequence_labeling_bioes_preprocessor(self):
         cfg = dict(
-            mode=ModeKeys.TRAIN,
             type='sequence-labeling-preprocessor',
             model_dir='bert-base-cased',
             labels=self.ner_labels,
             tag_scheme='BIOES',
+            mode=ModeKeys.TRAIN,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         id_to_label = {v: k for k, v in preprocessor.label_to_id.items()}
         output1 = preprocessor(self.ner_input1)
         labels = ['S-ORG', 'O', 'S-MISC', 'O', 'O', 'O', 'S-MISC', 'O', 'O']
@@ -72,14 +72,14 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_word2vec_sequence_labeling_preprocessor(self):
         cfg = dict(
-            mode=ModeKeys.TRAIN,
             type='sequence-labeling-preprocessor',
             model_dir='pangda/word2vec-skip-gram-mixed-large-chinese',
             labels=self.ner_labels,
             add_special_tokens=False,
             tag_scheme='BIOES',
+            mode=ModeKeys.TRAIN,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         id_to_label = {v: k for k, v in preprocessor.label_to_id.items()}
         output2 = preprocessor(self.ner_input2)
         input_ids = [217, 211, 286, 266, 8, 24, 391, 29, 41, 11, 42, 1391, 5, 16, 140, 352, 179, 6]
@@ -94,12 +94,12 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_bert_span_extraction_preprocessor(self):
         cfg = dict(
-            mode=ModeKeys.TRAIN,
             type='span-extraction-preprocessor',
             model_dir='bert-base-cased',
             labels=self.ner_labels2,
+            mode=ModeKeys.TRAIN,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         output2 = preprocessor(self.ner_input2)
         expected_labels = np.zeros((18, 18))
         expected_labels[0][1] = preprocessor.label_to_id['PER'] + 1
@@ -115,12 +115,12 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_span_typing_preprocessor(self):
         cfg = dict(
-            mode=ModeKeys.TRAIN,
             type='multilabel-span-typing-preprocessor',
             model_dir='bert-base-cased',
             labels=self.typing_labels,
+            mode=ModeKeys.TRAIN,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         id_to_label = {v: k for k, v in preprocessor.label_to_id.items()}
         output = preprocessor(self.typing_input)
         input_ids = [
@@ -161,13 +161,13 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_text_preprocessor_train(self):
         cfg = dict(
-            mode=ModeKeys.TRAIN,
             type='nlp-preprocessor',
             model_dir='bert-base-cased',
             return_offsets=True,
             labels=['O'],
+            mode=ModeKeys.TRAIN,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         output = preprocessor(self.ner_input3)
         input_ids = [
             101,
@@ -206,12 +206,12 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_text_preprocessor_inference(self):
         cfg = dict(
-            mode=ModeKeys.INFERENCE,
             type='nlp-preprocessor',
             model_dir='bert-base-cased',
             labels=['O'],
+            mode=ModeKeys.INFERENCE,
         )
-        preprocessor = build_preprocessor(cfg)
+        preprocessor = build_preprocessor(cfg, 'nlp')
         output = preprocessor(self.ner_input3)
         self.assertEqual(output['tokens']['input_ids'].ndim, 2)
         self.assertEqual(output['tokens']['input_ids'].shape[0], 1)

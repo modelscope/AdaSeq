@@ -2,6 +2,7 @@
 from typing import Any, Dict, List, Union
 
 from modelscope.preprocessors.builder import PREPROCESSORS
+from modelscope.utils.constant import Fields
 
 from adaseq.metainfo import Preprocessors
 
@@ -9,7 +10,9 @@ from ..constant import NONE_REL_LABEL, NONE_REL_LABEL_ID
 from .nlp_preprocessor import NLPPreprocessor
 
 
-@PREPROCESSORS.register_module(module_name=Preprocessors.relation_extraction_preprocessor)
+@PREPROCESSORS.register_module(
+    Fields.nlp, module_name=Preprocessors.relation_extraction_preprocessor
+)
 class RelationExtractionPreprocessor(NLPPreprocessor):
     """Relation Extraction data preprocessor"""
 

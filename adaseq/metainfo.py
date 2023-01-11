@@ -17,7 +17,7 @@ class Tasks:
     part_of_speech = 'part-of-speech'
     named_entity_recognition = 'named-entity-recognition'
     relation_extraction = 'relation-extraction'
-    entity_tying = 'entity-typing'
+    entity_typing = 'entity-typing'
 
 
 class Metrics:
