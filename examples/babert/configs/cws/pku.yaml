@@ -2,7 +2,7 @@ experiment:
   exp_dir: experiments/
   exp_name: pku
 
-task: chinese-word-segmentation
+task: word-segmentation
 
 dataset:
   data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/pku_cws/repo/files?Revision=master&FilePath=pku.zip'

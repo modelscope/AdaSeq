@@ -27,7 +27,7 @@ evaluation: ...
 
 #### 2.2 task
 `task`无子参数，目前支持下列值（也可见[metainfo](../../adaseq/metainfo.py)）：
-- chinese-word-segmentation
+- word-segmentation
 - part-of-speech
 - named-entity-recognition
 - relation-extraction

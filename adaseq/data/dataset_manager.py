@@ -160,7 +160,7 @@ class DatasetManager:
             assert task is not None and task in BUILTIN_TASKS, 'Need a specific task!'
             # where we have some pre-defined dataset builders
             task_builder_name = task
-            if task in {Tasks.chinese_word_segmentation, Tasks.part_of_speech}:
+            if task in {Tasks.word_segmentation, Tasks.part_of_speech}:
                 task_builder_name = Tasks.named_entity_recognition
 
             path = osp.join(
@@ -208,7 +208,7 @@ class DatasetManager:
         if labels is None:
             if task in {
                 Tasks.named_entity_recognition,
-                Tasks.chinese_word_segmentation,
+                Tasks.word_segmentation,
                 Tasks.part_of_speech,
                 Tasks.entity_tying,
             }:

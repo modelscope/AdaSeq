@@ -3,13 +3,17 @@
 
 def get_member_set(_class):
     """Get member names set."""
-    return set(getattr(_class, _a) for _a in dir(_class) if not _a.startswith('_'))
+    return set(
+        getattr(_class, _a)
+        for _a in dir(_class)
+        if not _a.startswith('_') and isinstance(getattr(_class, _a), str)
+    )
 
 
 class Tasks:
     """Names for different tasks"""
 
-    chinese_word_segmentation = 'chinese-word-segmentation'
+    word_segmentation = 'word-segmentation'
     part_of_speech = 'part-of-speech'
     named_entity_recognition = 'named-entity-recognition'
     relation_extraction = 'relation-extraction'

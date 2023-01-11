@@ -2,7 +2,7 @@ experiment:
   exp_dir: experiments/
   exp_name: msra
 
-task: chinese-word-segmentation
+task: word-segmentation
 
 dataset:
   name: msra_cws

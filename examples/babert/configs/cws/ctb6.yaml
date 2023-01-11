@@ -2,7 +2,7 @@ experiment:
   exp_dir: experiments/
   exp_name: ctb6
 
-task: chinese-word-segmentation
+task: word-segmentation
 
 dataset:
   data_file: ${PATH_TO_DATASET}

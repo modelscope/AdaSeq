@@ -27,7 +27,7 @@ Notice: Default = `/` means this parameter is compulsory.
 
 #### 2.2 task
 `task` supports the following values (see [metainfo](../../adaseq/metainfo.py)):
-- chinese-word-segmentation
+- word-segmentation
 - part-of-speech
 - named-entity-recognition
 - relation-extraction
