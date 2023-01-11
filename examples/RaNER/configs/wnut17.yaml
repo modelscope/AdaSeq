@@ -15,12 +15,14 @@ dataset:
 preprocessor:
   type: sequence-labeling-preprocessor
   model_dir: xlm-roberta-large
+  # return_original_view: true
   max_length: 512
 
 data_collator: SequenceLabelingDataCollatorWithPadding
 
 model:
   type: sequence-labeling-model
+  # multiview: true
   embedder:
     model_name_or_path: xlm-roberta-large
   dropout: 0.1

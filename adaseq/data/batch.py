@@ -47,7 +47,7 @@ class DataBatch(Mapping):
             elif k in self.keep_fields:
                 continue
             else:
-                batch[k] = torch.tensor(batch[k], dtype=torch.long)
+                batch[k] = torch.tensor(batch[k])
         return batch
 
     def to(self, device):

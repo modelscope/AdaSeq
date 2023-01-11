@@ -96,47 +96,45 @@ class SequenceLabelingModel(Model):
 
         self.load_model_ckpt()
 
-    def forward(  # noqa
+    def forward(
         self,
         tokens: Dict[str, Any],
         label_ids: Optional[torch.LongTensor] = None,
         meta: Optional[Dict[str, Any]] = None,
         origin_tokens: Optional[Dict[str, Any]] = None,
         origin_mask: Optional[torch.Tensor] = None,
-    ) -> Dict[str, Any]:  # TODO docstring
+    ) -> Dict[str, Any]:
+        """
+        TODO docstring
+        """
         logits = self._forward(tokens)
 
-        mask = get_tokens_mask(tokens, logits.size(1))
+        crf_mask = get_tokens_mask(tokens, logits.size(1)) if origin_mask is None else origin_mask
 
         if self.training and label_ids is not None:
-            crf_mask = origin_mask if origin_mask is not None else mask
             loss = self._calculate_loss(logits, label_ids, crf_mask)
 
             if self.multiview and origin_tokens is not None:  # for multiview training
                 origin_view_logits = self._forward(origin_tokens)
+                origin_size = origin_view_logits.size(1 if origin_view_logits.dim() == 3 else 0)
+                origin_mask_short = crf_mask[..., :origin_size]
+                origin_label_ids = label_ids[..., :origin_size]
 
-                origin_mask = get_tokens_mask(origin_tokens, origin_view_logits.size(1))
+                origin_view_loss = self._calculate_loss(
+                    origin_view_logits, origin_label_ids, origin_mask_short
+                )
+                logits_short = logits[..., :origin_size, :]
+                cl_kl_loss = self._calculate_cl_loss(
+                    logits_short, origin_view_logits, origin_mask_short, T=self.temperature
+                )
+                loss = (
+                    self.mv_interpolation * (loss + origin_view_loss)
+                    + (1 - self.mv_interpolation) * cl_kl_loss
+                )
 
-                origin_view_loss = self._calculate_loss(origin_view_logits, label_ids, origin_mask)
-                if self.mv_loss_type == 'kl':
-                    cl_kl_loss = self._calculate_cl_loss(
-                        logits, origin_view_logits, mask, T=self.temperature
-                    )
-                    loss = (
-                        self.mv_interpolation * (loss + origin_view_loss)
-                        + (1 - self.mv_interpolation) * cl_kl_loss
-                    )
-                elif self.mv_loss_type == 'crf_kl':
-                    cl_kl_loss = self._calculate_cl_loss(
-                        logits, origin_view_logits, mask, T=self.temperature
-                    )
-                    loss = (
-                        self.mv_interpolation * (loss + origin_view_loss)
-                        + (1 - self.mv_interpolation) * cl_kl_loss
-                    )
             outputs = {'logits': logits, 'loss': loss}
         else:
-            predicts = self.decode(logits, mask)
+            predicts = self.decode(logits, crf_mask)
             outputs = {'logits': logits, 'predicts': predicts}
 
         return outputs

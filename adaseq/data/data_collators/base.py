@@ -92,6 +92,14 @@ class DataCollatorWithPadding:
                 padded_tokens[sub] = padded_field
             batch[field] = padded_tokens
 
+        field = 'origin_mask'
+        if field in batch:
+            max_length = max(len(i) for i in batch[field])
+            for i in range(batch_size):
+                difference = max_length - len(batch[field][i])
+                if difference > 0:
+                    batch[field][i] = _pad(batch[field][i], difference, False)
+
         return batch
 
     def padding(
