@@ -333,12 +333,8 @@ def get_transformer(
             return get_hf_transformer(model_name_or_path, load_weights, **kwargs), True
 
         elif source.lower() == 'modelscope':
-            return (
-                MsModel.from_pretrained(
-                    model_name_or_path, task=kwargs.pop('task', 'backbone'), **kwargs
-                ),
-                False,
-            )
+            return get_ms_transformer(model_name_or_path, **kwargs), False
+
         else:
             raise ConfigurationError(f'Unsupported transformer source: {source}')
 
@@ -351,12 +347,7 @@ def get_transformer(
             hf_e = e
 
         try:
-            return (
-                MsModel.from_pretrained(
-                    model_name_or_path, task=kwargs.pop('task', 'backbone'), **kwargs
-                ),
-                False,
-            )
+            return get_ms_transformer(model_name_or_path, **kwargs), False
         except HTTPError as e:
             ms_e = e
 
@@ -381,4 +372,26 @@ def get_hf_transformer(
         transformer = AutoModel.from_config(
             AutoConfig.from_pretrained(model_name_or_path, **kwargs)
         )
+    return transformer
+
+
+def get_ms_transformer(
+    model_name_or_path: str,
+    **kwargs,
+) -> transformers.PreTrainedModel:
+    """see `get_transformer`."""
+    from adaseq.utils.checks import ConfigurationError
+
+    try:
+        transformer = MsModel.from_pretrained(model_name_or_path, task='backbone', **kwargs)
+    except KeyError:
+        transformer = MsModel.from_pretrained(model_name_or_path, **kwargs)
+
+        # only support transformer-crf model for now
+        model_type = transformer.cfg.model.type
+        if model_type == 'transformer-crf':
+            transformer = transformer.model.encoder
+        else:
+            raise ConfigurationError(f'Unsupported non-backbone embedder: {model_name_or_path}')
+
     return transformer

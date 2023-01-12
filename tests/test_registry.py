@@ -26,6 +26,13 @@ class TestRegistry(unittest.TestCase):
         model = Embedder.from_config(model_name_or_path='damo/nlp_structbert_backbone_tiny_std')
         self.assertTrue(isinstance(model.transformer_model, SbertModel))
 
+    def test_get_embedder_from_modelscope_task_model(self):
+        """可以使用名字从modelscope任务模型初始化一个embedder"""
+        model = Embedder.from_config(
+            model_name_or_path='damo/nlp_raner_named-entity-recognition_chinese-base-news'
+        )
+        self.assertTrue(isinstance(model.transformer_model, BertModel))
+
     def test_get_embedder_from_cfg_bert(self):
         """可以指定配置文件初始化一个embedder，本例中配置文件中存在model_name_or_path参数"""
         model = Embedder.from_config(cfg_dict_or_path=self.bert_config_file)
