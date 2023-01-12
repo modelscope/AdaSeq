@@ -3,7 +3,7 @@
 <div align="center">
 
 [![license](https://img.shields.io/github/license/modelscope/adaseq.svg)](./LICENSE)
-[![modelscope](https://img.shields.io/badge/modelscope-1.1.2-624aff.svg)](https://modelscope.cn/)
+[![modelscope](https://img.shields.io/badge/modelscope->=1.1.0-624aff.svg)](https://modelscope.cn/)
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
@@ -57,7 +57,7 @@
 [[中文NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
 [[中文分词]](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
 
-全部我们已发布的模型卡片：[Modelcards](./docs/modelcards.md)
+更多的任务、更多的语种、更多的领域：见全部已发布的模型卡片 [Modelcards](./docs/modelcards.md)
 
 ## 🛠️ 模型库
 <details open>

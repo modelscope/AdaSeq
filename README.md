@@ -3,7 +3,7 @@
 <div align="center">
 
 [![license](https://img.shields.io/github/license/modelscope/adaseq.svg)](./LICENSE)
-[![modelscope](https://img.shields.io/badge/modelscope-1.1.2-624aff.svg)](https://modelscope.cn/)
+[![modelscope](https://img.shields.io/badge/modelscope->=1.1.0-624aff.svg)](https://modelscope.cn/)
 ![version](https://img.shields.io/github/tag/modelscope/adaseq.svg)
 [![issues](https://img.shields.io/github/issues/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/issues)
 [![stars](https://img.shields.io/github/stars/modelscope/adaseq.svg)](https://github.com/modelscope/AdaSeq/stargazers)
@@ -57,7 +57,7 @@ You can try out our models via online demos built on ModelScope:
 [[Chinese NER]](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)
 [[CWS]](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)
 
-All modelcards we released can be found in this page [Modelcards](./docs/modelcards.md).
+More tasks, more languages, more domains: All modelcards we released can be found in this page [Modelcards](./docs/modelcards.md).
 
 ## 🛠️ Model Zoo
 <details open>
