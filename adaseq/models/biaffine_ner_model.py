@@ -65,8 +65,6 @@ class BiaffineNerModel(Model):
             else:
                 self.dropout = nn.Dropout(dropout)
 
-        self.load_model_ckpt()
-
     def forward(
         self,
         tokens: Dict[str, Any],

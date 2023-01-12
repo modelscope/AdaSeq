@@ -123,8 +123,6 @@ class MultiLabelSpanTypingModel(Model):
             self.sigmoid = nn.Sigmoid()
             self.loss_fn = BCELoss()
 
-        self.load_model_ckpt()
-
     def forward(  # noqa: D102
         self,
         tokens: Dict[str, Any],

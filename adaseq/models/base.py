@@ -26,6 +26,23 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
         super().__init__()
         MsModel.__init__(self, model_dir=model_dir, **kwargs)
 
+    def __init_subclass__(cls, *args, **kwargs):
+        super().__init_subclass__(*args, **kwargs)
+
+        def new_init(self, init=cls.__init__, *args, **kwargs):
+            init(self, *args, **kwargs)
+            self.post_init()
+
+        cls.__init__ = new_init
+
+    def post_init(self):
+        """Run something after __init__ in subclass
+
+        All derived model instances will try to load checkpoint from model_dir after __init__.
+        Useful when initializing pipeline from model_id.
+        """
+        self.load_model_ckpt()
+
     def __call__(self, *args, **kwargs) -> Dict[str, Any]:  # noqa: D102
         # use `nn.Module.__call__` rather than `MsModel.__call__`
         return self.postprocess(super()._call_impl(*args, **kwargs))

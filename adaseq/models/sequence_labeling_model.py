@@ -94,8 +94,6 @@ class SequenceLabelingModel(Model):
         self.temperature = temperature
         self.mv_interpolation = mv_interpolation
 
-        self.load_model_ckpt()
-
     def forward(
         self,
         tokens: Dict[str, Any],

@@ -54,8 +54,6 @@ class RelationExtractionModel(Model):
         self.multiview = multiview
         self.temperature = temperature
 
-        self.load_model_ckpt()
-
     def _forward(self, tokens: Dict[str, Any], so_head_mask: torch.Tensor) -> torch.Tensor:
         embed = self.embedder(**tokens)
 
