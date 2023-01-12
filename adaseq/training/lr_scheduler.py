@@ -9,7 +9,7 @@ from modelscope.utils.config import Config
 from transformers import optimization
 
 
-def build_lr_scheduler(config: Config, total_setps: int, default_args: Dict[str, Any]):
+def build_lr_scheduler(config: Config, total_steps: int, default_args: Dict[str, Any]):
     """
     Build lr scheduler, `constant` by default.
     """
@@ -24,8 +24,8 @@ def build_lr_scheduler(config: Config, total_setps: int, default_args: Dict[str,
         return optimization.get_scheduler(
             name,
             default_args['optimizer'],
-            num_warmup_steps=int(total_setps * warmup_rate),
-            num_training_steps=total_setps,
+            num_warmup_steps=int(total_steps * warmup_rate),
+            num_training_steps=total_steps,
         )
 
     # torch lr_scheduler

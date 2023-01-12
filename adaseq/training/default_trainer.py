@@ -112,7 +112,7 @@ class DefaultTrainer(EpochBasedTrainer):
         Override this func to customize the lr_scheduler.
         """
         batch_size = self.cfg.train.dataloader.batch_size_per_gpu
-        total_steps = len(self.train_dataset) * self._max_epochs / batch_size
+        total_steps = max(len(self.train_dataset) / batch_size, 1) * self._max_epochs
         return build_lr_scheduler(cfg, int(total_steps), default_args)
 
     def to_task_dataset(

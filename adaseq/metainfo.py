@@ -18,6 +18,7 @@ class Tasks:
     named_entity_recognition = 'named-entity-recognition'
     relation_extraction = 'relation-extraction'
     entity_typing = 'entity-typing'
+    pretraining = 'pretraining'
 
 
 class Metrics:
@@ -28,6 +29,7 @@ class Metrics:
     span_extraction_metric = 'span-extraction-metric'
     relation_extraction_metric = 'relation-extraction-metric'
     typing_metric = 'typing-metric'
+    pretraining_metric = 'pretraining-metric'
 
 
 class Models:
@@ -39,6 +41,8 @@ class Models:
     relation_extraction_model = 'relation-extraction-model'
     multilabel_concat_typing_model = 'multilabel-concat-typing-model'
     multilabel_span_typing_model = 'multilabel-span-typing-model'
+    pretraining_model = 'pretraining-model'
+    twostage_ner_model = 'twostage-ner-model'
 
 
 class Embedders:
@@ -64,6 +68,7 @@ class Decoders:
     partial_crf = 'partial-crf'
     pairwise_crf = 'pairwise-crf'
     linear = 'linear'
+    constrained_crf = 'constrained-crf'
 
 
 class Preprocessors:
@@ -75,6 +80,8 @@ class Preprocessors:
     span_extraction_preprocessor = 'span-extraction-preprocessor'
     multilabel_span_typing_preprocessor = 'multilabel-span-typing-preprocessor'
     multilabel_concat_typing_preprocessor = 'multilabel-concat-typing-preprocessor'
+    pretraining_preprocessor = 'pretraining-preprocessor'
+    twostage_preprocessor = 'twostage-preprocessor'
 
 
 class DataCollators:
@@ -85,6 +92,8 @@ class DataCollators:
     span_extraction_data_collator = 'SpanExtractionDataCollatorWithPadding'
     multi_label_span_typing_data_collator = 'MultiLabelSpanTypingDataCollatorWithPadding'
     multi_label_concat_typing_data_collator = 'MultiLabelConcatTypingDataCollatorWithPadding'
+    pretraining_data_collator = 'PretrainingDataCollatorWithPadding'
+    twostage_data_collator = 'TwostageDataCollatorWithPadding'
 
 
 class Trainers:
@@ -121,3 +130,4 @@ class Pipelines:
     """Names for different pipelines"""
 
     span_based_ner_pipeline = 'span-based-ner-pipeline'
+    maoe_ner_pipeline = 'maoe-ner-pipeline'

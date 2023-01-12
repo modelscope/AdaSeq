@@ -6,5 +6,7 @@ from .multilabel_typing_model import (
     MultiLabelConcatTypingModel,
     MultiLabelSpanTypingModel,
 )
+from .pretraining_model import PretrainingModel
 from .relation_extraction_model import RelationExtractionModel
 from .sequence_labeling_model import SequenceLabelingModel
+from .twostage_ner_model import TwoStageNERModel
