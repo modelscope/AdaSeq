@@ -56,7 +56,7 @@ class NLPPreprocessor(Preprocessor):
         super().__init__(**kwargs)
         if 'word2vec' in model_dir and is_word2vec is False:
             is_word2vec = True
-            logger.warn('You are using word2vec embedder, auto set `is_word2vec = True`')
+            logger.warning('You are using word2vec embedder, auto set `is_word2vec = True`')
 
         self.is_word2vec = is_word2vec
         self.max_length = max_length

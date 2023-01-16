@@ -197,9 +197,20 @@ class DatasetManager:
 
         if 'test' in datasets and 'valid' not in datasets:
             datasets['valid'] = datasets['test']
+            logger.warning('Validation set not found. Reuse test set for validation!')
 
         if 'valid' in datasets and 'test' not in datasets:
             datasets['test'] = datasets['valid']
+            logger.warning('Test set not found. Reuse validation set for testing!')
+
+        if 'train' not in datasets:
+            logger.warning('Training set not found!')
+
+        if 'valid' not in datasets:
+            logger.warning('Validation set not found!')
+
+        if 'test' not in datasets:
+            logger.warning('Test set not found!')
 
         # apply transform
         if transform:
