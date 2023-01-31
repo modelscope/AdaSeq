@@ -78,3 +78,15 @@ class RelationExtractionMetric(Metric):
         scores[MetricKeys.RECALL] = overall_score['recall']
         scores[MetricKeys.F1] = overall_score['f1']
         return scores
+
+    def merge(self, other):
+        """Merge metrics from multi nodes"""
+        self.preds.extend(other.preds)
+        self.golds.extend(other.preds)
+
+    def __getstate__(self):
+        return (self.preds, self.golds)
+
+    def __setstate__(self, state):
+        self.__init__()
+        (self.preds, self.golds) = state

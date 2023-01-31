@@ -213,3 +213,33 @@ class PretrainingMetric(Metric):
         scores['prompt_accuracy'] = accuracy_score(y_true=gold_labels, y_pred=pred_labels)
 
         return scores
+
+    def merge(self, other):
+        """Merge metrics from multi nodes"""
+        self.ident_preds.extend(other.ident_preds)
+        self.ident_golds.extend(other.ident_golds)
+        self.prompt_preds.extend(other.prompt_preds)
+        self.prompt_golds.extend(other.prompt_golds)
+
+    def __getstate__(self):
+        return (
+            self.typing_cls_scorer,
+            self.return_class_level_metric,
+            self.mode,
+            self.ident_preds,
+            self.ident_golds,
+            self.prompt_preds,
+            self.prompt_golds,
+        )
+
+    def __setstate__(self, state):
+        self.__init__()
+        (
+            self.typing_cls_scorer,
+            self.return_class_level_metric,
+            self.mode,
+            self.ident_preds,
+            self.ident_golds,
+            self.prompt_preds,
+            self.prompt_golds,
+        ) = state

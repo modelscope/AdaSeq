@@ -104,3 +104,6 @@ class SpanExtractionMetric(Metric):
         recall = true_positives / (true_positives + false_negatives + 1e-13)
         f1 = 2.0 * (precision * recall) / (precision + recall + 1e-13)
         return dict(precision=precision, recall=recall, f1=f1)
+
+    def merge(self, other):  # noqa: D102
+        raise NotImplementedError

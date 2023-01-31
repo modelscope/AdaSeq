@@ -85,3 +85,27 @@ class SequenceLabelingMetric(Metric):
                 scores[tp][MetricKeys.F1] = round(tp_score['f1-score'], 4)
                 scores[tp]['support'] = tp_score['support']
         return scores
+
+    def merge(self, other):
+        """Merge metrics from multi nodes"""
+        self.preds.extend(other.preds)
+        self.golds.extend(other.preds)
+
+    def __getstate__(self):
+        return (
+            self.return_macro_f1,
+            self.return_class_level_metric,
+            self.mode,
+            self.preds,
+            self.golds,
+        )
+
+    def __setstate__(self, state):
+        self.__init__()
+        (
+            self.return_macro_f1,
+            self.return_class_level_metric,
+            self.mode,
+            self.preds,
+            self.golds,
+        ) = state

@@ -125,3 +125,6 @@ class TypingMetric(Metric):
         scores['avg_pred_label'] = score_detail['avg_pred_label']
 
         return scores
+
+    def merge(self, other):  # noqa: D102
+        raise NotImplementedError
