@@ -59,7 +59,7 @@ class NLPPreprocessor(Preprocessor):
             logger.warning('You are using word2vec embedder, auto set `is_word2vec = True`')
 
         self.is_word2vec = is_word2vec
-        self.max_length = max_length
+        self.max_length = max_length if self.mode == ModeKeys.TRAIN else 512
         self.add_special_tokens = add_special_tokens
         self.return_offsets = return_offsets
         self.return_original_view = return_original_view
