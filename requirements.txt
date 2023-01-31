@@ -1,9 +1,10 @@
 addict
 datasets
-modelscope>=1.1.0
+modelscope>=1.2.0
 pyyaml
 seqeval
 torch>=1.11.0,<1.13.0
+torchaudio
 tqdm>=4.64.0
 transformers>=4.21.0
 urllib3>=1.26.0
