@@ -88,7 +88,7 @@ def suppress_modelscope_ast_warning():  # noqa
         def filter_modelscope_ast_warning(record):
             return 'not found in ast index file' not in record.msg
 
-        logger = get_logger('modelscope')
+        logger = get_logger()
         logger.addFilter(filter_modelscope_ast_warning)
     except IsADirectoryError:
         pass
