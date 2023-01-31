@@ -31,3 +31,9 @@ class DatasetDumper(Metric):
     def dump(self):
         """dump predictions"""
         raise NotImplementedError
+
+    def merge(self):
+        """implement abstract method
+        This function should never be used.
+        """
+        raise NotImplementedError
