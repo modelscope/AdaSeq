@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+from modelscope.hub.snapshot_download import snapshot_download
 from modelscope.preprocessors.builder import build_preprocessor
 from modelscope.utils.constant import ModeKeys
 from transformers import BertTokenizerFast
@@ -153,11 +154,16 @@ class TestPreprocessor(unittest.TestCase):
         output_labels = [id_to_label[i] for i in output['type_ids'][0]]
         self.assertEqual([output_labels], [['地名', '人名', '地名']])
 
-    def test_load_modelscope_tokenizer(self):
-        processor = NLPPreprocessor(
+    def test_load_modelscope_backbone_tokenizer(self):
+        preprocessor = NLPPreprocessor(
             model_dir='damo/nlp_structbert_backbone_tiny_std', labels=['O', 'B']
         )
-        self.assertTrue(isinstance(processor.tokenizer, BertTokenizerFast))
+        self.assertTrue(isinstance(preprocessor.tokenizer, BertTokenizerFast))
+
+    def test_load_modelscope_task_model_tokenizer(self):
+        model_dir = snapshot_download('damo/nlp_raner_named-entity-recognition_chinese-base-news')
+        preprocessor = NLPPreprocessor(model_dir=model_dir, labels=['O', 'B'])
+        self.assertTrue(isinstance(preprocessor.tokenizer, BertTokenizerFast))
 
     def test_text_preprocessor_train(self):
         cfg = dict(

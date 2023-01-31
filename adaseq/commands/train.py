@@ -7,6 +7,7 @@ from typing import Optional
 import yaml
 from modelscope.utils.config import Config
 from modelscope.utils.torch_utils import set_random_seed
+from requests.exceptions import HTTPError
 
 from adaseq.commands.subcommand import Subcommand
 from adaseq.data.data_collators.base import build_data_collator
@@ -15,8 +16,9 @@ from adaseq.data.preprocessors.nlp_preprocessor import build_preprocessor
 from adaseq.metainfo import Trainers
 from adaseq.training import build_trainer
 from adaseq.utils.checks import ConfigurationError
-from adaseq.utils.common_utils import create_datetime_str
+from adaseq.utils.common_utils import create_datetime_str, has_keys
 from adaseq.utils.file_utils import is_empty_dir
+from adaseq.utils.hub_utils import get_or_download_model_dir
 from adaseq.utils.logging import prepare_logging
 
 
@@ -155,15 +157,28 @@ def build_trainer_from_partial_objects(config, work_dir, **kwargs):
     """
     # build datasets via `DatasetManager`
     dm = DatasetManager.from_config(task=config.task, **config.dataset)
+
+    # reuse embedder's model_dir in preprocessor
+    if 'model_dir' not in config.preprocessor:
+        assert has_keys(
+            config, 'model', 'embedder', 'model_name_or_path'
+        ), 'model.embedder.model_name_or_path is required when preprocessor.model_dir is not set'
+        config.preprocessor.model_dir = config.model.embedder.model_name_or_path
+    # for initializing preprocessor from a modelscope model
+    try:
+        config.preprocessor.model_dir = get_or_download_model_dir(config.preprocessor.model_dir)
+    except HTTPError:
+        pass
+
     # build preprocessor with config and labels
     preprocessor = build_preprocessor(config.preprocessor, labels=dm.labels)
 
     if 'lr_scheduler' not in config.train:  # default constant lr.
         config.train['lr_scheduler'] = dict(type='constant')
 
-    # Finally, get `id_to_label` for model.
+    # finally, get `id_to_label` for model.
     config.model.id_to_label = preprocessor.id_to_label
-    # Dump config to work_dir and reload.
+    # dump config to work_dir and reload.
     new_config_path = os.path.join(work_dir, 'config.yaml')
     with open(new_config_path, mode='w', encoding='utf8') as file:
         yaml.dump(config.to_dict(), file, allow_unicode=True)
