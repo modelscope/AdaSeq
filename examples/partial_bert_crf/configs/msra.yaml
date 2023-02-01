@@ -11,7 +11,6 @@ dataset:
 
 preprocessor:
   type: sequence-labeling-preprocessor
-  model_dir: sijunhe/nezha-cn-base
   max_length: 150
 
 data_collator: SequenceLabelingDataCollatorWithPadding
@@ -19,7 +18,7 @@ data_collator: SequenceLabelingDataCollatorWithPadding
 model:
   type: sequence-labeling-model
   embedder:
-    model_name_or_path: sijunhe/nezha-cn-base
+    model_name_or_path: damo/nlp_raner_named-entity-recognition_chinese-base-news
   dropout: 0.1
   use_crf: true
   partial: true

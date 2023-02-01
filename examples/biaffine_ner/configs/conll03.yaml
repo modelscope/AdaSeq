@@ -11,7 +11,6 @@ dataset:
 
 preprocessor:
   type: span-extraction-preprocessor
-  model_dir: bert-base-cased
   max_length: 200
 
 data_collator: SpanExtractionDataCollatorWithPadding
@@ -19,7 +18,7 @@ data_collator: SpanExtractionDataCollatorWithPadding
 model:
   type: biaffine-ner-model
   embedder:
-    model_name_or_path: bert-base-cased
+    model_name_or_path: damo/nlp_raner_named-entity-recognition_multilingual-large-generic
   biaffine_ffnn_size: 150
   flat_ner: true
   dropout: 0.2

@@ -14,7 +14,6 @@ dataset:
 
 preprocessor:
   type: sequence-labeling-preprocessor
-  model_dir: xlm-roberta-large
   # return_original_view: true
   max_length: 512
 
@@ -24,7 +23,7 @@ model:
   type: sequence-labeling-model
   # multiview: true
   embedder:
-    model_name_or_path: xlm-roberta-large
+    model_name_or_path: damo/nlp_raner_named-entity-recognition_multilingual-large-generic
   dropout: 0.1
   use_crf: true
 
