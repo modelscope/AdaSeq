@@ -23,6 +23,52 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
 
         pass
 
+    def _resolve_datasets(self, dl_manager: DownloadManager):
+        """
+        Resolve datasets. From (remote) data_dir or data_files
+        Args:
+            dl_manager:
+
+        Returns:
+            data_files
+
+        """
+        if self.config.data_dir is not None:
+            if is_remote_url(self.config.data_dir):
+                _data_dir = dl_manager.download_and_extract(self.config.data_dir)
+            elif not os.path.isdir(self.config.data_dir):
+                # could be some archieve files like `DIR/FILE.zip`
+                _data_dir = dl_manager.extract(self.config.data_dir)
+            else:
+                _data_dir = self.config.data_dir
+
+            data_files = dict()
+            _all_files = os.listdir(_data_dir)
+            for split_name in ['train', 'valid', 'test']:
+                _file = get_file_by_keyword(_all_files, split_name)
+                if _file is None and split_name == 'valid':
+                    _file = get_file_by_keyword(_all_files, 'dev')
+                if _file is None:
+                    continue
+                data_files[split_name] = os.path.join(_data_dir, _file)
+
+        elif self.config.data_files is not None:
+            assert isinstance(self.config.data_files, dict)
+
+            data_files = dict()
+            for k, v in self.config.data_files.items():
+                if isinstance(v, list):
+                    v = v[0]
+                if not isinstance(v, str):
+                    v = v.as_posix()
+                if is_remote_url(v):
+                    v = dl_manager.download(v)
+                data_files[k] = v
+        else:
+            raise ValueError('Datasets cannot be resolved!')
+
+        return data_files
+
     def _split_generators(self, dl_manager: DownloadManager):
         """Specify feature dictionary generators and dataset splits.
 
@@ -67,39 +113,7 @@ class CustomDatasetBuilder(ABC, datasets.GeneratorBasedBuilder):
             `list<SplitGenerator>`.
         """
 
-        if self.config.data_dir is not None:
-            if is_remote_url(self.config.data_dir):
-                _data_dir = dl_manager.download_and_extract(self.config.data_dir)
-            elif not os.path.isdir(self.config.data_dir):
-                # could be some archieve files like `DIR/FILE.zip`
-                _data_dir = dl_manager.extract(self.config.data_dir)
-            else:
-                _data_dir = self.config.data_dir
-
-            data_files = dict()
-            _all_files = os.listdir(_data_dir)
-            for split_name in ['train', 'valid', 'test']:
-                _file = get_file_by_keyword(_all_files, split_name)
-                if _file is None and split_name == 'valid':
-                    _file = get_file_by_keyword(_all_files, 'dev')
-                if _file is None:
-                    continue
-                data_files[split_name] = os.path.join(_data_dir, _file)
-
-        elif self.config.data_files is not None:
-            assert isinstance(self.config.data_files, dict)
-
-            data_files = dict()
-            for k, v in self.config.data_files.items():
-                if isinstance(v, list):
-                    v = v[0]
-                if not isinstance(v, str):
-                    v = v.as_posix()
-                if is_remote_url(v):
-                    v = dl_manager.download(v)
-                data_files[k] = v
-        else:
-            raise ValueError('Datasets cannot be resolved!')
+        data_files = self._resolve_datasets(dl_manager=dl_manager)
 
         return [
             datasets.SplitGenerator(

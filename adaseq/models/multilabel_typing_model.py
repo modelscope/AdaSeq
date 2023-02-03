@@ -1,10 +1,13 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
-from typing import Any, Dict, Optional, Union
+import logging
+from typing import Any, Dict, List, Optional, Union
 
+import numpy as np
 import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
 from torch.nn import BCELoss, BCEWithLogitsLoss
+from tqdm import tqdm
 
 from adaseq.metainfo import Models, Tasks
 from adaseq.models.base import Model
@@ -12,6 +15,8 @@ from adaseq.modules.decoders import Decoder, PairwiseCRF
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
 from adaseq.modules.encoders import SpanEncoder
+
+logger = logging.getLogger(__name__)
 
 
 class WBCEWithLogitsLoss:
@@ -24,35 +29,6 @@ class WBCEWithLogitsLoss:
     def __call__(self, y_pred, y_true):  # noqa: D102
         loss = self.loss(y_pred, y_true.float())
 
-        if self.pos_weight != 1:
-            weights_pr = torch.ones_like(y_true).float()  # B x C
-            weights_pr[y_true > 0] = self.pos_weight
-            loss = (loss * weights_pr).mean()
-        else:
-            loss = loss.mean()
-
-        return loss
-
-
-class WBCEWithLogitsLossUFET:
-    """Weighed BCE loss, multiply the loss of positive examples with a scaler,
-    Apply the trick in Ultra-Fine Entity Typing with Weak Supervision from a Masked Language Model"""
-
-    def __init__(self, pos_weight=1.0):
-        self.pos_weight = pos_weight
-        self.loss = BCEWithLogitsLoss(reduction='none')
-
-    def __call__(self, y_pred, y_true):  # noqa: D102
-        loss = self.loss(y_pred, y_true.float())
-        B, L = y_true.shape
-        coarse = y_true[:, :9].sum(-1) > 0
-        fine = y_true[:, 9:130].sum(-1) > 0
-        ultra = y_true[:, 130:].sum(-1) > 0
-        a = coarse.view(-1, 1) * torch.ones_like(y_true[:, :9])
-        b = fine.view(-1, 1) * torch.ones_like(y_true[:, 9:130])
-        c = ultra.view(-1, 1) * torch.ones_like(y_true[:, 130:])
-        weight_cfu = torch.cat([a, b, c], -1)
-        loss = loss * weight_cfu
         if self.pos_weight != 1:
             weights_pr = torch.ones_like(y_true).float()  # B x C
             weights_pr[y_true > 0] = self.pos_weight
@@ -212,9 +188,10 @@ class MultiLabelConcatTypingModel(Model):
         embedder (Union[Embedder, str], `optional`): embedder used in the model.
             It can be an `Embedder` instance or an embedder config file or an embedder config dict.
         word_dropout (float, `optional`): word dropout rate, default `0.0`.
-        loss_function (str, `optional'): loss function, default 'BCE', other options `WBCE`, `WBCE-UFET'
+        loss_function (str, `optional'): loss function, default 'BCE', other options `WBCE`
         class_threshold (float, `optional`): classification threshold default. '0.5'
         pos_weight (float, `optional`): multiplier on loss of positive examples, default 1.0.
+        top_k (int, `optional'): <=0: default to predict all type > class_threshold, other wise predict top_k
         decoder (Union[Encoder, str], `optional`), can be linear or pairwise-crf
         **kwargs: other arguments
     """
@@ -228,11 +205,13 @@ class MultiLabelConcatTypingModel(Model):
         loss_function: str = 'BCE',
         class_threshold: float = 0.5,
         pos_weight: float = 1.0,
+        top_k: int = -1,
         decoder: Union[Decoder, str] = None,
         **kwargs
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
         self.id_to_label = id_to_label
+        self.label_to_id = {v: k for k, v in self.id_to_label.items()}
         self.num_labels = len(id_to_label)
         if isinstance(embedder, Embedder):
             self.embedder = embedder
@@ -253,16 +232,13 @@ class MultiLabelConcatTypingModel(Model):
         self.loss_function_type = loss_function
         self.class_threshold = class_threshold
         self.pos_weight = pos_weight
+        self.top_k = top_k
+        self.sigmoid = nn.Sigmoid()
 
         if self.loss_function_type == 'BCE':
-            self.sigmoid = nn.Sigmoid()
             self.loss_fn = BCEWithLogitsLoss()
         elif self.loss_function_type == 'WBCE':
-            self.sigmoid = nn.Sigmoid()
             self.loss_fn = WBCEWithLogitsLoss(pos_weight=self.pos_weight)
-        elif self.loss_function_type == 'WBCE-UFET':
-            self.sigmoid = nn.Sigmoid()
-            self.loss_fn = WBCEWithLogitsLossUFET(pos_weight=self.pos_weight)
 
         self.linear = nn.Linear(self.linear_input_dim, self.num_labels)
 
@@ -277,6 +253,8 @@ class MultiLabelConcatTypingModel(Model):
                 labels=[id_to_label[i] for i in range(self.num_labels)], **decoder
             )
 
+        self.load_model_ckpt()
+
     def forward(  # noqa: D102
         self,
         tokens: Dict[str, Any],
@@ -290,7 +268,7 @@ class MultiLabelConcatTypingModel(Model):
             outputs = {'logits': logits, 'loss': loss}
         else:
             predicts = self.classify(logits)
-            outputs = {'logits': logits, 'predicts': predicts}
+            outputs = {'logits': logits, 'predicts': predicts, 'label_to_id': self.label_to_id}
         return outputs
 
     def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
@@ -314,9 +292,172 @@ class MultiLabelConcatTypingModel(Model):
         logits = self.sigmoid(logits)  # B x L
         predicts = []
         for i in range(len(logits)):
-            pred_ = (logits[i] > 0.5).nonzero()  # at least predict one
-            if len(pred_) < 1:
-                pred_ = logits[i].topk(k=1).indices
+            if self.top_k <= 0:
+                pred_ = (logits[i] > self.class_threshold).nonzero()  # at least predict one
+                if len(pred_) < 1:
+                    pred_ = logits[i].topk(k=1).indices
+            else:
+                pred_ = logits[i].topk(k=self.top_k).indices
             types = set(self.id_to_label[i] for i in pred_.view(-1).cpu().numpy())
+            predicts.append([types])
+        return predicts
+
+
+@MODELS.register_module(
+    Tasks.entity_typing, module_name=Models.multilabel_concat_typing_model_mcce_s
+)
+class MultiLabelConcatTypingModelMCCES(Model):
+    """Concat based Single Mention MultiLabel Entity Typing model MCCE
+
+    This model is used for single mention multilabel entity typing tasks.
+    Input format [cls] sentence [sep] mention [sep] candidates
+
+    Args:
+        labels (List): list of labels
+        embedder (Union[Embedder, str], `optional`): embedder used in the model.
+            It can be an `Embedder` instance or an embedder config file or an embedder config dict.
+        word_dropout (float, `optional`): word dropout rate, default `0.0`.
+        loss_function (str, `optional'): loss function, default 'BCE', other options `WBCE`
+        class_threshold (float, `optional`): classification threshold default. '0.5'
+        pos_weight (float, `optional`): multiplier on loss of positive examples, default 1.0.
+        top_k (int, `optional'): <=0: default to predict all type > class_threshold, other wise predict top_k
+        decoder (Union[Encoder, str], `optional`), can be linear or pairwise-crf
+        **kwargs: other arguments
+    """
+
+    def __init__(
+        self,
+        id_to_label: Dict[int, str],
+        embedder: Union[Embedder, Dict] = None,
+        dropout: float = 0.0,
+        word_dropout: bool = False,
+        loss_function: str = 'BCE',
+        class_threshold: float = 0.5,
+        pos_weight: float = 1.0,
+        top_k: int = -1,
+        decoder: Union[Decoder, str] = None,
+        **kwargs
+    ) -> None:
+        super().__init__(**kwargs)
+        self.id_to_label = id_to_label
+        self.label_to_id = {v: k for k, v in self.id_to_label.items()}
+        self.num_labels = len(id_to_label)
+        if isinstance(embedder, Embedder):
+            self.embedder = embedder
+        else:
+            if isinstance(embedder, dict):
+                embedder['drop_special_tokens'] = False
+            self.embedder = Embedder.from_config(embedder)
+
+        self.linear_input_dim = self.embedder.get_output_dim()
+
+        self.use_dropout = dropout > 0.0
+        if self.use_dropout:
+            if word_dropout:
+                self.dropout = WordDropout(dropout)
+            else:
+                self.dropout = nn.Dropout(dropout)
+
+        self.loss_function_type = loss_function
+        self.class_threshold = class_threshold
+        self.pos_weight = pos_weight
+        self.top_k = top_k
+        self.sigmoid = nn.Sigmoid()
+
+        if self.loss_function_type == 'BCE':
+            self.loss_fn = BCEWithLogitsLoss()
+        elif self.loss_function_type == 'WBCE':
+            self.loss_fn = WBCEWithLogitsLoss(pos_weight=self.pos_weight)
+
+        self.linear = nn.Linear(self.linear_input_dim, 1)
+        self.decoder_type = decoder.pop('type')
+        assert self.decoder_type in ['linear']
+
+        self.load_model_ckpt()
+
+    def expand_vocab(self):
+        """
+        TODO
+        """
+        emb = self.get_label_emb()
+        self.embedder.transformer_model.resize_token_embeddings(
+            self.embedder.transformer_model.config.vocab_size + len(self.id_to_label)
+        )
+        with torch.no_grad():
+            self.embedder.transformer_model.embeddings.word_embeddings.weight[
+                -len(self.id_to_label) :
+            ] = emb
+        return self
+
+    def get_label_emb(self):
+        """
+        TODO
+        """
+        from modelscope.utils.data_utils import to_device
+
+        tokenizer = self.trainer.train_preprocessor.tokenizer
+        word_embedding = self.embedder.transformer_model.embeddings.word_embeddings
+        avg_subword = []
+        logger.info('generating label token embedding')
+        with torch.no_grad():
+            for id, label in tqdm(self.id_to_label.items()):
+                label = label.replace('_', ' ')
+                encoding = tokenizer(label, return_tensors='pt', padding=True)['input_ids']
+                encoding = to_device(encoding, self.trainer.device)
+                output = word_embedding(encoding)
+                avg_subword_emb = output[0][1:-1].mean(axis=0)
+                avg_subword.append(avg_subword_emb)
+
+        avg_subword = torch.stack(avg_subword, dim=0)
+        logger.info('generated label token embedding shape: {}'.format(avg_subword.shape))
+        return avg_subword
+
+    def forward(  # noqa: D102
+        self,
+        tokens: Dict[str, Any],
+        type_ids: Optional[torch.LongTensor] = None,
+        meta: Optional[Dict[str, Any]] = None,
+        cands: Optional[List] = None,
+    ) -> Dict[str, Any]:
+        # B x M -> B*M x 1
+        logits = self._forward(tokens).squeeze()
+        if self.training and type_ids is not None:
+            loss = self.loss_fn(logits, type_ids.float())
+            outputs = {'logits': logits, 'loss': loss}
+        else:
+            predicts = self.classify(logits, meta)
+            outputs = {'logits': logits, 'predicts': predicts, 'label_to_id': self.label_to_id}
+        return outputs
+
+    def _forward(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        span_reprs = self._token2span_encode(tokens)  # B x K
+        # B*M x label_num
+        logits = self.linear(span_reprs)
+        return logits
+
+    def _token2span_encode(self, tokens: Dict[str, Any]) -> torch.Tensor:
+        embed = self.embedder(**tokens)
+        # embed: B x W x K
+        if self.use_dropout:
+            embed = self.dropout(embed)
+        # use the cls embedding
+        if self.trainer.cfg['preprocessor']['cand_size'] == -1:
+            cand_size = len(self.label_to_id)
+        else:
+            cand_size = self.trainer.cfg['preprocessor']['cand_size']
+
+        return embed[:, -cand_size:, :]
+
+    def classify(self, logits, meta):  # noqa: D102
+        logits = self.sigmoid(logits)  # B x L
+        predicts = []
+        for i in range(len(logits)):
+            if self.top_k <= 0:
+                pred_ = (logits[i] > self.class_threshold).nonzero()  # at least predict one
+                if len(pred_) < 1:
+                    pred_ = logits[i].topk(k=1).indices
+            else:
+                pred_ = logits[i].topk(k=self.top_k).indices
+            types = np.array(meta[i]['spans'][0]['candidates'])[pred_.view(-1).cpu().numpy()]
             predicts.append([types])
         return predicts

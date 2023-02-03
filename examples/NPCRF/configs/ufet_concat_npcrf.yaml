@@ -1,7 +1,7 @@
 experiment:
   exp_dir: experiments/
   exp_name: ufet
-  seed: 42
+  seed: 17
 
 task: entity-typing
 
@@ -35,10 +35,10 @@ model:
     target_emb_dir: ${PATH_TO_DIR}  # TODO
     target_emb_name: glove.300.emb
     pairwise_factor: 70
-    mfvi_iteration: 6
+    mfvi_iteration: 4
     two_potential: false
     sign_trick: true
-  loss_function: WBCE-UFET
+  loss_function: WBCE
   pos_weight: 4
 
 train:

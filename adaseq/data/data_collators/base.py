@@ -59,7 +59,6 @@ class DataCollatorWithPadding:
     def padding_token(self, batch: Dict[str, Any], padding_side: str) -> Dict[str, Any]:
         """pad token related fields (hf.transformers style)"""
         _pad = self._get_pad_func(padding_side)
-
         batch_size = len(batch['meta'])
         for field in [f for f in batch.keys() if f.endswith('tokens')]:
             sub_field_pair = [

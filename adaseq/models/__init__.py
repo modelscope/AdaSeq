@@ -4,6 +4,7 @@ from .biaffine_ner_model import BiaffineNerModel
 from .global_pointer_model import GlobalPointerModel
 from .multilabel_typing_model import (
     MultiLabelConcatTypingModel,
+    MultiLabelConcatTypingModelMCCES,
     MultiLabelSpanTypingModel,
 )
 from .pretraining_model import PretrainingModel

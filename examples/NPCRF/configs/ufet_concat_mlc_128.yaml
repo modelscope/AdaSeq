@@ -31,6 +31,7 @@ model:
     type: linear
   loss_function: WBCE
   pos_weight: 4
+  top_k: 128
 
 train:
   max_epochs: 100
@@ -41,7 +42,7 @@ train:
     lr: 2.0e-5
   lr_scheduler:
     type: cosine
-    warmup_rate: 0.1 # when choose concat typing model, default to use cosine_linear_with_warmup
+    warmup_rate: 0.1
     options:
       by_epoch: false
   hooks:
@@ -49,6 +50,7 @@ train:
       interval: 100
     - type: "BestCkptSaverHook"
       save_file_name: "best_model.pt"
+      metric_key: "recall"
 
 evaluation:
   dataloader:

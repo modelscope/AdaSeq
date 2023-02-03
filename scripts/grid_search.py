@@ -240,7 +240,7 @@ def collect(args):
 
     keys = None
     records = []
-    output_dirs = glob.glob(os.path.join(output_path, '*/best_model.pth'))
+    output_dirs = glob.glob(os.path.join(output_path, '*/metrics.json'))
     for output_dir in tqdm(output_dirs):
         try:
             output_dir = output_dir[: output_dir.rfind('/')]

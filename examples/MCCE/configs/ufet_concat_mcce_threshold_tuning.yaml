@@ -1,56 +1,60 @@
 experiment:
   exp_dir: experiments/
-  exp_name: ufet
+  exp_name: ufet_mcce
   seed: 42
 
-task: entity-typing
+task: mcce-entity-typing
 
 dataset:
   data_file:
     train: 'https://www.modelscope.cn/api/v1/datasets/izhx404/ufet/repo/files?Revision=master&FilePath=train.json'
     valid: 'https://www.modelscope.cn/api/v1/datasets/izhx404/ufet/repo/files?Revision=master&FilePath=dev.json'
     test: 'https://www.modelscope.cn/api/v1/datasets/izhx404/ufet/repo/files?Revision=master&FilePath=test.json'
+    cand: PATH_TO_CAND
   tokenizer: blank
-  lower: true
   labels: 'https://www.modelscope.cn/api/v1/datasets/izhx404/ufet/repo/files?Revision=master&FilePath=labels.txt'
 
 preprocessor:
-  type: multilabel-concat-typing-preprocessor
-  model_dir:  roberta-large
-  max_length: 150
+  type: multilabel-concat-typing-mcce-preprocessor
+  max_length: 300
+  cand_size: 256
 
 data_collator: MultiLabelConcatTypingDataCollatorWithPadding
 
 model:
-  type: multilabel-concat-typing-model
+  type: multilabel-concat-typing-model-mcce-s
   embedder:
-    model_name_or_path: roberta-large
+    model_name_or_path: roberta-base
     drop_special_tokens: false
   dropout: 0
   decoder:
     type: linear
   loss_function: WBCE
-  pos_weight: 4
+  pos_weight: 1
 
 train:
-  max_epochs: 100
+  trainer: typing-trainer
+  max_epochs: 20
   dataloader:
-    batch_size_per_gpu: 8
+    batch_size_per_gpu: 4
   optimizer:
     type: AdamW
-    lr: 2.0e-5
+    lr: 1.0e-5
   lr_scheduler:
     type: cosine
-    warmup_rate: 0.1 # when choose concat typing model, default to use cosine_linear_with_warmup
+    warmup_rate: 0
     options:
       by_epoch: false
   hooks:
     - type: "CheckpointHook"
       interval: 100
     - type: "BestCkptSaverHook"
-      save_file_name: "best_model.pt"
+      save_file_name: "best_model.pth"
+    - type: "EvaluationHook"
+      interval: 100
+      by_epoch: False
 
 evaluation:
   dataloader:
     batch_size_per_gpu: 32
-  metrics: typing-metric
+  metrics: typing-threshold-metric

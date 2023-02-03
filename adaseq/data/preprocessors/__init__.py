@@ -1,5 +1,6 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 from .multilabel_typing_preprocessor import (
+    MultiLabelConcatTypingMCCEPreprocessor,
     MultiLabelConcatTypingPreprocessor,
     MultiLabelSpanTypingPreprocessor,
 )

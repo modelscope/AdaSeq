@@ -163,6 +163,9 @@ class DatasetManager:
             if task in {Tasks.word_segmentation, Tasks.part_of_speech}:
                 task_builder_name = Tasks.named_entity_recognition
 
+            if task == Tasks.entity_typing and 'cand' in data_file:
+                task_builder_name = 'mcce-entity-typing'
+
             path = osp.join(
                 osp.dirname(osp.abspath(__file__)),
                 'dataset_builders',

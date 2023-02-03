@@ -30,6 +30,7 @@ class Metrics:
     relation_extraction_metric = 'relation-extraction-metric'
     typing_metric = 'typing-metric'
     pretraining_metric = 'pretraining-metric'
+    typing_threshold_metric = 'typing-threshold-metric'
 
 
 class Models:
@@ -41,6 +42,7 @@ class Models:
     relation_extraction_model = 'relation-extraction-model'
     multilabel_concat_typing_model = 'multilabel-concat-typing-model'
     multilabel_span_typing_model = 'multilabel-span-typing-model'
+    multilabel_concat_typing_model_mcce_s = 'multilabel-concat-typing-model-mcce-s'
     pretraining_model = 'pretraining-model'
     twostage_ner_model = 'twostage-ner-model'
 
@@ -80,6 +82,7 @@ class Preprocessors:
     span_extraction_preprocessor = 'span-extraction-preprocessor'
     multilabel_span_typing_preprocessor = 'multilabel-span-typing-preprocessor'
     multilabel_concat_typing_preprocessor = 'multilabel-concat-typing-preprocessor'
+    multilabel_concat_typing_mcce_preprocessor = 'multilabel-concat-typing-mcce-preprocessor'
     pretraining_preprocessor = 'pretraining-preprocessor'
     twostage_preprocessor = 'twostage-preprocessor'
 
@@ -100,6 +103,7 @@ class Trainers:
     """Names for different trainers"""
 
     default_trainer = 'default-trainer'
+    typing_trainer = 'typing-trainer'
 
 
 class Optimizers:

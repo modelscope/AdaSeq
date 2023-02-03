@@ -171,6 +171,12 @@ def build_trainer_from_partial_objects(config, work_dir, **kwargs):
         pass
 
     # build preprocessor with config and labels
+
+    if 'model_dir' not in config.preprocessor:
+        assert (
+            'model_name_or_path' in config.model.embedder
+        ), 'model.embedder.model_name_or_path is required when preprocessor.model_dir is not set'
+        config.preprocessor.model_dir = config.model.embedder.model_name_or_path
     preprocessor = build_preprocessor(config.preprocessor, labels=dm.labels)
 
     if 'lr_scheduler' not in config.train:  # default constant lr.
