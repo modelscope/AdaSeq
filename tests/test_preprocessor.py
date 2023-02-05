@@ -161,8 +161,9 @@ class TestPreprocessor(unittest.TestCase):
         self.assertTrue(isinstance(preprocessor.tokenizer, BertTokenizerFast))
 
     def test_load_modelscope_task_model_tokenizer(self):
-        model_dir = snapshot_download('damo/nlp_raner_named-entity-recognition_chinese-base-news')
-        preprocessor = NLPPreprocessor(model_dir=model_dir, labels=['O', 'B'])
+        preprocessor = NLPPreprocessor(
+            model_dir='damo/nlp_raner_named-entity-recognition_chinese-base-news', labels=['O', 'B']
+        )
         self.assertTrue(isinstance(preprocessor.tokenizer, BertTokenizerFast))
 
     def test_text_preprocessor_train(self):

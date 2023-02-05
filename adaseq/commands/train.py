@@ -7,7 +7,6 @@ from typing import Optional
 import yaml
 from modelscope.utils.config import Config
 from modelscope.utils.torch_utils import set_random_seed
-from requests.exceptions import HTTPError
 
 from adaseq.commands.subcommand import Subcommand
 from adaseq.data.data_collators.base import build_data_collator
@@ -18,7 +17,6 @@ from adaseq.training import build_trainer
 from adaseq.utils.checks import ConfigurationError
 from adaseq.utils.common_utils import create_datetime_str, has_keys
 from adaseq.utils.file_utils import is_empty_dir
-from adaseq.utils.hub_utils import get_or_download_model_dir
 from adaseq.utils.logging import prepare_logging
 
 
@@ -164,19 +162,8 @@ def build_trainer_from_partial_objects(config, work_dir, **kwargs):
             config, 'model', 'embedder', 'model_name_or_path'
         ), 'model.embedder.model_name_or_path is required when preprocessor.model_dir is not set'
         config.preprocessor.model_dir = config.model.embedder.model_name_or_path
-    # for initializing preprocessor from a modelscope model
-    try:
-        config.preprocessor.model_dir = get_or_download_model_dir(config.preprocessor.model_dir)
-    except HTTPError:
-        pass
 
     # build preprocessor with config and labels
-
-    if 'model_dir' not in config.preprocessor:
-        assert (
-            'model_name_or_path' in config.model.embedder
-        ), 'model.embedder.model_name_or_path is required when preprocessor.model_dir is not set'
-        config.preprocessor.model_dir = config.model.embedder.model_name_or_path
     preprocessor = build_preprocessor(config.preprocessor, labels=dm.labels)
 
     if 'lr_scheduler' not in config.train:  # default constant lr.
