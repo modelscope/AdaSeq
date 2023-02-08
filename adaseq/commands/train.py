@@ -2,7 +2,7 @@
 import argparse
 import os
 import shutil
-from typing import Optional
+from typing import Optional, Union
 
 import yaml
 from modelscope.utils.config import Config
@@ -73,7 +73,7 @@ class Train(Subcommand):
 
 def train_model_from_args(args: argparse.Namespace):  # noqa: D103
     train_model(
-        config_path=args.config_path,
+        config_path_or_dict=args.config_path,
         work_dir=args.work_dir,
         run_name=args.run_name,
         seed=args.seed,
@@ -85,7 +85,7 @@ def train_model_from_args(args: argparse.Namespace):  # noqa: D103
 
 
 def train_model(
-    config_path: str,
+    config_path_or_dict: Union[str, dict],
     work_dir: Optional[str] = None,
     run_name: Optional[str] = None,
     seed: Optional[int] = None,
@@ -96,9 +96,12 @@ def train_model(
 ) -> None:
     """
     Train a model from config file.
-    You can mannualy call this function in a python script for debugging.
+    You can manually call this function in a python script for debugging.
     """
-    config = Config.from_file(config_path)
+    if isinstance(config_path_or_dict, str):
+        config = Config.from_file(config_path_or_dict)
+    else:
+        config = Config(config_path_or_dict)
 
     # create work_dir
     if work_dir is None:
