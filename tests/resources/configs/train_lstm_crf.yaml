@@ -1,0 +1,44 @@
+work_dir: tests/resources/regression
+
+task: named-entity-recognition
+
+dataset:
+  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra.zip'
+  data_type: conll
+  labels:
+    type: count_span_labels
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  max_length: 150
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  embedder:
+    type: embedding
+    model_name_or_path: pangda/word2vec-skip-gram-mixed-large-chinese
+  word_dropout: 0.0
+  use_crf: true
+
+train:
+  max_epochs: 1
+  dataloader:
+    batch_size_per_gpu: 16
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    param_groups:
+      - regex: crf
+        lr: 5.0e-1
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 20
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 128
+  metrics: ner-metric
