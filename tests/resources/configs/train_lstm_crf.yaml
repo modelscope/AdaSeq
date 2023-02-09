@@ -19,6 +19,11 @@ model:
   embedder:
     type: embedding
     model_name_or_path: pangda/word2vec-skip-gram-mixed-large-chinese
+  encoder:
+    type: lstm
+    input_size: 300
+    hidden_size: 100
+    bidirectional: true
   word_dropout: 0.0
   use_crf: true
 
