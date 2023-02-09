@@ -95,7 +95,7 @@ def train_model(
     checkpoint_path: Optional[str] = None,
 ) -> None:
     """
-    Train a model from config file.
+    Train a model from config file or dict.
     You can manually call this function in a python script for debugging.
     """
     if isinstance(config_path_or_dict, str):

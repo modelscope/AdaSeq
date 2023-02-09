@@ -1,7 +1,7 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 import os
 import shutil
-from typing import Optional
+from typing import Optional, Union
 
 import yaml
 from modelscope.utils.config import Config
@@ -19,7 +19,7 @@ from adaseq.utils.logging import prepare_logging
 
 
 def pretrain_model(
-    config_path: str,
+    config_path_or_dict: Union[str, dict],
     work_dir: Optional[str] = None,
     run_name: Optional[str] = None,
     seed: Optional[int] = None,
@@ -29,10 +29,13 @@ def pretrain_model(
     checkpoint_path: Optional[str] = None,
 ) -> None:
     """
-    Train a model from config file.
-    You can mannualy call this function in a python script for debugging.
+    Train a model from config file or dict.
+    You can manually call this function in a python script for debugging.
     """
-    config = Config.from_file(config_path)
+    if isinstance(config_path_or_dict, str):
+        config = Config.from_file(config_path_or_dict)
+    else:
+        config = Config(config_path_or_dict)
 
     # create work_dir
     if work_dir is None:

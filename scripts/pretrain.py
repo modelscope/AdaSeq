@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 def main(args):
     """train a model from args"""
     pretrain_model(
-        config_path=args.config_path,
+        config_path_or_dict=args.config_path,
         work_dir=args.work_dir,
         run_name=args.run_name,
         seed=args.seed,
