@@ -76,3 +76,15 @@
 |:--------:|:-------:|:--------------:|:------:|:----------------------------------------------|:-----------------------------------------------------------------|:--------------------------------------------------------------------|
 | English  |  UFET   | 1998/1998/1998 | 10331  | Ultra-fine Entity Typing                      | [Choi et al., 2018](https://aclanthology.org/P18-1009.pdf)       | [izhx404/ufet](https://modelscope.cn/datasets/izhx404/ufet/summary) |
 | Chinese  |  CFET   |  2880/960/958  |  1299  | Unofficial split, no official split provided. | [Lee et al., 2020](https://aclanthology.org/2020.lrec-1.548.pdf) | [izhx404/cfet](https://modelscope.cn/datasets/izhx404/cfet/summary) |
+
+
+## Event Extraction
+
+| Language | Dataset |      Size       | Description                                   | Paper                                                            | Download                                                            |
+|:--------:|:-------:|:--------------:|:----------------------------------------------|:-----------------------------------------------------------------|:--------------------------------------------------------------------|
+| Chinese |  FewFC     | 7185/899/898        | Passage level  |    [Zhou et al., 2021](https://ojs.aaai.org/index.php/AAAI/article/view/17720)    |     [here](https://github.com/TimeBurningFish/FewFC)    |
+| Chinese |  Duee      |  11908/1492/34904   | Passage level  | [Li et al., 2020](https://link.springer.com/chapter/10.1007/978-3-030-60457-8_44) |  [here](https://aistudio.baidu.com/aistudio/competition/detail/46/0/datasets)   |
+| Chinese |  Duee-fin  |  7015/1171/59394    | Document level |   [Li et al., 2020](https://aistudio.baidu.com/aistudio/competition/detail/46)    |   [here](https://aistudio.baidu.com/aistudio/competition/detail/46/0/datasets)   |
+| Chinese |  ChFinAnn  |  25632/3204/3204    | Document level |            [Zheng et al., 2019](https://aclanthology.org/D19-1032.pdf)            |       [here](https://github.com/dolphin-zs/Doc2EDAG/blob/master/Data.zip)     |
+| English | WIKIEVENTS | 206/20/20           | Document level |         [Li et al., 2021](https://doi.org/10.18653/v1/2021.naacl-main.69)         | [train](https://gen-arg-data.s3.us-east-2.amazonaws.com/wikievents/data/train.jsonl) / [dev](https://gen-arg-data.s3.us-east-2.amazonaws.com/wikievents/data/dev.jsonl) / [test](https://gen-arg-data.s3.us-east-2.amazonaws.com/wikievents/data/test.jsonl) |
+| English | RAMS       | 7329/924/871        | Document level |         [Ebner et al., 2020](https://doi.org/10.18653/v1/2020.acl-main.718)       |                [here](https://nlp.jhu.edu/rams/RAMS_1.0b.tar.gz)       |
