@@ -79,8 +79,9 @@
 
 
 ## Event Extraction
-| Language|  Dataset   |    Size             | Description    |                                       Paper                                       |                                     Download                                     |
-|-------  |:-------:   |:-----------------:  |:-------------: |:---------------------------------------------------------------------------------:| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- :  |
+
+| Language | Dataset |      Size       | Description                                   | Paper                                                            | Download                                                            |
+|:--------:|:-------:|:--------------:|:----------------------------------------------|:-----------------------------------------------------------------|:--------------------------------------------------------------------|
 | Chinese |  FewFC     | 7185/899/898        | Passage level  |    [Zhou et al., 2021](https://ojs.aaai.org/index.php/AAAI/article/view/17720)    |     [here](https://github.com/TimeBurningFish/FewFC)    |
 | Chinese |  Duee      |  11908/1492/34904   | Passage level  | [Li et al., 2020](https://link.springer.com/chapter/10.1007/978-3-030-60457-8_44) |  [here](https://aistudio.baidu.com/aistudio/competition/detail/46/0/datasets)   |
 | Chinese |  Duee-fin  |  7015/1171/59394    | Document level |   [Li et al., 2020](https://aistudio.baidu.com/aistudio/competition/detail/46)    |   [here](https://aistudio.baidu.com/aistudio/competition/detail/46/0/datasets)   |
