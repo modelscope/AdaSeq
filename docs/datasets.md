@@ -88,3 +88,16 @@
 | Chinese |  ChFinAnn  |  25632/3204/3204    | Document level |            [Zheng et al., 2019](https://aclanthology.org/D19-1032.pdf)            |       [here](https://github.com/dolphin-zs/Doc2EDAG/blob/master/Data.zip)     |
 | English | WIKIEVENTS | 206/20/20           | Document level |         [Li et al., 2021](https://doi.org/10.18653/v1/2021.naacl-main.69)         | [train](https://gen-arg-data.s3.us-east-2.amazonaws.com/wikievents/data/train.jsonl) / [dev](https://gen-arg-data.s3.us-east-2.amazonaws.com/wikievents/data/dev.jsonl) / [test](https://gen-arg-data.s3.us-east-2.amazonaws.com/wikievents/data/test.jsonl) |
 | English | RAMS       | 7329/924/871        | Document level |         [Ebner et al., 2020](https://doi.org/10.18653/v1/2020.acl-main.718)       |                [here](https://nlp.jhu.edu/rams/RAMS_1.0b.tar.gz)       |
+
+## Entity Relation joint Extraction
+| Language | Dataset |      Size       | Description                                   | Paper                                                            | Download                                                            |
+|:--------:|:-------:|:--------------:|:----------------------------------------------|:-----------------------------------------------------------------|:--------------------------------------------------------------------|
+| English | NYT | - | - | [Ren et al.,2017](https://arxiv.org/pdf/1610.08763.pdf) | [here](https://github.com/INK-USC/USC-DS-RelationExtraction/tree/master/data/source/NYT) |
+| English | NYT10-HRL/11-HRL | 70339/-/4006;62648/-/369 | got by preprocessing in paper HRL | [Takanobu et al., 2019](https://arxiv.org/pdf/1811.03925v1.pdf) | [here](https://github.com/truthless11/HRL-RE/tree/master/data) | 
+| English | WebNLG | 5019/-/703 | - | [Gardent et al.,2017](https://aclanthology.org/P18-1047.pdf) | [here](https://paperswithcode.com/dataset/webnlg) | 
+| English | ADE | - | - | [Gurulingappa et al., 2012](https://pubmed.ncbi.nlm.nih.gov/22554702/) | - | 
+| English | SciERC | 1816/275/551 | - | [Luan et al., 2018](https://aclanthology.org/D18-1360.pdf) | [here](https://paperswithcode.com/dataset/scierc) | 
+| English | CoNLL04 | - | - | [Roth et al., 2004](https://aclanthology.org/W04-2401.pdf) | - |
+| English | ACE04 | - | - | - | [here](https://catalog.ldc.upenn.edu/LDC2005T09) |
+| English | ACE05 | 10051/2424/2050 | - | - | [here](https://catalog.ldc.upenn.edu/LDC2006T06) |
+| Chinese | DuIE2.0 | 171135/-/21055 | - | [Li et al., 2019](https://link.springer.com/chapter/10.1007/978-3-030-32236-6_72) | [here](https://www.luge.ai/#/luge/dataDetail?id=5) |
