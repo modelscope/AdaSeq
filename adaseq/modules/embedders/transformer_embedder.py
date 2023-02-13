@@ -387,11 +387,19 @@ def get_ms_transformer(
     except KeyError:
         transformer = MsModel.from_pretrained(model_name_or_path, **kwargs)
 
-        # only support transformer-crf model for now
-        model_type = transformer.cfg.model.type
-        if model_type == 'transformer-crf':
-            transformer = transformer.model.encoder
-        else:
-            raise ConfigurationError(f'Unsupported non-backbone embedder: {model_name_or_path}')
+        try:
+            from modelscope.models.nlp.task_models.task_model import EncoderModel
+
+            if isinstance(transformer, EncoderModel):
+                transformer = transformer.encoder
+            else:
+                raise ConfigurationError(f'Unsupported non-backbone embedder: {model_name_or_path}')
+
+        except (ImportError, ConfigurationError):
+            model_type = transformer.cfg.model.type
+            if model_type == 'transformer-crf':
+                transformer = transformer.model.encoder
+            else:
+                raise ConfigurationError(f'Unsupported non-backbone embedder: {model_name_or_path}')
 
     return transformer

@@ -2,6 +2,7 @@ import os
 import unittest
 
 from modelscope.models.nlp import SbertModel
+from modelscope.models.nlp.bert.backbone import BertModel as MsBertModel
 from transformers import BertModel
 
 from adaseq.metainfo import Models, Tasks
@@ -31,7 +32,7 @@ class TestRegistry(unittest.TestCase):
         model = Embedder.from_config(
             model_name_or_path='damo/nlp_raner_named-entity-recognition_chinese-base-news'
         )
-        self.assertTrue(isinstance(model.transformer_model, BertModel))
+        self.assertTrue(isinstance(model.transformer_model, (BertModel, MsBertModel)))
 
     def test_get_embedder_from_cfg_bert(self):
         """可以指定配置文件初始化一个embedder，本例中配置文件中存在model_name_or_path参数"""
