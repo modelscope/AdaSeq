@@ -4,7 +4,6 @@ DEFAULT_CONFIG = {
         'dataloader': {'workers_per_gpu': 0},
         'hooks': [
             {'type': 'EvaluationHook'},
-            {'type': 'CheckpointHook'},
             {
                 'type': 'BestCkptSaverHook',
                 'save_file_name': 'best_model.pth',

@@ -1,6 +1,6 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from modelscope.preprocessors.builder import PREPROCESSORS
 from modelscope.utils.constant import Fields
@@ -18,13 +18,22 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
     """Preprocessor for Sequence Labeling"""
 
     def __init__(
-        self, model_dir: str, labels: List[str], tag_scheme: str = 'BIOES', **kwargs
+        self,
+        model_dir: str,
+        labels: Optional[List[str]] = None,
+        tag_scheme: str = 'BIOES',
+        label_to_id: Optional[Dict[str, int]] = None,
+        **kwargs,
     ) -> None:
+        assert (
+            labels is not None or label_to_id is not None
+        ), 'Either `labels` or `label_to_id` must be set for `SequenceLabelingPreprocessor`'
         self.tag_scheme = tag_scheme.upper()
         if not self._is_valid_tag_scheme(self.tag_scheme):
             raise ValueError('Invalid tag scheme! Options: [BIO, BIOES]')
         # self.tag_scheme = self._determine_tag_scheme_from_labels(labels)
-        label_to_id = self._gen_label_to_id_with_bio(labels, self.tag_scheme)
+        if label_to_id is None:
+            label_to_id = self._gen_label_to_id_with_bio(labels, self.tag_scheme)
         logger.info('label_to_id: ' + str(label_to_id))
         super().__init__(model_dir, label_to_id=label_to_id, return_offsets=True, **kwargs)
 

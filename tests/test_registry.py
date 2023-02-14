@@ -10,8 +10,6 @@ from adaseq.models.base import Model
 from adaseq.models.sequence_labeling_model import SequenceLabelingModel
 from adaseq.modules.embedders import Embedder
 
-# from adaseq.modules.encoders import Encoder
-
 
 class TestRegistry(unittest.TestCase):
     def setUp(self):

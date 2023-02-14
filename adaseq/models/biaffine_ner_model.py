@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
 
-from adaseq.metainfo import Models, Tasks
+from adaseq.metainfo import Models, Pipelines, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.biaffine import Biaffine
 from adaseq.modules.dropouts import WordDropout
@@ -20,6 +20,8 @@ class BiaffineNerModel(Model):
     Named Entity Recognition as Dependency Parsing (Yu et al., ACL 2020)
     ref: https://aclanthology.org/2020.acl-main.577/
     """
+
+    pipeline = Pipelines.sequence_labeling_pipeline
 
     def __init__(
         self,

@@ -8,7 +8,7 @@ from modelscope.models.builder import MODELS
 from modelscope.utils.config import ConfigDict
 
 from adaseq.data.constant import PAD_LABEL_ID
-from adaseq.metainfo import Models, Tasks
+from adaseq.metainfo import Models, Pipelines, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.decoders import CRF, PartialCRF
 from adaseq.modules.dropouts import WordDropout
@@ -35,6 +35,8 @@ class SequenceLabelingModel(Model):
         use_crf (bool, `optional`): whether to use crf, default `True`.
         **kwargs: other arguments
     """
+
+    pipeline = Pipelines.sequence_labeling_pipeline
 
     def __init__(
         self,

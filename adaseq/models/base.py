@@ -2,25 +2,30 @@
 import logging
 import os
 import os.path as osp
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Optional, Union
 
 import torch
-import torch.nn as nn
 from modelscope.hub.snapshot_download import snapshot_download
-from modelscope.models.base.base_model import Model as MsModel
+from modelscope.models.base.base_torch_model import TorchModel as MsModel
 from modelscope.models.builder import build_model
-from modelscope.utils.checkpoint import save_checkpoint
+from modelscope.utils.checkpoint import (
+    save_checkpoint,
+    save_configuration,
+    save_pretrained,
+)
 from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.constant import DEFAULT_MODEL_REVISION, ModelFile
 
 logger = logging.getLogger(__name__)
 
 
-class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
+class Model(MsModel, ABC):
     """
     The model base class
     """
+
+    pipeline = None
 
     def __init__(self, model_dir: str = None, **kwargs):
         super().__init__()
@@ -116,15 +121,67 @@ class Model(nn.Module, MsModel):  # TODO 继承 modelscope model
         save_checkpoint_names: str = ModelFile.TORCH_MODEL_BIN_FILE,
         save_function: Callable = save_checkpoint,
         config: Optional[dict] = None,
-        manual_call: bool = False,
+        save_config_function: Callable = save_configuration,
+        with_meta: bool = False,
         **kwargs,
     ) -> None:
-        """`MsModel.save_pretrained`"""
-        if not manual_call:
-            return  # prevent modelscope call this method in training stage.
-        super().save_pretrained(
-            target_folder, save_checkpoint_names, save_function, config, **kwargs
+        """save the pretrained model, its configuration and other related files to a directory,
+            so that it can be re-loaded
+
+        Args:
+            target_folder (Union[str, os.PathLike]):
+            Directory to which to save. Will be created if it doesn't exist.
+
+            save_checkpoint_names (Union[str, List[str]]):
+            The checkpoint names to be saved in the target_folder
+
+            save_function (Callable, optional):
+            The function to use to save the state dictionary.
+
+            config (Optional[dict], optional):
+            The config for the configuration.json, might not be identical with model.config
+
+            save_config_function (Callble, optional):
+            The function to use to save the configuration.
+        """
+        if config is None and hasattr(self, 'cfg'):
+            config = self.cfg
+
+        # save pytorch_model.bin and model related files
+        save_pretrained(
+            self, target_folder, save_checkpoint_names, save_function, with_meta=with_meta, **kwargs
         )
+
+        if config is not None:
+            # config modification
+            config['plugins'] = 'adaseq'
+
+            if self.pipeline is not None:
+                config['pipeline'] = {'type': self.pipeline}
+
+            for field in ['experiment', 'dataset', 'train', 'evaluation']:
+                if field in config:
+                    del config[field]
+
+            if (
+                'preprocessor' in config
+                and 'label_to_id' not in config['preprocessor']
+                and 'model' in config
+                and 'id_to_label' in config['model']
+            ):
+                config['preprocessor']['label_to_id'] = {
+                    v: int(k) for k, v in config['model']['id_to_label'].items()
+                }
+
+            # save configuration.json
+            save_config_function(target_folder, config)
+
+        # embedder configuration
+        if not osp.isfile(osp.join(target_folder, 'config.json')):
+            try:
+                self.embedder.transformer_model.config.save_pretrained(target_folder)
+            except Exception as e:
+                logger.warning(f'embedder config.json not saved! {str(e)}')
 
     @classmethod
     def from_pretrained(

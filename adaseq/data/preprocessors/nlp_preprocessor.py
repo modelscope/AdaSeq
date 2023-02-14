@@ -1,6 +1,8 @@
 # Copyright (c) Alibaba, Inc. and its affiliates.
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+import os
+import os.path as osp
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from modelscope.preprocessors.base import Preprocessor
@@ -212,6 +214,33 @@ class NLPPreprocessor(Preprocessor):
         origin_length = sum(mask)
         origin_tokens = tokens[:origin_length]
         return self.encode_tokens(origin_tokens)
+
+    def save_pretrained(
+        self,
+        target_folder: Union[str, os.PathLike],
+        config: Optional[dict] = None,
+        save_config_function: Callable = None,
+    ):
+        """Save the preprocessor, its configuration and other related files to a directory,
+            so that it can be re-loaded
+
+        By default, this method will save the preprocessor's config with mode `inference`.
+
+        Args:
+            target_folder (Union[str, os.PathLike]):
+            Directory to which to save. Will be created if it doesn't exist.
+
+            config (Optional[dict], optional):
+            The config for the configuration.json
+
+            save_config_function (Callable): The function used to save the configuration, call this function
+                after the config is updated.
+
+        """
+        super().save_pretrained(target_folder, config, save_config_function)
+        # save tokenizer
+        if not osp.isfile(osp.join(target_folder, 'vocab.txt')):
+            self.tokenizer.save_pretrained(target_folder)
 
 
 def build_preprocessor(config: ConfigDict, **kwargs) -> Preprocessor:

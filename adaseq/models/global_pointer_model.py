@@ -7,7 +7,7 @@ import torch.nn as nn
 from modelscope.models.builder import MODELS
 
 from adaseq.data.span_utils import TypedSpan
-from adaseq.metainfo import Models, Tasks
+from adaseq.metainfo import Models, Pipelines, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
@@ -19,6 +19,8 @@ class SinusoidalPositionEmbedding(nn.Module):
     """Sin-Cos Embedding.
     ref: https://spaces.ac.cn/archives/8265
     """
+
+    pipeline = Pipelines.sequence_labeling_pipeline
 
     def __init__(self, output_dim: int, merge_mode: str = 'add', custom_position_ids: bool = False):
         super(SinusoidalPositionEmbedding, self).__init__()

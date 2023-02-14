@@ -133,5 +133,5 @@ class DatasetDumpers:
 class Pipelines:
     """Names for different pipelines"""
 
+    sequence_labeling_pipeline = 'sequence-labeling-pipeline'
     span_based_ner_pipeline = 'span-based-ner-pipeline'
-    maoe_ner_pipeline = 'maoe-ner-pipeline'

@@ -6,12 +6,9 @@ from modelscope.utils.constant import Tasks
 
 class TestPipelines(unittest.TestCase):
     def test_span_based_ner_pipeline(self):
-        from adaseq import pipelines  # tmp
-
         pipeline_ins = pipeline(
             Tasks.named_entity_recognition,
             'damo/nlp_nested-ner_named-entity-recognition_chinese-base-med',
-            model_revision='v1.0.0',
         )
         print(
             pipeline_ins(
