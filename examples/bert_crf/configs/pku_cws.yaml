@@ -1,0 +1,52 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: pku
+  seed: 42
+
+task: word-segmentation
+
+dataset:
+  data_file:
+    train: https://modelscope.cn/api/v1/datasets/dingkun/chinese_word_segmentation_pku/repo?Revision=master&FilePath=train.txt
+    dev: https://modelscope.cn/api/v1/datasets/dingkun/chinese_word_segmentation_pku/repo?Revision=master&FilePath=dev.txt
+    test: https://modelscope.cn/api/v1/datasets/dingkun/chinese_word_segmentation_pku/repo?Revision=master&FilePath=test.txt
+  data_type: conll
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  max_length: 256
+  tag_scheme: BIES
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  embedder:
+    model_name_or_path: damo/nlp_structbert_word-segmentation_chinese-base
+  dropout: 0.1
+  use_crf: true
+
+train:
+  max_epochs: 30
+  dataloader:
+    batch_size_per_gpu: 32
+  optimizer:
+    type: AdamW
+    lr: 2.0e-5
+    param_groups:
+      - regex: crf
+        lr: 2.0e-1
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 30
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 64
+  metrics:
+    - type: ner-metric
+    - type: ner-dumper
+      model_type: sequence_labeling
+      dump_format: conll

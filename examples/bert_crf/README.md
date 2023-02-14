@@ -17,7 +17,7 @@ python scripts/train.py -c examples/bert_crf/configs/resume.yaml
 ### Model-specific Arguments
 ```
 preprocessor:
-  tag_scheme: BIOES  # (str, optional): The tag scheme used for sequence-labeling tasks. Possible candidates are [`BIO`, `BIOES`]. Default to `BIOES`.
+  tag_scheme: BIOES  # (str, optional): The tag scheme used for sequence-labeling tasks. Possible candidates are [`BIO`, `BIOES`, `BIES`, `BI`]. Default to `BIOES`.
 model:
   word_dropout: 0.1  # (float, optional): Word-level/token-level dropout probability. Default to `0`.
   use_crf: true  # (bool, optional): Whether to use CRF decoder. Default to `true`.
@@ -29,6 +29,8 @@ See [tutorial](../../docs/tutorials/customizing_dataset.md)
 
 ## Benchmarks
 
+- NER
+
 | Language |    Dataset    |     Backbone      | AdaSeq Bert-CRF |                                Best published                                 |                                                   Modelcard & Demo                                                    |
 |:--------:|:-------------:|:-----------------:|:---------------:|:-----------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------:|
 | Chinese  |     msra      |  structbert-base  |      96.69      |   96.72 [(Li et al., 2020)](https://aclanthology.org/2020.acl-main.45.pdf)    |     [ModelScope](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_chinese-base-news/summary)      |
@@ -39,3 +41,15 @@ See [tutorial](../../docs/tutorials/customizing_dataset.md)
 | English  |    conllpp    | xlm-roberta-large |      94.71      | 95.88 [(Zhou et al., 2021)](https://aclanthology.org/2021.emnlp-main.437.pdf) |     [ModelScope](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_english-large-news/summary)     |
 | English  |    wnut16     | xlm-roberta-large |      57.23      |         58.98 [(Wang et al., 2021)](https://arxiv.org/abs/2105.03654)         |                                                           -                                                           |
 | English  |    wnut17     | xlm-roberta-large |      59.69      |         60.45 [(Wang et al., 2021)](https://arxiv.org/abs/2105.03654)         | [ModelScope](https://modelscope.cn/models/damo/nlp_raner_named-entity-recognition_english-large-social_media/summary) |
+
+- Word Segmentation
+
+| Language |    Dataset    |     Backbone      | AdaSeq Bert-CRF |                                Best published                                 |                                                   Modelcard & Demo                                                    |
+|:--------:|:-------------:|:-----------------:|:---------------:|:-----------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------:|
+| Chinese  |     pku      |  bastructbert-base  |      96.87      |   96.84[(Jiang et al., 2022)](https://aclanthology.org/2022.emnlp-main.34.pdf)    |     [ModelScope](https://modelscope.cn/models/damo/nlp_structbert_word-segmentation_chinese-base/summary)      |
+
+- Part of Speech
+
+| Language |    Dataset    |     Backbone      | AdaSeq Bert-CRF |                                Best published                                 |                                                   Modelcard & Demo                                                    |
+|:--------:|:-------------:|:-----------------:|:---------------:|:-----------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------:|
+| Chinese  |     ctb6      |  bastructbert-base  |      95.19      |   95.41[(Meng et al., 2020)](https://arxiv.org/pdf/1901.10125v5.pdf)    |     [ModelScope](https://modelscope.cn/models/damo/nlp_structbert_part-of-speech_chinese-base/summary)      |

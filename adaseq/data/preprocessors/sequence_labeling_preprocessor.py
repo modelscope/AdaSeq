@@ -51,7 +51,7 @@ class SequenceLabelingPreprocessor(NLPPreprocessor):
 
     @staticmethod
     def _is_valid_tag_scheme(tag_scheme: str):
-        return tag_scheme in ['BIO', 'BIOES']
+        return tag_scheme in ['BIO', 'BIOES', 'BI', 'BIES']
 
     @staticmethod
     def _determine_tag_scheme_from_labels(labels: List[str]) -> str:
