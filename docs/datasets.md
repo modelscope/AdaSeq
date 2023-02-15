@@ -93,10 +93,10 @@
 | Language | Dataset |      Size       | Description                                   | Paper                                                            | Download                                                            |
 |:--------:|:-------:|:--------------:|:----------------------------------------------|:-----------------------------------------------------------------|:--------------------------------------------------------------------|
 | English | NYT | - | - | [Ren et al.,2017](https://arxiv.org/pdf/1610.08763.pdf) | [here](https://github.com/INK-USC/USC-DS-RelationExtraction/tree/master/data/source/NYT) |
-| English | NYT10-HRL/11-HRL | 70339/-/4006;62648/-/369 | got by preprocessing in paper HRL | [Takanobu et al., 2019](https://arxiv.org/pdf/1811.03925v1.pdf) | [here](https://github.com/truthless11/HRL-RE/tree/master/data) | 
-| English | WebNLG | 5019/-/703 | - | [Gardent et al.,2017](https://aclanthology.org/P18-1047.pdf) | [here](https://paperswithcode.com/dataset/webnlg) | 
-| English | ADE | - | - | [Gurulingappa et al., 2012](https://pubmed.ncbi.nlm.nih.gov/22554702/) | - | 
-| English | SciERC | 1816/275/551 | - | [Luan et al., 2018](https://aclanthology.org/D18-1360.pdf) | [here](https://paperswithcode.com/dataset/scierc) | 
+| English | NYT10-HRL/11-HRL | 70339/-/4006;62648/-/369 | got by preprocessing in paper HRL | [Takanobu et al., 2019](https://arxiv.org/pdf/1811.03925v1.pdf) | [here](https://github.com/truthless11/HRL-RE/tree/master/data) |
+| English | WebNLG | 5019/-/703 | - | [Gardent et al.,2017](https://aclanthology.org/P18-1047.pdf) | [here](https://paperswithcode.com/dataset/webnlg) |
+| English | ADE | - | - | [Gurulingappa et al., 2012](https://pubmed.ncbi.nlm.nih.gov/22554702/) | - |
+| English | SciERC | 1816/275/551 | - | [Luan et al., 2018](https://aclanthology.org/D18-1360.pdf) | [here](https://paperswithcode.com/dataset/scierc) |
 | English | CoNLL04 | - | - | [Roth et al., 2004](https://aclanthology.org/W04-2401.pdf) | - |
 | English | ACE04 | - | - | - | [here](https://catalog.ldc.upenn.edu/LDC2005T09) |
 | English | ACE05 | 10051/2424/2050 | - | - | [here](https://catalog.ldc.upenn.edu/LDC2006T06) |
