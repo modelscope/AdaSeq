@@ -93,11 +93,21 @@
 | Language | Dataset |      Size       | Description                                   | Paper                                                            | Download                                                            |
 |:--------:|:-------:|:--------------:|:----------------------------------------------|:-----------------------------------------------------------------|:--------------------------------------------------------------------|
 | English | NYT | - | - | [Ren et al.,2017](https://arxiv.org/pdf/1610.08763.pdf) | [here](https://github.com/INK-USC/USC-DS-RelationExtraction/tree/master/data/source/NYT) |
-| English | NYT10-HRL/11-HRL | 70339/-/4006;62648/-/369 | got by preprocessing in paper HRL | [Takanobu et al., 2019](https://arxiv.org/pdf/1811.03925v1.pdf) | [here](https://github.com/truthless11/HRL-RE/tree/master/data) | 
-| English | WebNLG | 5019/-/703 | - | [Gardent et al.,2017](https://aclanthology.org/P18-1047.pdf) | [here](https://paperswithcode.com/dataset/webnlg) | 
-| English | ADE | - | - | [Gurulingappa et al., 2012](https://pubmed.ncbi.nlm.nih.gov/22554702/) | - | 
-| English | SciERC | 1816/275/551 | - | [Luan et al., 2018](https://aclanthology.org/D18-1360.pdf) | [here](https://paperswithcode.com/dataset/scierc) | 
+| English | NYT10-HRL/11-HRL | 70339/-/4006;62648/-/369 | got by preprocessing in paper HRL | [Takanobu et al., 2019](https://arxiv.org/pdf/1811.03925v1.pdf) | [here](https://github.com/truthless11/HRL-RE/tree/master/data) |
+| English | WebNLG | 5019/-/703 | - | [Gardent et al.,2017](https://aclanthology.org/P18-1047.pdf) | [here](https://paperswithcode.com/dataset/webnlg) |
+| English | ADE | - | - | [Gurulingappa et al., 2012](https://pubmed.ncbi.nlm.nih.gov/22554702/) | - |
+| English | SciERC | 1816/275/551 | - | [Luan et al., 2018](https://aclanthology.org/D18-1360.pdf) | [here](https://paperswithcode.com/dataset/scierc) |
 | English | CoNLL04 | - | - | [Roth et al., 2004](https://aclanthology.org/W04-2401.pdf) | - |
 | English | ACE04 | - | - | - | [here](https://catalog.ldc.upenn.edu/LDC2005T09) |
 | English | ACE05 | 10051/2424/2050 | - | - | [here](https://catalog.ldc.upenn.edu/LDC2006T06) |
 | Chinese | DuIE2.0 | 171135/-/21055 | - | [Li et al., 2019](https://link.springer.com/chapter/10.1007/978-3-030-32236-6_72) | [here](https://www.luge.ai/#/luge/dataDetail?id=5) |
+
+## End-to-End Entity Linking
+
+| Language | Domain    |  Dataset   | Train/Dev/Test/KB Size  | Paper/Link                                                   | Download                                                     |
+| :------: | --------- | :--------: | :---------------------: | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| English  | News      | AIDA-CoNLL | 12820/4242/3953/5903530 | [Hoffart et al.,2011](https://aclanthology.org/D11-1072/)    | [here](https://github.com/INK-USC/USC-DS-RelationExtraction/tree/master/data/source/NYT) |
+| English  | Medical   |   BC5CDR   |  9535/9481/10032/2291   | [Li et al., 2016](https://doi.org/10.1093/database/baw068)   | [here](https://github.com/truthless11/HRL-RE/tree/master/data) |
+| English  | Speech    | NLPCC2022  | 28400/7640/2905/118795  | [NLPCC2022](http://tcci.ccf.org.cn/conference/2022/cfpt.php) | [here](https://paperswithcode.com/dataset/webnlg)            |
+| Chinese  | ShortText |  CCKS2020  |  69691/9148/-/3234418   | [CCKS2020](https://www.biendata.xyz/competition/ccks_2020_el/) | -                                                            |
+
