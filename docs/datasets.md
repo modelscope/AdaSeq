@@ -1,6 +1,15 @@
 # Datasets
 
-## NER
+## Area of Collected Datasets
+- [Named Entity Recognition (NER)](#named-entity-recognition)
+- [Chinese Word Segmentation (CWS)](#chinese-word-segmentation)
+- [Part-of-Speech Tagging (POS)](#part-of-speech-tagging)
+- [Ultra-fine Entity Typing](#ultra-fine-entity-typing)
+- [Event Extraction](#event-extraction)
+- [Entity Relation joint Extraction](#entity-relation-joint-extraction)
+- [End-to-End Entity Linking](#end-to-end-entity-linking)
+
+## Named Entity Recognition
 
 | Language  |     Dataset      |         Size         | #Types | Description                                                                                                                          | Paper                                                                                      | Download                                                                                                                     |
 |:---------:|:----------------:|:--------------------:|:------:|:-------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
@@ -54,7 +63,7 @@
 |  9 langs  |    wikineural    |          -           |        | silver-standard data                                                                                                                 | [Tedeschi et al, 2021](https://aclanthology.org/2021.findings-emnlp.215.pdf)               |                                                                                                                              |
 | 10 langs  |    multinerd     |          -           |        | silver-standard data                                                                                                                 | [Tedeschi & Navigli. 2022](https://aclanthology.org/2022.findings-naacl.60.pdf)            |                                                                                                                              |
 
-## CWS
+## Chinese Word Segmentation
 
 | Language 	| Dataset 	| Size            	| #Types 	| Description 	| Paper                                                                                                                                                                                                         	| Download                                                                                                                                                                                           	|
 |----------	|---------	|-----------------	|--------	|-------------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
@@ -62,7 +71,7 @@
 | Chinese  	| MSRA    	| 86924/-/3985    	| -      	| -           	| [sighan05](https://aclanthology.org/I05-3017/)                                                                                                                                                                	| [train](http://sighan.cs.uchicago.edu/bakeoff2005/data/icwb2-data.zip#training/msr_training.utf8)<br>[test](http://sighan.cs.uchicago.edu/bakeoff2005/data/icwb2-data.zip#gold/msr_test_gold.utf8) 	|
 | Chinese  	| CTB6    	| 23401/2078/2795 	| -      	| -           	| [Chinese Tree Bank v6](https://www.cambridge.org/core/journals/natural-language-engineering/article/abs/penn-chinese-treebank-phrase-structure-annotation-of-a-large-corpus/26220D5C308A1A65B1D0636AE9A9FC72) 	| [train](http://file.hankcs.com/corpus/ctb6_cws.zip#train.txt)<br>[dev](http://file.hankcs.com/corpus/ctb6_cws.zip#dev.txt)<br>[test](http://file.hankcs.com/corpus/ctb6_cws.zip#dev.txt)           	|
 
-## POS
+## Part-of-Speech Tagging
 
 | Language 	| Dataset 	| Size            	| #Types 	| Description 	| Paper                                                                                                                                                                                                         	| Download                                                                                                                                                                                                                                                                                                                            	|
 |:--------:	|:-------:	|-----------------	|--------	|-------------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
@@ -110,4 +119,3 @@
 | English  | Medical   |   BC5CDR   |  9535/9481/10032/2291   | [Li et al., 2016](https://doi.org/10.1093/database/baw068)   | [here](https://github.com/truthless11/HRL-RE/tree/master/data) |
 | English  | Speech    | NLPCC2022  | 28400/7640/2905/118795  | [NLPCC2022](http://tcci.ccf.org.cn/conference/2022/cfpt.php) | [here](https://paperswithcode.com/dataset/webnlg)            |
 | Chinese  | ShortText |  CCKS2020  |  69691/9148/-/3234418   | [CCKS2020](https://www.biendata.xyz/competition/ccks_2020_el/) | -                                                            |
-
