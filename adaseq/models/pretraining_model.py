@@ -20,16 +20,12 @@ from adaseq.modules.util import get_tokens_mask
 class PretrainingModel(Model):
     """Pretraining model
 
-    This model is used for pretraining with identification and typing.
-
     Args:
         num_labels (int): number of labels
         embedder (Union[embedder, str], `optional`): embedder used in the model.
             It can be an `Embedder` instance or an embedder config file or an embedder config dict.
         span_encoder_method (str): concat
         word_dropout (float, `optional`): word dropout rate, default `0.0`.
-        ident_loss_function (str, `optional'): loss function, default 'PULearning',
-        typing_loss_function (str, `optional'): loss function, default 'BCE',
         class_threshold (float, `optional`): classification threshold default. '0.5'
         use_biaffine (bool, `optional`): whether to use biaffine for span representation, default `False`.
         **kwargs: other arguments
@@ -59,6 +55,9 @@ class PretrainingModel(Model):
             self.tokenizer = build_tokenizer('bert-base-chinese')
         assert isinstance(self.embedder, TransformerEmbedder)
 
+        self.lstm = nn.LSTM(768, 384, num_layers=1, bidirectional=True, batch_first=True)
+        self.lstm_dropout = torch.nn.Dropout(0.3)
+
         self.use_dropout = word_dropout > 0.0
         if self.use_dropout:
             self.dropout = nn.Dropout(word_dropout)
@@ -73,6 +72,7 @@ class PretrainingModel(Model):
             self.embedder.get_output_dim(), self.embedder.get_output_dim()
         )
         self.ident_linear = nn.Linear(self.embedder.get_output_dim(), self.ident_num_labels)
+        self.crf = CRF(self.ident_num_labels, batch_first=True)
 
         self.span_encoder = SpanEncoder(
             self.embedder.get_output_dim(),
@@ -90,19 +90,6 @@ class PretrainingModel(Model):
         self.prompt_linear = nn.Linear(self.embedder.get_output_dim(), self.ident_num_labels)
         self.prompt_crf = CRF(self.ident_num_labels, batch_first=True)
         self.load_model_ckpt()
-
-    def __forward_embedder(
-        self, tokens: Dict[str, Any], mlm_input_ids: Optional[torch.LongTensor] = None
-    ) -> torch.Tensor:
-        if self.use_mlm_loss:
-            assert mlm_input_ids is not None, 'Must have mlm_input_ids!!!'
-            subtoken_embed = self.embedder.encode(mlm_input_ids, tokens['attention_mask'])
-        else:
-            subtoken_embed = self.embedder.encode(tokens['input_ids'], tokens['attention_mask'])
-
-        if self.training and self.use_dropout:
-            subtoken_embed = self.dropout(subtoken_embed)
-        return subtoken_embed
 
     def __forward_ident(self, token_embed: torch.Tensor) -> torch.Tensor:
         ident_embed = self.split_space_ident(token_embed[:, 1:-1, :])
@@ -149,9 +136,13 @@ class PretrainingModel(Model):
         meta: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:  # TODO docstring
         # B x M -> B*M x 1
-        token_embed = self.embedder.encode(tokens['input_ids'], tokens['attention_mask'])
+        subtoken_embed = self.embedder.encode(tokens['input_ids'], tokens['attention_mask'])
+        token_embed = self.embedder.reconstruct(subtoken_embed, tokens['offsets'])
+        lstm_output, _ = self.lstm(token_embed)
+        token_embed = self.lstm_dropout(lstm_output)
         ident_logits = self.__forward_ident(token_embed)
-        ident_predicts = ident_logits.argmax(-1)  # B*M
+        ident_mask = get_tokens_mask(tokens, ident_logits.size(1))
+        ident_predicts = self.crf.decode(ident_logits, mask=ident_mask).squeeze(0)
         pred_mentions, pred_mask = bio2span(
             ident_predicts, ident_logits.device, self.ident_id_to_label
         )

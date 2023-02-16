@@ -8,6 +8,7 @@ from modelscope.models import Model as MsModel
 from transformers import AutoConfig, AutoModel, XLNetConfig
 
 from adaseq.metainfo import Embedders
+from adaseq.models.base import Model
 from adaseq.modules import util
 from adaseq.modules.scalar_mix import ScalarMix
 
@@ -397,7 +398,9 @@ def get_ms_transformer(
 
         except (ImportError, ConfigurationError):
             model_type = transformer.cfg.model.type
-            if model_type == 'transformer-crf':
+            if isinstance(transformer, Model):
+                transformer = transformer.embedder.transformer_model
+            elif model_type == 'transformer-crf':
                 transformer = transformer.model.encoder
             else:
                 raise ConfigurationError(f'Unsupported non-backbone embedder: {model_name_or_path}')

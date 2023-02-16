@@ -174,7 +174,12 @@ def build_trainer_from_partial_objects(config, work_dir, **kwargs):
 
     # finally, get `id_to_label` for model.
     config.model.id_to_label = preprocessor.id_to_label
-    # dump config to work_dir and reload.
+    # TODO: remove this in the future
+    if hasattr(preprocessor, 'typing_id_to_label') and hasattr(preprocessor, 'ident_id_to_label'):
+        config.model.typing_id_to_label = preprocessor.typing_id_to_label
+        config.model.ident_id_to_label = preprocessor.ident_id_to_label
+
+    # Dump config to work_dir and reload.
     new_config_path = os.path.join(work_dir, 'config.yaml')
     with open(new_config_path, mode='w', encoding='utf8') as file:
         yaml.dump(config.to_dict(), file, allow_unicode=True)

@@ -1,0 +1,47 @@
+work_dir: tests/resources/regression
+
+task: named-entity-recognition
+
+dataset:
+  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra.zip'
+  labels:
+    type: count_span_labels
+  data_type: conll
+
+preprocessor:
+  type: twostage-preprocessor
+  model_dir: bert-base-chinese
+  max_length: 512
+
+data_collator: TwostageDataCollatorWithPadding
+
+model:
+  type: twostage-ner-model
+  embedder:
+    model_name_or_path: bert-base-chinese
+  word_dropout: 0.1
+
+train:
+  max_epochs: 1
+  dataloader:
+    batch_size_per_gpu: 10
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    param_groups:
+     - regex: crf
+       lr: 1.0e-3
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters:
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 16
+  metrics:
+    - type: span-extraction-metric
+    - type: ner-dumper
+      model_type: span_based
+      dump_format: jsonline

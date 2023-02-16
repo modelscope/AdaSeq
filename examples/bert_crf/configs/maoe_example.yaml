@@ -1,0 +1,55 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: weibo_maoe
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_file:
+    train: 'https://www.modelscope.cn/api/v1/datasets/damo/weibo_ner/repo/files?Revision=master&FilePath=train.txt'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/damo/weibo_ner/repo/files?Revision=master&FilePath=dev.txt'
+    test: 'https://www.modelscope.cn/api/v1/datasets/damo/weibo_ner/repo/files?Revision=master&FilePath=test.txt'
+  data_type: conll
+  labels:
+    type: count_span_labels
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  model_dir: bert-base-chinese
+  max_length: 160
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  embedder:
+    model_name_or_path: damo/nlp_maoe_named-entity-recognition_general
+    #model_name_or_path: bert-base-chinese
+  dropout: 0.1
+  use_crf: true
+
+train:
+  max_epochs: 20
+  dataloader:
+    batch_size_per_gpu: 16
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    param_groups:
+      - regex: crf
+        lr: 5.0e-1
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 20
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 128
+  metrics:
+    - type: ner-metric
+    - type: ner-dumper
+      model_type: sequence_labeling
+      dump_format: conll

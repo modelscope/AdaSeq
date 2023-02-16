@@ -106,6 +106,22 @@ class TestPreprocessor(unittest.TestCase):
         expected_labels[0][1] = preprocessor.label_to_id['PER'] + 1
         self.assertEqual((output2['span_labels'] == expected_labels).all(), True)
 
+    def test_twostage_ner_preprocessor(self):
+        cfg = dict(
+            type='twostage-preprocessor',
+            model_dir='bert-base-cased',
+            labels=self.ner_labels2,
+            mode=ModeKeys.TRAIN,
+        )
+        preprocessor = build_preprocessor(cfg, 'nlp')
+        output2 = preprocessor(self.ner_input2)
+        expected_ident_ids = np.array([1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        expected_type_ids = np.array([0])
+        expected_mention_boundaries = np.array([[0], [1]])
+        self.assertEqual((output2['ident_ids'] == expected_ident_ids).all(), True)
+        self.assertEqual((output2['type_ids'] == expected_type_ids).all(), True)
+        self.assertEqual((output2['mention_boundary'] == expected_mention_boundaries).all(), True)
+
     def setUp_typing_examples(self):
         self.typing_input = {
             'tokens': list('国正先生在我心中就是这样的一位学长。'),
