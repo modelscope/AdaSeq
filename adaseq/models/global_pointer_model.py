@@ -20,7 +20,7 @@ class SinusoidalPositionEmbedding(nn.Module):
     ref: https://spaces.ac.cn/archives/8265
     """
 
-    pipeline = Pipelines.sequence_labeling_pipeline
+    pipeline = Pipelines.span_based_ner_pipeline
 
     def __init__(self, output_dim: int, merge_mode: str = 'add', custom_position_ids: bool = False):
         super(SinusoidalPositionEmbedding, self).__init__()

@@ -21,7 +21,7 @@ class BiaffineNerModel(Model):
     ref: https://aclanthology.org/2020.acl-main.577/
     """
 
-    pipeline = Pipelines.sequence_labeling_pipeline
+    pipeline = Pipelines.span_based_ner_pipeline
 
     def __init__(
         self,

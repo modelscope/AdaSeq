@@ -154,7 +154,7 @@ class Model(MsModel, ABC):
 
         if config is not None:
             # config modification
-            config['plugins'] = 'adaseq'
+            config['plugins'] = ['adaseq']
 
             if self.pipeline is not None:
                 config['pipeline'] = {'type': self.pipeline}
