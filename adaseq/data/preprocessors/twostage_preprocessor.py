@@ -43,12 +43,13 @@ class TwoStagePreprocessor(NLPPreprocessor):
     def __call__(self, data: Union[str, List, Dict]) -> Dict[str, Any]:
         """prepare inputs for two-stage-ner model"""
         output = super().__call__(data)
-        # span detection inputs
-        output['ident_ids'] = self.__span2bioes(
-            len(output['tokens']['input_ids']) - 2, data['spans']
-        )
-        # entity typing inputs
-        self._generate_mentions_labels(data, output)
+        if isinstance(data, Dict):
+            # span detection inputs
+            output['ident_ids'] = self.__span2bioes(
+                len(output['tokens']['mask']) - 2, data['spans']
+            )
+            # entity typing inputs
+            self._generate_mentions_labels(data, output)
         return output
 
     def _generate_mentions_labels(self, data: Union[str, List, Dict], output: Dict[str, Any]):
@@ -57,6 +58,11 @@ class TwoStagePreprocessor(NLPPreprocessor):
         boundary_ends = []
         mention_mask = []
         for span in data['spans']:
+            if (
+                span['start'] > len(output['tokens']['mask']) - 2
+                or span['end'] > len(output['tokens']['mask']) - 2
+            ):
+                continue
             boundary_starts.append(span['start'])
             boundary_ends.append(span['end'] - 1)
             mention_mask.append(1)

@@ -23,6 +23,7 @@ class TwostageDataCollatorWithPadding(DataCollatorWithPadding):
                 batch['ident_ids'][i] = batch['ident_ids'][i] + [-100] * difference
 
         max_span_count = max([len(x[0]) for x in batch['mention_boundary']])
+        max_span_count = max(max_span_count, 1)
         for i in range(len(batch['mention_boundary'])):
             difference = max_span_count - len(batch['mention_boundary'][i][0])
             if difference > 0:

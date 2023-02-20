@@ -1,0 +1,60 @@
+experiment:
+  exp_dir: experiments/twostage_ner
+  exp_name: weibo
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  data_file:
+    train: 'https://www.modelscope.cn/api/v1/datasets/damo/weibo_ner/repo/files?Revision=master&FilePath=train.txt'
+    valid: 'https://www.modelscope.cn/api/v1/datasets/damo/weibo_ner/repo/files?Revision=master&FilePath=dev.txt'
+    test: 'https://www.modelscope.cn/api/v1/datasets/damo/weibo_ner/repo/files?Revision=master&FilePath=test.txt'
+  data_type: conll
+  labels:
+    type: count_span_labels
+
+preprocessor:
+  type: twostage-preprocessor
+  model_dir: bert-base-chinese
+  max_length: 512
+
+data_collator: TwostageDataCollatorWithPadding
+
+model:
+  type: twostage-ner-model
+  embedder:
+    model_name_or_path: bert-base-chinese
+    #transformer_kwargs:
+    #  revision: v0.0.1
+  word_dropout: 0.1
+
+train:
+  max_epochs: 50
+  dataloader:
+    batch_size_per_gpu: 32
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    param_groups:
+     - regex: crf
+       lr: 1.0e-3
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 50
+    options:
+      by_epoch: False
+      warmup:
+        type: LinearWarmup
+        warmup_iters: 5
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 16
+  metrics:
+    - type: span-extraction-metric
+    - type: ner-dumper
+      model_type: span_based
+      dump_format: jsonline

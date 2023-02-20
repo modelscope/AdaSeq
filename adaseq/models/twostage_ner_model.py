@@ -6,7 +6,7 @@ import torch.nn as nn
 from modelscope.models.builder import MODELS
 
 from adaseq.data.constant import PAD_LABEL_ID
-from adaseq.metainfo import Models, Tasks
+from adaseq.metainfo import Models, Pipelines, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.decoders.crf import CRFwithConstraints
 from adaseq.modules.embedders import Embedder
@@ -32,6 +32,8 @@ class TwoStageNERModel(Model):
         **kwargs: other arguments
     """
 
+    pipeline = Pipelines.span_based_ner_pipeline
+
     def __init__(
         self,
         typing_id_to_label: Dict[int, str],
@@ -48,9 +50,8 @@ class TwoStageNERModel(Model):
         super(TwoStageNERModel, self).__init__()
         self.ident_num_labels = len(ident_id_to_label)
         self.typing_num_labels = len(typing_id_to_label)
-        self.ident_id_to_label = ident_id_to_label
-        self.typing_id_to_label = typing_id_to_label
-
+        self.ident_id_to_label = {int(k): v for k, v in ident_id_to_label.items()}
+        self.typing_id_to_label = {int(k): v for k, v in typing_id_to_label.items()}
         self.use_biaffine = use_biaffine
 
         if isinstance(embedder, Embedder):
@@ -68,8 +69,12 @@ class TwoStageNERModel(Model):
         self.ident_linear = nn.Linear(self.embedder.get_output_dim(), self.ident_num_labels)
         self.typing_linear = nn.Linear(self.span_encoder.output_dim, self.typing_num_labels)
 
-        self.split_space_ident = None
-        self.split_space_typing = None
+        self.split_space_ident = nn.Linear(
+            self.embedder.get_output_dim(), self.embedder.get_output_dim()
+        )
+        self.split_space_typing = nn.Linear(
+            self.embedder.get_output_dim(), self.embedder.get_output_dim()
+        )
         if load_parts is not None and model_helper_path is not None:
             self.load_from_pretrained(load_parts, model_helper_path)
 
@@ -151,8 +156,8 @@ class TwoStageNERModel(Model):
     def forward(  # noqa: D102
         self,
         tokens: Dict[str, Any],
-        mention_boundary: torch.LongTensor,
-        mention_mask: torch.LongTensor,
+        mention_boundary: Optional[torch.LongTensor] = None,
+        mention_mask: Optional[torch.LongTensor] = None,
         ident_ids: Optional[torch.LongTensor] = None,
         type_ids: Optional[torch.LongTensor] = None,
         meta: Optional[Dict[str, Any]] = None,
@@ -208,8 +213,9 @@ class TwoStageNERModel(Model):
         )
         typing_target = typing_target.masked_select(typing_mask)
         typing_loss = self.typing_loss_fn(typing_logits, typing_target)
+        if typing_mask.sum() == 0:
+            return typing_loss.sum()
         typing_loss = typing_loss.sum() / typing_mask.sum()
-
         return typing_loss
 
     def bio2span(self, sequences, device):
