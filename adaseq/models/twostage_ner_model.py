@@ -69,12 +69,9 @@ class TwoStageNERModel(Model):
         self.ident_linear = nn.Linear(self.embedder.get_output_dim(), self.ident_num_labels)
         self.typing_linear = nn.Linear(self.span_encoder.output_dim, self.typing_num_labels)
 
-        self.split_space_ident = nn.Linear(
-            self.embedder.get_output_dim(), self.embedder.get_output_dim()
-        )
-        self.split_space_typing = nn.Linear(
-            self.embedder.get_output_dim(), self.embedder.get_output_dim()
-        )
+        self.split_space_ident = None
+        self.split_space_typing = None
+
         if load_parts is not None and model_helper_path is not None:
             self.load_from_pretrained(load_parts, model_helper_path)
 
