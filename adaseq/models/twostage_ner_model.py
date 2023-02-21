@@ -47,7 +47,7 @@ class TwoStageNERModel(Model):
         use_biaffine: bool = False,
         **kwargs
     ):
-        super(TwoStageNERModel, self).__init__()
+        super(TwoStageNERModel, self).__init__(**kwargs)
         self.ident_num_labels = len(ident_id_to_label)
         self.typing_num_labels = len(typing_id_to_label)
         self.ident_id_to_label = {int(k): v for k, v in ident_id_to_label.items()}

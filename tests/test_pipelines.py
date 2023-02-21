@@ -16,6 +16,16 @@ class TestPipelines(unittest.TestCase):
             )
         )
 
+    def test_maoe_pipelines(self):
+        from adaseq import pipelines  # tmp
+
+        pipeline_ins = pipeline(
+            Tasks.named_entity_recognition,
+            'damo/nlp_maoe_named-entity-recognition_chinese-base-general',
+            model_revision='v0.0.1',
+        )
+        print(pipeline_ins('刘培强，男，生理年龄40岁（因为在太空中进入休眠状态），实际年龄52岁，领航员国际空间站中的中国航天员，机械工程专家，军人，军衔中校。'))
+
 
 if __name__ == '__main__':
     unittest.main()
