@@ -112,6 +112,7 @@ adaseq train -c demo.yaml
   - [TODO] 上传模型到ModelScope
   - [TODO] 实现自定义模型
   - [TODO] 使用AdaLA进行推理
+- [FAQ](./docs/faq_zh.md)
 
 ## 👫 开源社区
 钉钉扫一扫，加入官方技术交流群。欢迎各位业界同好一起交流技术心得。
