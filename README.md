@@ -90,6 +90,13 @@ cd adaseq
 pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
 ```
 
+### Verify the Installation
+To verify whether AdaSeq is installed properly, we provide a demo config for training a model (the demo config will be automatically downloaded).
+```
+adaseq train -c demo.yaml
+```
+You will see the training logs on your terminal. Once the training is done, the results on test set will be printed: `test: {"precision": xxx, "recall": xxx, "f1": xxx}`. A folder `experiments/toy_msra/` will be generated to save all experimental results and model checkpoints.
+
 ## 📖 Tutorials
 - [Quick Start](./docs/tutorials/quick_start.md)
 - Basics

@@ -1,0 +1,41 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: toy_msra
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  name: damo/toy_msra
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  max_length: 100
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  embedder:
+    model_name_or_path: damo/nlp_raner_named-entity-recognition_chinese-base-news
+  dropout: 0.1
+  use_crf: true
+
+train:
+  max_epochs: 5
+  dataloader:
+    batch_size_per_gpu: 8
+  optimizer:
+    type: AdamW
+    lr: 5.0e-5
+    param_groups:
+      - regex: crf
+        lr: 5.0e-1
+    options:
+      cumulative_iters: 4
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 16
+  metrics:
+    - type: ner-metric

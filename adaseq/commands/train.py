@@ -5,6 +5,7 @@ import shutil
 from typing import Optional, Union
 
 import yaml
+from modelscope.hub.file_download import http_get_file
 from modelscope.utils.config import Config
 from modelscope.utils.torch_utils import set_random_seed
 
@@ -16,6 +17,7 @@ from adaseq.metainfo import Trainers
 from adaseq.training import build_trainer
 from adaseq.utils.checks import ConfigurationError
 from adaseq.utils.common_utils import create_datetime_str, has_keys
+from adaseq.utils.constant import DEMO_CONFIG
 from adaseq.utils.file_utils import is_empty_dir
 from adaseq.utils.logging import prepare_logging
 
@@ -99,6 +101,9 @@ def train_model(
     You can manually call this function in a python script for debugging.
     """
     if isinstance(config_path_or_dict, str):
+        demo_config = 'demo.yaml'
+        if config_path_or_dict == demo_config and not os.path.isfile(config_path_or_dict):
+            http_get_file(DEMO_CONFIG, '.', demo_config, None)
         config = Config.from_file(config_path_or_dict)
     else:
         config = Config(config_path_or_dict)

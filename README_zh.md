@@ -90,6 +90,13 @@ cd adaseq
 pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
 ```
 
+### 验证安装
+为了验证AdaSeq是否安装成功，我们提供了一个demo配置文件用于训练模型（该文件需联网环境自动下载）。
+```
+adaseq train -c demo.yaml
+```
+运行过程中，你会看到不断刷新的训练日志；运行结束后，测试集评测结果将会被显示 `test: {"precision": xxx, "recall": xxx, "f1": xxx}`，同时在当前目录下，会生成`experiments/toy_msra/`，记录所有实验结果和保存的模型。
+
 ## 📖 教程文档
 - [快速开始](./docs/tutorials/quick_start_zh.md)
 - 基础教程
