@@ -24,9 +24,9 @@ from adaseq.utils.logging import prepare_logging
 
 class Train(Subcommand):
     """
-    usage: adaseq train [-h] -c CONFIG_PATH [-w WORK_DIR] [-n RUN_NAME]
-                        [-d DEVICE] [-f FORCE] [-ckpt CHECKPOINT_PATH]
-                        [--seed SEED] [--local_rank LOCAL_RANK]
+    usage: adaseq train [-h] -c CONFIG_PATH [-w WORK_DIR] [-n RUN_NAME] [-f FORCE]
+                        [-ckpt CHECKPOINT_PATH] [--seed SEED] [-d DEVICE]
+                        [--use_fp16] [--local_rank LOCAL_RANK]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -36,13 +36,14 @@ class Train(Subcommand):
                             directory to save experiment logs and checkpoints
       -n RUN_NAME, --run_name RUN_NAME
                             trial name
-      -d DEVICE, --device DEVICE
-                            device name
       -f FORCE, --force FORCE
                             overwrite the output directory if it exists.
       -ckpt CHECKPOINT_PATH, --checkpoint_path CHECKPOINT_PATH
-                            model checkpoint
+                            model checkpoint to load
       --seed SEED           random seed for everything
+      -d DEVICE, --device DEVICE
+                            device name
+      --use_fp16            whether to use mixed precision
       --local_rank LOCAL_RANK
     """
 
@@ -61,12 +62,17 @@ class Train(Subcommand):
             help='directory to save experiment logs and checkpoints',
         )
         subparser.add_argument('-n', '--run_name', type=str, default=None, help='trial name')
-        subparser.add_argument('-d', '--device', type=str, default='gpu', help='device name')
         subparser.add_argument(
             '-f', '--force', default=None, help='overwrite the output directory if it exists.'
         )
-        subparser.add_argument('-ckpt', '--checkpoint_path', default=None, help='model checkpoint')
+        subparser.add_argument(
+            '-ckpt', '--checkpoint_path', default=None, help='model checkpoint to load'
+        )
         subparser.add_argument('--seed', type=int, default=None, help='random seed for everything')
+        subparser.add_argument('-d', '--device', type=str, default='gpu', help='device name')
+        subparser.add_argument(
+            '--use_fp16', action='store_true', help='whether to use mixed precision'
+        )
         subparser.add_argument('--local_rank', type=str, default='0')
 
         subparser.set_defaults(func=train_model_from_args)
@@ -78,9 +84,10 @@ def train_model_from_args(args: argparse.Namespace):  # noqa: D103
         config_path_or_dict=args.config_path,
         work_dir=args.work_dir,
         run_name=args.run_name,
-        seed=args.seed,
         force=args.force,
+        seed=args.seed,
         device=args.device,
+        use_fp16=args.use_fp16,
         local_rank=args.local_rank,
         checkpoint_path=args.checkpoint_path,
     )
@@ -90,9 +97,10 @@ def train_model(
     config_path_or_dict: Union[str, dict],
     work_dir: Optional[str] = None,
     run_name: Optional[str] = None,
-    seed: Optional[int] = None,
     force: bool = False,
+    seed: Optional[int] = None,
     device: str = 'gpu',
+    use_fp16: bool = False,
     local_rank: str = '0',
     checkpoint_path: Optional[str] = None,
 ) -> None:
@@ -139,6 +147,7 @@ def train_model(
         work_dir=work_dir,
         seed=seed,
         device=device,
+        use_fp16=use_fp16,
         local_rank=local_rank,
     )
     trainer.train(checkpoint_path)

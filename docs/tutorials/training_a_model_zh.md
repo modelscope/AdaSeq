@@ -222,7 +222,7 @@ adaseq train -c examples/bert_crf/configs/resume.yaml
 
 > 如果您想调整更多训练设置，请查阅以下文档。
 > - [超参数优化](./hyperparameter_optimization_zh.md)
-> - [多 GPU 训练](./training_with_multiple_gpus_zh.md)
+> - [训练加速](./training_acceleration_zh.md)
 
 ## 3. 获取评价结果和预测输出
 
