@@ -106,10 +106,11 @@ adaseq train -c demo.yaml
   - [TODO] 有用的Hooks
   - [超参数优化](./docs/tutorials/hyperparameter_optimization_zh.md)
   - [使用多GPU训练](./docs/tutorials/training_with_multiple_gpus_zh.md)
+  - [模型推理](./docs/tutorials/model_inference_zh.md)
 - 最佳实践
   - [在自定义数据上训练模型](./docs/tutorials/training_a_model_zh.md)
   - [复现论文实验结果](./docs/tutorials/reproducing_papers_zh.md)
-  - [TODO] 上传模型到ModelScope
+  - [模型发布到 ModelScope](./docs/tutorials/uploading_to_modelscope_zh.md)
   - [TODO] 实现自定义模型
   - [TODO] 使用AdaLA进行推理
 - [FAQ](./docs/faq_zh.md)
