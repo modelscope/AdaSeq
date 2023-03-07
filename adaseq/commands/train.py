@@ -20,6 +20,7 @@ from adaseq.utils.common_utils import create_datetime_str, has_keys
 from adaseq.utils.constant import DEMO_CONFIG
 from adaseq.utils.file_utils import is_empty_dir
 from adaseq.utils.logging import prepare_logging
+from adaseq.utils.yaml import read_yaml
 
 
 class Train(Subcommand):
@@ -141,6 +142,16 @@ def train_model(
     else:
         config['experiment']['seed'] = seed
     set_random_seed(seed)
+
+    # A stupid implementation to reload config with `envyaml`
+    new_config_path = os.path.join(work_dir, 'config.yaml')
+    with open(new_config_path, mode='w', encoding='utf8') as file:
+        yaml.dump(config.to_dict(), file, allow_unicode=True)
+
+    parsed = read_yaml(new_config_path)
+    with open(new_config_path, mode='w', encoding='utf8') as file:
+        yaml.dump(parsed, file, allow_unicode=True)
+    config = Config.from_file(new_config_path)
 
     trainer = build_trainer_from_partial_objects(
         config,
