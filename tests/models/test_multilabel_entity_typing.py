@@ -1,4 +1,4 @@
-import os
+import os.path as osp
 import unittest
 
 from modelscope.utils.config import Config
@@ -8,10 +8,18 @@ from tests.models.base import TestModel, compare_fn
 
 
 class TestGlobalPointer(TestModel):
+    def setUp(self):
+        super().setUp()
+        config_dir = osp.join('tests', 'resources', 'configs')
+        self.config_span = Config.from_file(osp.join(config_dir, 'train_entity_typing_span.yaml'))
+        self.config_concat = Config.from_file(
+            osp.join(config_dir, 'train_entity_typing_concat.yaml')
+        )
+
     def test_global_pointer(self):
-        cfg_file = os.path.join('tests', 'resources', 'configs', 'train_entity_typing_span.yaml')
-        config = Config.from_file(cfg_file)
-        trainer = build_trainer_from_partial_objects(config, work_dir=config.work_dir, seed=42)
+        trainer = build_trainer_from_partial_objects(
+            self.config_span, work_dir=self.tmp_dir, seed=42
+        )
         with self.regress_tool.monitor_ms_train(
             trainer,
             'ut_entity_typing',
@@ -22,13 +30,10 @@ class TestGlobalPointer(TestModel):
         ):
             trainer.train()
 
-        os.remove(config.work_dir + '/config.yaml')
-
     def test_concat_typing(self):
-
-        cfg_file = os.path.join('tests', 'resources', 'configs', 'train_entity_typing_concat.yaml')
-        config = Config.from_file(cfg_file)
-        trainer = build_trainer_from_partial_objects(config, work_dir=config.work_dir, seed=42)
+        trainer = build_trainer_from_partial_objects(
+            self.config_concat, work_dir=self.tmp_dir, seed=42
+        )
         self.is_baseline = True
         with self.regress_tool.monitor_ms_train(
             trainer,
@@ -39,8 +44,6 @@ class TestGlobalPointer(TestModel):
             atol=1e-3,
         ):
             trainer.train()
-
-        os.remove(config.work_dir + '/config.yaml')
 
 
 if __name__ == '__main__':

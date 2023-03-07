@@ -1,6 +1,7 @@
 import hashlib
 import os
 import shutil
+import tempfile
 import unittest
 
 from modelscope.utils.regress_test_utils import MsRegressTool, compare_arguments_nested
@@ -8,6 +9,11 @@ from modelscope.utils.regress_test_utils import MsRegressTool, compare_arguments
 
 class TestModel(unittest.TestCase):
     def setUp(self):
+        print(('Testing %s.%s' % (type(self).__name__, self._testMethodName)))
+        self.tmp_dir = tempfile.TemporaryDirectory().name
+        if not os.path.exists(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
+
         os.environ['REGRESSION_BASELINE'] = '1'
         self.is_baseline = (
             True if os.environ.get('IS_BASELINE', '').lower() in ['1', 'y', 'true'] else False
@@ -34,6 +40,10 @@ class TestModel(unittest.TestCase):
         self.regress_tool = MsRegressTool(
             baseline=self.is_baseline, store_func=store_func, load_func=load_func
         )
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dir)
+        super().tearDown()
 
 
 def compare_fn(value1, value2, key, type):
