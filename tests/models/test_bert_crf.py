@@ -4,6 +4,9 @@ import unittest
 from modelscope.utils.config import Config
 
 from adaseq.commands.train import build_trainer_from_partial_objects
+from adaseq.exporters.sequence_labeling_model_exporter import (
+    SequenceLabelingModelExporter,
+)
 from tests.models.base import TestModel, compare_fn
 
 
@@ -13,7 +16,7 @@ class TestBertCRF(TestModel):
         cfg_file = osp.join('tests', 'resources', 'configs', 'train_bert_crf.yaml')
         self.config = Config.from_file(cfg_file)
 
-    def test_bert_crf(self):
+    def test_train_bert_crf(self):
         trainer = build_trainer_from_partial_objects(self.config, work_dir=self.tmp_dir, seed=42)
 
         with self.regress_tool.monitor_ms_train(
@@ -25,6 +28,16 @@ class TestBertCRF(TestModel):
             atol=1e-3,
         ):
             trainer.train()
+
+    def test_export_bert_crf(self):
+        trainer = build_trainer_from_partial_objects(self.config, work_dir=self.tmp_dir)
+        model = trainer.model
+        preprocessor = trainer.eval_preprocessor
+        exporter = SequenceLabelingModelExporter(model=model, preprocessor=preprocessor)
+        with self.subTest(format='onnx'):
+            print(exporter.export_onnx(output_dir=self.tmp_dir))
+        with self.subTest(format='torchscript'):
+            print(exporter.export_torch_script(output_dir=self.tmp_dir, strict=False))
 
 
 if __name__ == '__main__':
