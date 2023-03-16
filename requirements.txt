@@ -1,6 +1,6 @@
 addict
 datasets
-modelscope>=1.2.0
+modelscope>=1.4.0
 seqeval
 torch>=1.11.0,<1.13.0
 tqdm>=4.64.0

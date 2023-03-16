@@ -1,10 +1,22 @@
 import unittest
+from unittest import mock
 
 from modelscope.pipelines import pipeline
 from modelscope.utils.constant import Tasks
 
+from adaseq import pipelines
+
 
 class TestPipelines(unittest.TestCase):
+    def setUp(self):
+        try:
+            from modelscope.utils import plugins
+
+            plugins.install_requirements_by_names = mock.Mock(return_value=None)
+            plugins.import_plugins = mock.Mock(return_value=None)
+        except (ImportError, AttributeError):
+            pass
+
     def test_span_based_ner_pipeline(self):
         pipeline_ins = pipeline(
             Tasks.named_entity_recognition,
@@ -17,8 +29,6 @@ class TestPipelines(unittest.TestCase):
         )
 
     def test_maoe_pipelines(self):
-        from adaseq import pipelines  # tmp
-
         pipeline_ins = pipeline(
             Tasks.named_entity_recognition,
             'damo/nlp_maoe_named-entity-recognition_chinese-base-general',
