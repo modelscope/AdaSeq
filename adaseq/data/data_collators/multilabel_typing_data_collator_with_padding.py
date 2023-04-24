@@ -17,14 +17,16 @@ class MultiLabelSpanTypingDataCollatorWithPadding(DataCollatorWithPadding):
         """
 
         max_span_count = max([len(x[0]) for x in batch['mention_boundary']])
+        for type_ids in batch['type_ids']:
+            if len(type_ids) > 0:
+                type_num = len(type_ids[0])
+                break
         for i in range(len(batch['mention_boundary'])):
             difference = max_span_count - len(batch['mention_boundary'][i][0])
             if difference > 0:
                 batch['mention_boundary'][i][0] = batch['mention_boundary'][i][0] + [0] * difference
                 batch['mention_boundary'][i][1] = batch['mention_boundary'][i][1] + [0] * difference
-                batch['type_ids'][i] = (
-                    batch['type_ids'][i] + ([[0] * len(batch['type_ids'][i][0])]) * difference
-                )
+                batch['type_ids'][i] = batch['type_ids'][i] + ([[0] * type_num]) * difference
                 batch['mention_mask'][i] = batch['mention_mask'][i] + [0] * difference
         return batch
 

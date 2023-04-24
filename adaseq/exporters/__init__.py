@@ -1,1 +1,2 @@
+from .multilabel_typing_model_exporter import MultiLabelSpanTypingModelExporter
 from .sequence_labeling_model_exporter import SequenceLabelingModelExporter

@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import numpy as np
 from modelscope.preprocessors.builder import PREPROCESSORS
-from modelscope.utils.constant import Fields
+from modelscope.utils.constant import Fields, ModeKeys
 
 from adaseq.metainfo import Preprocessors
 
@@ -11,7 +11,7 @@ from .nlp_preprocessor import NLPPreprocessor
 
 
 @PREPROCESSORS.register_module(
-    Fields.nlp, module_name=Preprocessors.multilabel_span_typing_preprocessor
+    group_key=Fields.nlp, module_name=Preprocessors.multilabel_span_typing_preprocessor
 )
 class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
     """Preprocessor for multilabel (aka multi-type) span typing task.
@@ -36,16 +36,21 @@ class MultiLabelSpanTypingPreprocessor(NLPPreprocessor):
             boundary_starts.append(span['start'])
             boundary_ends.append(span['end'] - 1)
             mention_mask.append(1)
-            type_ids = [self.label_to_id.get(x, -1) for x in span['type']]
-            padded_type_ids = [0] * len(self.label_to_id)
-            for t in type_ids:
-                if t != -1:
-                    padded_type_ids[t] = 1
-            mention_type_ids.append(padded_type_ids)
+            if 'type' in span:
+                type_ids = [self.label_to_id.get(x, -1) for x in span['type']]
+                padded_type_ids = [0] * len(self.label_to_id)
+                for t in type_ids:
+                    if t != -1:
+                        padded_type_ids[t] = 1
+                mention_type_ids.append(padded_type_ids)
 
         output['mention_boundary'] = [boundary_starts, boundary_ends]
         output['mention_mask'] = mention_mask  # mask, 为了避开nlp_preprocessor对他做padding.
-        output['type_ids'] = mention_type_ids
+        if len(mention_type_ids) > 0:
+            output['type_ids'] = mention_type_ids
+        if self.mode == ModeKeys.INFERENCE:
+            output['mention_boundary'] = np.expand_dims(np.array(output['mention_boundary']), 0)
+            output['mention_mask'] = np.expand_dims(np.array(output['mention_mask']), 0)
         return output
 
 

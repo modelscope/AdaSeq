@@ -116,10 +116,18 @@ class TypingMetric(Metric):
         predicts = outputs['predicts']
         pred_results = list()
         ground_truths = list()
-        for i, meta in enumerate(inputs['meta']):
-            for j, s in enumerate(meta['spans']):
-                pred_results.append(predicts[i][j])
-                ground_truths.append(set(s['type']))
+        for i, golden_type_ids in enumerate(inputs['type_ids']):
+            for j in range(len(golden_type_ids)):
+
+                def one_hot_to_list(in_tensor):
+                    id_list = set((np.where(in_tensor.detach().cpu() == 1)[0]))
+                    return id_list
+
+                ground_truths.append(one_hot_to_list(golden_type_ids[j]))
+                if j < len(predicts[i]):
+                    pred_results.append(one_hot_to_list(predicts[i][j]))
+                else:
+                    pred_results.append(set([]))
         self.scorer.update(ground_truths, pred_results)
 
     def evaluate(self):  # noqa: D102

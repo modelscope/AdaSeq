@@ -80,7 +80,7 @@ class MultiLabelSpanTypingModel(Model):
         )
         self.linear_input_dim = self.span_encoder.output_dim
 
-        self.id_to_label = id_to_label
+        self.id_to_label = {int(k): v for k, v in id_to_label.items()}
         self.num_labels = len(id_to_label)
         self.linear = nn.Linear(self.linear_input_dim, self.num_labels)
 
@@ -114,7 +114,8 @@ class MultiLabelSpanTypingModel(Model):
             loss = self._calculate_loss(logits, type_ids, mask)
             outputs = {'logits': logits, 'loss': loss}
         else:
-            batch_size, max_mention_per_sent = type_ids.shape[0:2]  # TODO: no supervision
+            batch_size = tokens['input_ids'].shape[0]
+            max_mention_per_sent = mention_boundary.shape[2]
             logits = logits.reshape(batch_size, max_mention_per_sent, -1)
             predicts = self.classify(logits, mask)
             outputs = {'logits': logits, 'predicts': predicts}
@@ -161,19 +162,7 @@ class MultiLabelSpanTypingModel(Model):
             predicts = torch.where(logits > self.class_threshold, 1, 0)  # B*M x L
         else:
             raise ValueError('Unsupported loss %s', self.loss_function_type)
-
-        predicts = predicts.detach().cpu().numpy()
-        batch_mention_mask = mention_mask.detach().cpu().numpy()
-        batch_mentions = []
-        for prediction, mask in zip(predicts, batch_mention_mask):
-            mentions = []
-            for pred, flag in zip(prediction, mask):
-                if flag == 1:
-                    types = set(self.id_to_label[i] for i, p in enumerate(pred) if p == 1)
-                    mentions.append(types)
-            batch_mentions.append(mentions)
-
-        return batch_mentions
+        return predicts * mention_mask
 
 
 @MODELS.register_module(Tasks.entity_typing, module_name=Models.multilabel_concat_typing_model)
