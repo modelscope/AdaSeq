@@ -1,0 +1,59 @@
+experiment:
+  exp_dir: experiments/
+  exp_name: multiconer2-uk-wiki2048
+  seed: 42
+
+task: named-entity-recognition
+
+dataset:
+  namespace: pangda
+  name: multico_ner_2023_wiki2048
+  subset_name: uk
+
+preprocessor:
+  type: sequence-labeling-preprocessor
+  max_length: 1024
+  chunk_size: 256
+  chunk_num: 4
+
+data_collator: SequenceLabelingDataCollatorWithPadding
+
+model:
+  type: sequence-labeling-model
+  embedder:
+    model_name_or_path: damo/nlp_raner_named-entity-recognition_multilingual-large-generic
+  dropout: 0.1
+  use_crf: true
+  chunk: true
+
+train:
+  max_epochs: 30
+  dataloader:
+    batch_size_per_gpu: 8
+  optimizer:
+    type: AdamW
+    lr: 1.0e-5
+    param_groups:
+      - regex: crf
+        lr: 5.0e-2
+  lr_scheduler:
+    type: LinearLR
+    start_factor: 1.0
+    end_factor: 0.0
+    total_iters: 30
+  hooks:
+    - type: BestCkptSaverHook
+      save_file_name: best_model.pth
+      metric_key: macro-f1
+      save_optimizer: false
+      restore_best: true
+
+evaluation:
+  dataloader:
+    batch_size_per_gpu: 32
+  metrics:
+    - type: ner-metric
+      return_macro_f1: true
+    - type: ner-dumper
+      model_type: sequence_labeling
+      dump_format: conll

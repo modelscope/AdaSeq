@@ -51,6 +51,7 @@ class SequenceLabelingModel(Model):
         mv_loss_type: Optional[str] = 'kl',
         mv_interpolation: Optional[float] = 0.5,
         partial: Optional[bool] = False,
+        chunk: Optional[bool] = False,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)
@@ -95,6 +96,7 @@ class SequenceLabelingModel(Model):
         self.mv_loss_type = mv_loss_type
         self.temperature = temperature
         self.mv_interpolation = mv_interpolation
+        self.chunk = chunk
 
     def forward(
         self,
@@ -107,9 +109,21 @@ class SequenceLabelingModel(Model):
         """
         TODO docstring
         """
-        logits = self._forward(tokens)
 
-        crf_mask = get_tokens_mask(tokens, logits.size(1)) if origin_mask is None else origin_mask
+        if self.chunk:
+            self._flatten(tokens)
+            logits = self._forward(tokens)
+            logits = logits.view(len(meta), -1, logits.size(-2), logits.size(-1)).max(dim=1)[0]
+            logits = logits[:, : label_ids.size(1), :]
+            crf_mask = (
+                get_tokens_mask(tokens, logits.size(1)) if origin_mask is None else origin_mask
+            )
+
+        else:
+            logits = self._forward(tokens)
+            crf_mask = (
+                get_tokens_mask(tokens, logits.size(1)) if origin_mask is None else origin_mask
+            )
 
         if self.training and label_ids is not None:
             loss = self._calculate_loss(logits, label_ids, crf_mask)
@@ -211,3 +225,12 @@ class SequenceLabelingModel(Model):
         else:
             predicts = logits.argmax(-1)
         return predicts
+
+    def _flatten(
+        self,
+        tokens: Dict[str, Any],
+    ):
+        fields = set(tokens.keys())
+        for field in fields:
+            if len(tokens[field].size()) > 2:
+                tokens[field] = tokens[field].flatten(0, 1)
