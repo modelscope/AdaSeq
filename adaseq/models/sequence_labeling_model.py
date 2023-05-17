@@ -10,7 +10,7 @@ from modelscope.utils.config import ConfigDict
 from adaseq.data.constant import PAD_LABEL_ID
 from adaseq.metainfo import Models, Pipelines, Tasks
 from adaseq.models.base import Model
-from adaseq.modules.decoders import CRF, PartialCRF
+from adaseq.modules.decoders import CRF, PartialCRF, CRFwithConstraints
 from adaseq.modules.dropouts import WordDropout
 from adaseq.modules.embedders import Embedder
 from adaseq.modules.encoders import Encoder
@@ -52,6 +52,7 @@ class SequenceLabelingModel(Model):
         mv_interpolation: Optional[float] = 0.5,
         partial: Optional[bool] = False,
         chunk: Optional[bool] = False,
+        constrain_crf: Optional[bool] = False,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)
@@ -84,8 +85,14 @@ class SequenceLabelingModel(Model):
                 self.dropout = nn.Dropout(dropout)
 
         self.use_crf = use_crf
+        self.constrain_crf = constrain_crf
         if use_crf:
-            if partial:
+            if constrain_crf:
+                id2label_list = [v for k, v in self.id_to_label.items()]
+                self.crf = CRFwithConstraints(
+                    id2label_list, batch_first=True, add_constraint=True
+                )
+            elif partial:
                 self.crf = PartialCRF(self.num_labels, batch_first=True)
             else:
                 self.crf = CRF(self.num_labels, batch_first=True)
