@@ -33,6 +33,8 @@ class SequenceLabelingModel(Model):
         dropout (float, `optional`): dropout rate, default `0.0`.
         word_dropout (bool): if `True`, use `WordDropout`.
         use_crf (bool, `optional`): whether to use crf, default `True`.
+        constrain_crf (bool, `optional`): If `True`, then crf is constrained at decoding time to produce valid sequences of tags,
+            requires use_crf to be `True`, default `False`.
         **kwargs: other arguments
     """
 
