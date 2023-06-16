@@ -9,34 +9,39 @@ dataset:
     type: count_span_labels
 
 preprocessor:
-  type: sequence-labeling-preprocessor
+  type: word-extraction-preprocessor
+  model_dir: bert-base-chinese
   max_length: 150
 
-data_collator: SequenceLabelingDataCollatorWithPadding
+data_collator: WordExtractionDataCollatorWithPadding
 
 model:
-  type: sequence-labeling-model
+  type: w2ner-model
   embedder:
-    type: embedding
-    model_name_or_path: pangda/word2vec-skip-gram-mixed-large-chinese
-  encoder:
-    type: lstm
-    input_size: 300
-    hidden_size: 100
+    model_name_or_path: sijunhe/nezha-cn-base
+  lstm_encoder:
+    hidden_size: 384
     bidirectional: true
-  dropout: 0.0
-  use_crf: true
+  cnn_encoder:
+    channels: 96
+    dropout: 0.0
+    dilation: [1, 2, 3]
+  emb_dropout: 0.0
+  out_dropout: 0.0
 
 train:
   max_epochs: 1
   dataloader:
-    batch_size_per_gpu: 16
+    batch_size_per_gpu: 4
   optimizer:
     type: AdamW
-    lr: 5.0e-5
+    lr: 1.0e-3
     param_groups:
-      - regex: crf
-        lr: 5.0e-1
+      - regex: transformer_model
+        lr: 1.0e-5
+    options:
+      grad_clip:
+        max_norm: 1.0
   lr_scheduler:
     type: LinearLR
     start_factor: 1.0
@@ -45,5 +50,5 @@ train:
 
 evaluation:
   dataloader:
-    batch_size_per_gpu: 128
-  metrics: ner-metric
+    batch_size_per_gpu: 16
+  metrics: span-extraction-metric

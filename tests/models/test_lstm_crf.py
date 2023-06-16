@@ -7,7 +7,7 @@ from adaseq.commands.train import build_trainer_from_partial_objects
 from tests.models.base import TestModel, compare_fn
 
 
-class TestBertCRF(TestModel):
+class TestLSTMCRF(TestModel):
     def setUp(self):
         super().setUp()
         cfg_file = osp.join('tests', 'resources', 'configs', 'train_lstm_crf.yaml')

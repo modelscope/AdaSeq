@@ -19,7 +19,7 @@ model:
   type: multilabel-concat-typing-model
   embedder:
     model_name_or_path: sijunhe/nezha-cn-base
-  word_dropout: 0.
+  dropout: 0.0
   decoder:
     type: linear
   loss_function: WBCE

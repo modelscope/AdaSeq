@@ -30,6 +30,7 @@ class BiaffineNerModel(Model):
         encoder: Optional[Union[Encoder, Dict[str, Any]]] = None,
         biaffine_ffnn_size: int = -1,
         biaffine_bias: bool = True,
+        multi_label: bool = False,
         flat_ner: bool = True,
         dropout: float = 0.0,
         word_dropout: bool = False,
@@ -39,6 +40,7 @@ class BiaffineNerModel(Model):
         self.id_to_label = id_to_label
         self.num_labels = len(id_to_label) + 1  # leave 0 as non-entity label
         self.flat_ner = flat_ner
+        self.multi_label = multi_label
 
         if isinstance(embedder, Embedder):
             self.embedder = embedder
@@ -57,7 +59,7 @@ class BiaffineNerModel(Model):
             hidden_size = self.encoder.get_output_dim()
 
         self.scorer = BiaffineScorer(
-            hidden_size, biaffine_ffnn_size, self.num_labels, biaffine_bias
+            hidden_size, biaffine_ffnn_size, self.num_labels * (1 + int(multi_label)), biaffine_bias
         )
 
         self.use_dropout = dropout > 0.0
@@ -90,7 +92,6 @@ class BiaffineNerModel(Model):
 
         if self.encoder is not None:
             x = self.encoder(x, mask)
-
             if self.use_dropout:
                 x = self.dropout(x)
 
@@ -112,11 +113,19 @@ class BiaffineNerModel(Model):
         span_labels : (batch_size, seq_len, seq_len)
         span_scores : (batch_size, seq_len, seq_len, num_classes)
         """
-        label_mask = torch.triu(mask.unsqueeze(-1).expand_as(span_labels).clone())
-        loss = nn.functional.cross_entropy(
-            span_scores.reshape(-1, self.num_labels),
-            span_labels.masked_fill(~label_mask, -100).reshape(-1),
-        )
+        if self.multi_label:  # TODO why?
+            new_scores = span_scores.view(-1, 2)
+            new_labels = nn.functional.one_hot(span_labels, self.num_labels)
+            mi_mask = torch.triu(mask.unsqueeze(-1).expand_as(span_labels).clone())
+            en_mask = mi_mask.unsqueeze(-1).expand_as(new_labels).clone()
+            use_labels = new_labels.masked_fill(~en_mask, -100).view(-1)
+            loss = nn.functional.cross_entropy(new_scores, use_labels)
+        else:
+            label_mask = torch.triu(mask.unsqueeze(-1).expand_as(span_labels).clone())
+            loss = nn.functional.cross_entropy(
+                span_scores.reshape(-1, self.num_labels),
+                span_labels.masked_fill(~label_mask, -100).reshape(-1),
+            )
         return loss
 
     def decode(self, span_scores, mask):
@@ -125,13 +134,34 @@ class BiaffineNerModel(Model):
         :param mask: (b, t)
         :return:
         """
+        batch_size, t_shape = span_scores.shape[0], span_scores.shape[1]
         lengths = mask.sum(-1).tolist()
-        # (b, t, t)
-        type_idxs = span_scores.detach().argmax(dim=-1)
-        # (b, t, t)
-        span_max_score = (
-            span_scores.detach().gather(dim=-1, index=type_idxs.unsqueeze(-1)).squeeze(-1)
-        )
+        # mult = self.multi_label and not self.flat_ner
+        if not self.multi_label:
+            # (b, t, t)
+            type_idxs = span_scores.detach().argmax(dim=-1)
+            # (b, t, t)
+            span_max_score = (
+                span_scores.detach().gather(dim=-1, index=type_idxs.unsqueeze(-1)).squeeze(-1)
+            )
+        else:
+            binary_scores = span_scores.detach().view(-1, 2)  # (b*t*t*c, 2)
+            # if not mult:
+            #     new_span_scores = binary_scores[..., 1].view(-1, t_shape, t_shape, self.num_labels)
+            #     assert new_span_scores.shape[0] == batch_size
+            #     type_idxs = new_span_scores.argmax(dim=-1)
+            #     span_max_score = (
+            #         new_span_scores.gather(dim=-1, index=type_idxs.unsqueeze(-1)).squeeze(1)
+            #     )
+            # else:
+            #     cur = binary_scores.argmax(dim=-1).view(-1, self.num_labels)
+
+            # use the second dim as span_scores
+            span_scores = binary_scores[..., 1].view(-1, t_shape, t_shape, self.num_labels)
+            assert span_scores.shape[0] == batch_size
+            type_idxs = span_scores.argmax(dim=-1)
+            span_max_score = span_scores.gather(dim=-1, index=type_idxs.unsqueeze(-1)).squeeze(1)
+
         final = []
         for span_score, tids, l in zip(span_max_score, type_idxs, lengths):
             cands = []

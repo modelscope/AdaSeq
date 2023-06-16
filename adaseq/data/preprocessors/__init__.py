@@ -10,3 +10,4 @@ from .relation_extraction_preprocessor import RelationExtractionPreprocessor
 from .sequence_labeling_preprocessor import SequenceLabelingPreprocessor
 from .span_extraction_preprocessor import SpanExtracionPreprocessor
 from .twostage_preprocessor import TwoStagePreprocessor
+from .word_extraction_preprocessor import WordExtracionPreprocessor

@@ -35,6 +35,8 @@ class SpanExtracionPreprocessor(NLPPreprocessor):
             # self.label_to_id doesn't have non-entity label,
             # we set index 0 as non-entity label, so we add 1 to type_id
             type_id = self.label_to_id[span['type']] + 1
+            if span['end'] > length:
+                continue
             span_labels[span['start']][span['end'] - 1] = type_id
         output['span_labels'] = span_labels
         return output

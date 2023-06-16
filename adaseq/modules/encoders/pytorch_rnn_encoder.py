@@ -40,9 +40,7 @@ class _PytorchRnnWrapper(Encoder):
         return self._module.hidden_size * (1 + int(self._module.bidirectional))
 
     def forward(
-        self,
-        inputs: torch.Tensor,
-        mask: Optional[torch.BoolTensor] = None,
+        self, inputs: torch.Tensor, mask: Optional[torch.BoolTensor] = None, **kwargs
     ) -> torch.Tensor:
         """
         inputs: `torch.Tensor`

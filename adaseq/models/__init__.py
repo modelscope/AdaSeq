@@ -11,3 +11,4 @@ from .pretraining_model import PretrainingModel
 from .relation_extraction_model import RelationExtractionModel
 from .sequence_labeling_model import SequenceLabelingModel
 from .twostage_ner_model import TwoStageNERModel
+from .w2ner_model import W2NerModel

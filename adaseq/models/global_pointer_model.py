@@ -111,6 +111,7 @@ class GlobalPointerModel(Model):
         entity_score = self._forward(tokens)
         if self.training:
             onehot = nn.functional.one_hot(span_labels, self.num_classes)
+            # we choose the indexes from 1, so the label_id does not need to minus 1.
             label_matrix = onehot.permute(0, 3, 1, 2)[:, 1:, ...]
             loss = self._calculate_loss(entity_score, label_matrix)
             outputs = {'entity_score': entity_score, 'loss': loss}

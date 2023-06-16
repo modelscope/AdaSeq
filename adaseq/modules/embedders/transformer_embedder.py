@@ -170,7 +170,10 @@ class TransformerEmbedder(Embedder):
         encoded = self.encode(input_ids, attention_mask, token_type_ids)  # type: ignore
         if offsets is not None:
             # then reconstruct token-level ones by offsets
-            encoded = self.reconstruct(encoded, offsets)
+            if 'pieces2word' in kwargs:
+                encoded = self.reconstruct(encoded, offsets, kwargs['pieces2word'])
+            else:
+                encoded = self.reconstruct(encoded, offsets)
 
         if has_special_tokens is not None:
             if self.drop_special_tokens and has_special_tokens.bool()[0]:
@@ -233,7 +236,12 @@ class TransformerEmbedder(Embedder):
 
         return embeddings
 
-    def reconstruct(self, embeddings: torch.Tensor, offsets: torch.LongTensor) -> torch.Tensor:
+    def reconstruct(
+        self,
+        embeddings: torch.Tensor,
+        offsets: torch.LongTensor,
+        pieces2word: Optional[torch.LongTensor] = None,
+    ) -> torch.Tensor:
         """
         # Parameters
 
@@ -287,6 +295,14 @@ class TransformerEmbedder(Embedder):
 
             # All the places where the span length is zero, write in zeros.
             orig_embeddings[(span_embeddings_len == 0).expand(orig_embeddings.shape)] = 0
+
+        # If "sub_token_mode" is set to "w2max", return the max embedding of all sub-tokens of a word in mode of w2ner.
+        elif self.sub_token_mode == 'w2max':
+            min_value = torch.min(embeddings).item()
+            length = pieces2word.size(1)
+            bert_embeds = embeddings.contiguous().unsqueeze(1).expand(-1, length, -1, -1)
+            bert_embeds = torch.masked_fill(bert_embeds, pieces2word.eq(0).unsqueeze(-1), min_value)
+            orig_embeddings, _ = torch.max(bert_embeds, dim=2)
 
         # If invalid "sub_token_mode" is provided, throw error
         else:

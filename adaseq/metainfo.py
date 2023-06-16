@@ -45,6 +45,7 @@ class Models:
     multilabel_concat_typing_model_mcce_s = 'multilabel-concat-typing-model-mcce-s'
     pretraining_model = 'pretraining-model'
     twostage_ner_model = 'twostage-ner-model'
+    w2ner_model = 'w2ner-model'
 
 
 class Embedders:
@@ -61,6 +62,7 @@ class Encoders:
     gru_encoder = 'gru'
     rnn_encoder = 'rnn'
     lstm_encoder = 'lstm'
+    cnn_encoder = 'cnn'
 
 
 class Decoders:
@@ -85,6 +87,7 @@ class Preprocessors:
     multilabel_concat_typing_mcce_preprocessor = 'multilabel-concat-typing-mcce-preprocessor'
     pretraining_preprocessor = 'pretraining-preprocessor'
     twostage_preprocessor = 'twostage-preprocessor'
+    word_extraction_preprocessor = 'word-extraction-preprocessor'
 
 
 class DataCollators:
@@ -97,6 +100,7 @@ class DataCollators:
     multi_label_concat_typing_data_collator = 'MultiLabelConcatTypingDataCollatorWithPadding'
     pretraining_data_collator = 'PretrainingDataCollatorWithPadding'
     twostage_data_collator = 'TwostageDataCollatorWithPadding'
+    word_extraction_data_collator = 'WordExtractionDataCollatorWithPadding'
 
 
 class Trainers:

@@ -10,3 +10,6 @@ from .span_extraction_data_collator_with_padding import (
     SpanExtractionDataCollatorWithPadding,
 )
 from .twostage_data_collator_with_padding import TwostageDataCollatorWithPadding
+from .word_extraction_data_collator_with_padding import (
+    WordExtractionDataCollatorWithPadding,
+)
