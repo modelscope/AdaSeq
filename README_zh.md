@@ -47,7 +47,7 @@
 ⚠️**注意：** 这个项目仍在高速开发阶段，部分接口可能会发生改变。
 
 ## 📢 最新进展
-- 2022-03: [SemEval 2023] 我们的U-RaNER模型赢得了[SemEval 2023多语言复杂实体识别比赛](https://multiconer.github.io/results) ***9个赛道的冠军***！源代码将会很快开源！
+- 2022-03: [SemEval 2023] 我们的U-RaNER模型赢得了[SemEval 2023多语言复杂实体识别比赛](https://multiconer.github.io/results) ***9个赛道的冠军***！[模型介绍和源代码](./examples/U-RaNER)！
 - 2022-12: [[EMNLP 2022] 实现检索增强多模态实体理解MoRE模型](./examples/MoRe)
 - 2022-11: [[EMNLP 2022] 实现超细粒度实体分类NPCRF模型](./examples/NPCRF)
 - 2022-11: [[EMNLP 2022] 无监督边界感知预训练模型模型BABERT释出，实验复现](./examples/babert)
