@@ -41,9 +41,19 @@ class SequenceLabelingPipeline(Pipeline):
 
         labels = [self.id2label[x] for x in predictions]
 
+        return_prob = postprocess_params.pop('return_prob', True)
+        if return_prob:
+            if 'logits' in inputs:
+                logits = inputs['logits']
+                if len(logits.shape) == 3:
+                    logits = logits[0]
+                probs = torch_nested_numpify(torch_nested_detach(logits.softmax(-1)))
+            else:
+                return_prob = False
+
         outputs = []
         chunk = {}
-        for label, offsets in zip(labels, offset_mapping):
+        for i, (label, offsets) in enumerate(zip(labels, offset_mapping)):
             if label[0] in 'BS':
                 if chunk:
                     chunk['span'] = text[chunk['start'] : chunk['end']]
@@ -53,6 +63,8 @@ class SequenceLabelingPipeline(Pipeline):
             if label[0] in 'BIES':
                 if not chunk:
                     chunk = {'type': label[2:], 'start': offsets[0], 'end': offsets[1]}
+                    if return_prob:
+                        chunk['prob'] = probs[i][predictions[i]]
 
             if label[0] in 'IES':
                 if chunk:
