@@ -22,7 +22,6 @@ pip install -r requirements.txt -f https://modelscope.oss-cn-beijing.aliyuncs.co
 ```
 
 ### 1.b 使用 pip 安装
-我们暂时还没有发布到pypi，未来可以使用这种方式。
 ```commandline
 pip install adaseq
 ```

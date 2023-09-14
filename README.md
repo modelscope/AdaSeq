@@ -46,8 +46,9 @@ English | [简体中文](./README_zh.md)
 
 ⚠️**Notice:** This project is under quick development. This means some interfaces could be changed in the future.
 
-## 📢 What's New
-- 2022-03: [SemEval 2023] Our U-RaNER Won ***1st place in 9 tracks*** at [SemEval 2023 Task2](https://multiconer.github.io/results): Multilingual Complex Named Entity Recognition! [Model introduction and source code can be found here](./examples/U-RaNER).
+## 📢 What's News
+- 2022-07: [SemEval 2023] Our U-RaNER paper won [Best Paper Award](https://semeval.github.io/SemEval2023/awards)!
+- 2022-03: [SemEval 2023] Our U-RaNER won ***1st place in 9 tracks*** at [SemEval 2023 Task2](https://multiconer.github.io/results): Multilingual Complex Named Entity Recognition! [Model introduction and source code can be found here](./examples/U-RaNER).
 - 2022-12: [[EMNLP 2022] Retrieval-augmented Multimodal Entity Understanding Model (MoRe)](./examples/MoRe)
 - 2022-11: [[EMNLP 2022] Ultra-Fine Entity Typing Model (NPCRF)](./examples/NPCRF)
 - 2022-11: [[EMNLP 2022] Unsupervised Boundary-Aware Language Model (BABERT)](./examples/babert)
