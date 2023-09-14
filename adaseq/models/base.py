@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Optional, Union
 
 import torch
+import transformers
 from modelscope.hub.snapshot_download import snapshot_download
 from modelscope.models.base.base_torch_model import TorchModel as MsModel
 from modelscope.models.builder import build_model
@@ -16,6 +17,7 @@ from modelscope.utils.checkpoint import (
 )
 from modelscope.utils.config import Config, ConfigDict
 from modelscope.utils.constant import DEFAULT_MODEL_REVISION, ModelFile
+from packaging import version
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +60,11 @@ class Model(MsModel, ABC):
             model_dir = self.model_dir
         if model_dir is not None:
             model_ckpt = os.path.join(model_dir, ModelFile.TORCH_MODEL_BIN_FILE)
-            self.load_state_dict(torch.load(model_ckpt, map_location=torch.device('cpu')))
+            state_dict = torch.load(model_ckpt, map_location=torch.device('cpu'))
+            compatible_position_ids(
+                state_dict, 'embedder.transformer_model.embeddings.position_ids'
+            )
+            self.load_state_dict(state_dict)
 
     @abstractmethod
     def forward(
@@ -252,3 +258,15 @@ class Model(MsModel, ABC):
 
         model.name = model_name_or_path
         return model
+
+
+def compatible_position_ids(state_dict, position_id_key):
+    """Transformers no longer expect position_ids after transformers==4.31
+       https://github.com/huggingface/transformers/pull/24505
+    Args:
+        position_id_key (str): position_ids key,
+            such as(encoder.embeddings.position_ids)
+    """
+    transformer_version = version.parse('.'.join(transformers.__version__.split('.')[:2]))
+    if transformer_version >= version.parse('4.31.0'):
+        del state_dict[position_id_key]
