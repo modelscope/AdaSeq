@@ -27,7 +27,7 @@ class TestBaseModel(unittest.TestCase):
             type=Models.sequence_labeling_model,
             task=Tasks.named_entity_recognition,
             id_to_label={0: 'O', 1: 'B', 2: 'I'},
-            embedder={'model_name_or_path': 'bert-base-cased'},
+            embedder={'model_name_or_path': 'damo/nlp_structbert_backbone_base_std'},
         )
 
         model.save_pretrained(self.tmp_dir)

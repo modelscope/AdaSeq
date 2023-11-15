@@ -3,14 +3,13 @@ work_dir: tests/resources/regression
 task: named-entity-recognition
 
 dataset:
-  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra_partial.zip'
+  data_file: 'https://www.modelscope.cn/api/v1/datasets/izhx404/toy_msra/repo/files?Revision=master&FilePath=toy_msra.zip'
   data_type: conll
   labels:
     type: count_span_labels
 
 preprocessor:
   type: sequence-labeling-preprocessor
-  model_dir: damo/nlp_structbert_backbone_base_std
   max_length: 150
 
 data_collator: SequenceLabelingDataCollatorWithPadding
@@ -18,13 +17,12 @@ data_collator: SequenceLabelingDataCollatorWithPadding
 model:
   type: sequence-labeling-model
   embedder:
-    model_name_or_path: damo/nlp_structbert_backbone_base_std
+    model_name_or_path: damo/nlp_raner_named-entity-recognition_chinese-base-ecom
   dropout: 0.0
   use_crf: true
-  partial: true
 
 train:
-  max_epochs: 1
+  max_epochs: 3
   dataloader:
     batch_size_per_gpu: 16
   optimizer:
@@ -40,4 +38,6 @@ train:
     total_iters: 20
 
 evaluation:
+  dataloader:
+    batch_size_per_gpu: 128
   metrics: ner-metric

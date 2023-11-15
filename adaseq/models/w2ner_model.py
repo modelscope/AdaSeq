@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from modelscope.models.builder import MODELS
 
-from adaseq.metainfo import Models, Tasks
+from adaseq.metainfo import Models, Pipelines, Tasks
 from adaseq.models.base import Model
 from adaseq.modules.biaffine import Biaffine
 from adaseq.modules.embedders import Embedder
@@ -153,6 +153,8 @@ class W2NerModel(Model):
     ref: https://arxiv.org/abs/2112.10070
     ref: https://github.com/ljynlp/W2NER
     """
+
+    pipeline = Pipelines.span_based_ner_pipeline
 
     def __init__(
         self,

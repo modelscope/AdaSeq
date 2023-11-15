@@ -79,7 +79,7 @@
 我们整理了很多序列理解相关任务的数据集：[Datasets](./docs/datasets.md)
 
 ## 📦 安装AdaSeq
-AdaSeq项目基于 `Python version >= 3.7` 和 `PyTorch version >= 1.8`.
+AdaSeq项目基于 `Python >= 3.7`,  `PyTorch >= 1.8` 以及 `ModelScope >= 1.4`. 我们确认在 `ModelScope == 1.9.5` 时可以正常使用AdaSeq的各种功能。
 
 - pip安装：
 ```

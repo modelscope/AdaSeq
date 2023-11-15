@@ -268,5 +268,5 @@ def compatible_position_ids(state_dict, position_id_key):
             such as(encoder.embeddings.position_ids)
     """
     transformer_version = version.parse('.'.join(transformers.__version__.split('.')[:2]))
-    if transformer_version >= version.parse('4.31.0'):
+    if transformer_version >= version.parse('4.31.0') and position_id_key in state_dict:
         del state_dict[position_id_key]

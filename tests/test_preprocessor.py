@@ -7,6 +7,7 @@ from modelscope.utils.constant import ModeKeys
 from transformers import BertTokenizerFast
 
 from adaseq.data.preprocessors import NLPPreprocessor
+from tests.utils import is_huggingface_available
 
 
 class TestPreprocessor(unittest.TestCase):
@@ -34,6 +35,7 @@ class TestPreprocessor(unittest.TestCase):
 
         self.ner_input3 = {'text': 'EU rejects German call to boycott British lamb .'}
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_bert_sequence_labeling_preprocessor(self):
         cfg = dict(
             type='sequence-labeling-preprocessor',
@@ -56,6 +58,7 @@ class TestPreprocessor(unittest.TestCase):
         output_labels = [id_to_label[i] for i in output1['label_ids']]
         self.assertEqual(output_labels, labels)
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_bert_sequence_labeling_bioes_preprocessor(self):
         cfg = dict(
             type='sequence-labeling-preprocessor',
@@ -71,6 +74,7 @@ class TestPreprocessor(unittest.TestCase):
         output_labels = [id_to_label[i] for i in output1['label_ids']]
         self.assertEqual(output_labels, labels)
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_word2vec_sequence_labeling_preprocessor(self):
         cfg = dict(
             type='sequence-labeling-preprocessor',
@@ -93,6 +97,7 @@ class TestPreprocessor(unittest.TestCase):
         output_labels = [id_to_label[i] for i in output2['label_ids']]
         self.assertEqual(output_labels, labels)
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_bert_span_extraction_preprocessor(self):
         cfg = dict(
             type='span-extraction-preprocessor',
@@ -106,6 +111,7 @@ class TestPreprocessor(unittest.TestCase):
         expected_labels[0][1] = preprocessor.label_to_id['PER'] + 1
         self.assertEqual((output2['span_labels'] == expected_labels).all(), True)
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_twostage_ner_preprocessor(self):
         cfg = dict(
             type='twostage-preprocessor',
@@ -130,6 +136,7 @@ class TestPreprocessor(unittest.TestCase):
 
         self.typing_labels = ['人名', '地名', '老师']
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_span_typing_preprocessor(self):
         cfg = dict(
             type='multilabel-span-typing-preprocessor',
@@ -172,7 +179,7 @@ class TestPreprocessor(unittest.TestCase):
 
     def test_load_modelscope_backbone_tokenizer(self):
         preprocessor = NLPPreprocessor(
-            model_dir='damo/nlp_structbert_backbone_tiny_std', labels=['O', 'B']
+            model_dir='damo/nlp_structbert_backbone_base_std', labels=['O', 'B']
         )
         self.assertTrue(isinstance(preprocessor.tokenizer, BertTokenizerFast))
 
@@ -182,6 +189,7 @@ class TestPreprocessor(unittest.TestCase):
         )
         self.assertTrue(isinstance(preprocessor.tokenizer, BertTokenizerFast))
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_text_preprocessor_train(self):
         cfg = dict(
             type='nlp-preprocessor',
@@ -227,10 +235,35 @@ class TestPreprocessor(unittest.TestCase):
         self.assertTrue(np.array_equal(output['tokens']['attention_mask'], [True] * 15))
         self.assertTrue(np.array_equal(output['tokens']['offsets'], offsets))
 
+    @unittest.skipUnless(is_huggingface_available(), 'Cannot connect to huggingface!')
     def test_text_preprocessor_inference(self):
         cfg = dict(
             type='nlp-preprocessor',
             model_dir='bert-base-cased',
+            labels=['O'],
+            mode=ModeKeys.INFERENCE,
+        )
+        preprocessor = build_preprocessor(cfg, 'nlp')
+        output = preprocessor(self.ner_input3)
+        self.assertEqual(output['tokens']['input_ids'].ndim, 2)
+        self.assertEqual(output['tokens']['input_ids'].shape[0], 1)
+
+    def test_modelscope_backbone_preprocessor_inference(self):
+        cfg = dict(
+            type='nlp-preprocessor',
+            model_dir='damo/nlp_structbert_backbone_base_std',
+            labels=['O'],
+            mode=ModeKeys.INFERENCE,
+        )
+        preprocessor = build_preprocessor(cfg, 'nlp')
+        output = preprocessor(self.ner_input3)
+        self.assertEqual(output['tokens']['input_ids'].ndim, 2)
+        self.assertEqual(output['tokens']['input_ids'].shape[0], 1)
+
+    def test_modelscope_task_model_preprocessor_inference(self):
+        cfg = dict(
+            type='nlp-preprocessor',
+            model_dir='damo/nlp_raner_named-entity-recognition_chinese-base-news',
             labels=['O'],
             mode=ModeKeys.INFERENCE,
         )

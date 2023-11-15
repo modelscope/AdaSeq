@@ -15,9 +15,14 @@ def build_tokenizer(
         tokenizer = BertTokenizerFast if use_fast else BertTokenizer
         return tokenizer.from_pretrained(model_name_or_path, **kwargs)
 
-    try:
-        return AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast, **kwargs)
-
-    except OSError:
+    if model_name_or_path.startswith('damo/'):
         model_name_or_path = get_or_download_model_dir(model_name_or_path)
         return NLPTokenizer(model_name_or_path, use_fast=use_fast).tokenizer
+
+    else:
+        try:
+            return AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast, **kwargs)
+
+        except OSError:
+            model_name_or_path = get_or_download_model_dir(model_name_or_path)
+            return NLPTokenizer(model_name_or_path, use_fast=use_fast).tokenizer

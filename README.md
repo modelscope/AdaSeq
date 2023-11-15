@@ -78,7 +78,7 @@ More tasks, more languages, more domains: All modelcards we released can be foun
 We collected many datasets for sequence understanding tasks. All can be found in this page [Datasets](./docs/datasets.md).
 
 ## 📦 Installation
-AdaSeq project is based on `Python version >= 3.7` and `PyTorch version >= 1.8`.
+AdaSeq project is based on `Python >= 3.7`, `PyTorch >= 1.8` and `ModelScope >= 1.4`. We assure that AdaSeq can run smoothly when `ModelScope == 1.9.5`.
 
 - installation via pip：
 ```

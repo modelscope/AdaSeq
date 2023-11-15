@@ -10,7 +10,7 @@ dataset:
 
 preprocessor:
   type: span-extraction-preprocessor
-  model_dir: bert-base-chinese
+  model_dir: damo/nlp_structbert_backbone_base_std
   max_length: 150
 
 data_collator: SpanExtractionDataCollatorWithPadding
@@ -18,7 +18,7 @@ data_collator: SpanExtractionDataCollatorWithPadding
 model:
   type: global-pointer-model
   embedder:
-    model_name_or_path: sijunhe/nezha-cn-base
+    model_name_or_path: damo/nlp_structbert_backbone_base_std
   token_ffn_out_width: 64
   dropout: 0.0
 

@@ -358,19 +358,30 @@ def get_transformer(
     elif source is None:
         hf_e, ms_e = None, None
 
-        try:
-            return get_hf_transformer(model_name_or_path, load_weights, **kwargs), True
-        except OSError as e:
-            hf_e = e
+        if model_name_or_path.startswith('damo/'):
+            try:
+                return get_ms_transformer(model_name_or_path, **kwargs), False
+            except HTTPError as e:
+                ms_e = e
 
-        try:
-            return get_ms_transformer(model_name_or_path, **kwargs), False
-        except HTTPError as e:
-            ms_e = e
+            message = 'Try loading from huggingface and modelscope failed \n\n'
+            message += 'modelscope:\n' + str(ms_e)
 
-        message = 'Try loading from huggingface and modelscope failed \n\n'
-        message += 'huggingface:\n' + str(hf_e)
-        message += '\n\nmodelscope:\n' + str(ms_e)
+        else:
+            try:
+                return get_hf_transformer(model_name_or_path, load_weights, **kwargs), True
+            except OSError as e:
+                hf_e = e
+
+            try:
+                return get_ms_transformer(model_name_or_path, **kwargs), False
+            except HTTPError as e:
+                ms_e = e
+
+            message = 'Try loading from huggingface and modelscope failed \n\n'
+            message += 'huggingface:\n' + str(hf_e)
+            message += '\n\nmodelscope:\n' + str(ms_e)
+
         raise RuntimeError(message)
 
     else:
